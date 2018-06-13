@@ -1,0 +1,26 @@
+class:: Ganglion
+summary:: for communicating with the Ganglion board (4ch)
+categories:: External Control
+related:: Classes/OpenBCI, Classes/Cyton, Classes/CytonDaisy
+
+description::
+see link::Classes/OpenBCI:: for more help.
+
+note::
+does not survive link::Classes/CmdPeriod::.
+::
+
+classmethods::
+
+method::numChannels
+4
+
+instancemethods::
+
+private:: initGanglion
+
+examples::
+
+code::
+//todo
+::

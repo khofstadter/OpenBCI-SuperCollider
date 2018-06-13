@@ -1,0 +1,26 @@
+class:: CytonDaisy
+summary:: for communicating with the Cyton+Daisy board (16ch)
+categories:: External Control
+related:: Classes/OpenBCI, Classes/Cyton, Classes/Ganglion
+
+description::
+see link::Classes/Cyton:: and link::Classes/OpenBCI:: for more help.
+
+note::
+does not survive link::Classes/CmdPeriod::.
+::
+
+classmethods::
+
+method::numChannels
+16
+
+instancemethods::
+
+private:: initCytonDaisy
+
+examples::
+
+code::
+//todo
+::

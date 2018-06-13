@@ -1,0 +1,37 @@
+class:: OpenBCI
+summary:: Abstract class for OpenBCI boards
+categories:: External Control
+related:: Classes/Cyton, Classes/CytonDaisy, Classes/Ganglion
+
+description::
+for more information see http://openbci.com
+
+note::
+this is an abstract class - do not instantiate. use the subclasses...
+::
+CLASSTREE:: OpenBCI
+
+classmethods::
+
+method::new
+open port
+
+argument::port
+a link::Classes/String:: with the name of the serial port. by default this is code::"/dev/tty.usbserial-DJ00DO0N"::
+
+argument::baudrate
+it is not recommended to change this. (see setRadioHostBaudRate)
+
+instancemethods::
+
+private:: initOpenBCI
+
+method::port
+the link::Classes/SerialPort:: object in use.
+
+examples::
+
+code::
+SerialPort.listDevices;
+//todo
+::
