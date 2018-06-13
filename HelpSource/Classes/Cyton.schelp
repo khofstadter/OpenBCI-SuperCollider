@@ -22,5 +22,58 @@ private:: initCyton
 examples::
 
 code::
-//todo
+c= Cyton(dataAction:{|num, data, aux| [num, data, aux].postln})
+c.start
+c.stop
+c.getVersion
+
+c.start
+c.off(1)  //turn off the first channel
+c.off([2, 3, 4])
+c.off((1..8))  //all off
+c.on(3)
+c.on((1..8))  //all on
+
+c.testGnd  //test signal
+c.test1AmpSlow
+c.test1AmpFast
+c.testDC
+c.test2AmpSlow
+c.test2AmpFast
+c.stop
+
+c.settings(1, 1)
+c.settings(1, 0)
+c.settings(1, 0, 0)
+c.settings(1, 0, 6)
+c.setDefaultChannelSettings
+c.getDefaultChannelSettings
+c.gains
+
+c.timeStamping(true)
+c.timeStamping(false)
+
+c.attachWifi
+c.removeWifi
+c.getWifiStatus
+c.softResetWifi
+
+c.getRadioChannel
+c.setRadioChannel(7)
+c.getRadioPollTime
+c.setRadioPollTime(80)
+c.setRadioHostBaudRate(0)
+c.getRadioSystemStatus
+c.getBoardMode
+c.setBoardMode(2)
+c.getSampleRate
+c.setSampleRate(4)
+c.startLogging
+c.stopLogging
+c.getVersion
+c.query
+c.softReset
+c.start
+c.stop
+c.close
 ::

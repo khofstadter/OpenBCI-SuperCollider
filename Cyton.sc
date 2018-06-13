@@ -11,7 +11,7 @@
 
 Cyton : OpenBCI {
 	classvar <numChannels= 8;
-	var <gains, <state= 0, <buffer;
+	var <gains;
 	*new {|port, dataAction, replyAction, initAction|
 		^super.new(port).initCyton(dataAction, replyAction, initAction);
 	}
@@ -30,10 +30,9 @@ Cyton : OpenBCI {
 		//--read loop
 		task= Routine({
 			var last3= [0, 0, 0];
-			//var buffer= List(32);
-			var num, aux= (26..31);
-			var reply;
-			buffer= List(32);
+			var buffer= List(32);
+			var state= 0;
+			var reply, num, aux= (26..31);
 			inf.do{|i|
 				var byte= port.read;
 				//byte.postln;  //debug
@@ -41,6 +40,8 @@ Cyton : OpenBCI {
 				switch(state,
 					0, {
 						if(byte==0xA0, {  //header
+							buffer= List(32);
+							buffer.add(byte);
 							state= 1;
 						}, {
 							last3[i%3]= byte;
@@ -91,6 +92,7 @@ Cyton : OpenBCI {
 							dataAction.value(num, data, accel);
 							//TODO: parse aux data depending on footer
 						}, {
+							buffer.postln;
 							("% read error").format(this.class.name).postln;
 						});
 						buffer= List(32);
