@@ -29,9 +29,46 @@ private:: initOpenBCI
 method::port
 the link::Classes/SerialPort:: object in use.
 
+method::dataAction
+a link::Classes/Function:: that is evaluated as new packages with brain wave data arrives. no data is transmitted until you call the code::start:: method.
+there are three arguments passed in to the function: code::num, data, aux:: where code::num:: is a running counter (0-255), code::data:: is the N channels of data from the electrodes, and code::aux:: currently the accelerometer TODO: add code for the other modes and description here as well.
+
+method::replyAction
+a link::Classes/String:: that contains any reply message the board sends back (up until each EOT code::$$$::). by default this will be a function that just posts to the post window, but you can write a custom parser for the replies by setting your own function here.
+
+method::initAction
+a link::Classes/Function:: that is evaluated at startup and after each call to link::#-softReset::.
+
+method::data
+last brain wave data readings as an link::Classes/Array::. can be code::nil:: if streaming has not yet been started.
+
+method::accel
+last accelerometer readings as an link::Classes/Array::. can be code::nil:: if streaming has not yet been started.
+
+method::startLogging
+start writing data to a file on the sd card.
+
+argument::time
+can be '5MIN', '15MIN', '30MIN', '1HR', '2HR', '4HR', '12HR', '24HR' or '14SEC'
+
+method::stopLogging
+stop writing data and close the file.
+
+method::query
+ask for current register settings.
+
+method::softReset
+send a restart message to the board that will stop streaming and reset most of the settings.
+
+method::start
+start streaming data.
+
+method::stop
+stop streaming data.
+
+method::close
+stops main loop and closes the serial port.
+
 examples::
 
-code::
-SerialPort.listDevices;
-//todo
-::
+see link::Classes/Cyton:: or link::Classes/Ganglion:: help files.

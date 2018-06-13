@@ -1,5 +1,7 @@
 //--abstract class for supercollider openbci communication
 
+//related: Cyton Ganglion
+
 OpenBCI {
 	var <port, task;
 	var <>dataAction, <>replyAction, <>initAction;  //callback functions
