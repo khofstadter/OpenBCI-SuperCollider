@@ -5,6 +5,7 @@
 OpenBCI {
 	var <port, task;
 	var <>dataAction, <>replyAction, <>initAction;  //callback functions
+	var <>accelAction;  //more callback functions
 	var <>data, <>accel;  //latest readings (can be nil)
 	*new {|port, baudrate= 115200, dataAction, replyAction, initAction|
 		^super.new.initOpenBCI(port, baudrate, dataAction, replyAction, initAction);

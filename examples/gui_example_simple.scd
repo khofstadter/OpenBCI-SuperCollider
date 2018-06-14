@@ -12,7 +12,7 @@ win.layout= VLayout(*[
 	HLayout(*sliders),
 	HLayout(*numbers)
 ]);
-updateFunc= {|num, data, accel|
+updateFunc= {|num, data, aux, stop|
 	if(data.notNil, {
 		if(Main.elapsedTime-lastTime>0.016, {  //downsample to 60fps
 			lastTime= Main.elapsedTime;

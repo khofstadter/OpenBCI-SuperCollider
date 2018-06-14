@@ -166,7 +166,7 @@ Cyton : OpenBCI {
 					});
 				},
 				2, {
-					if(byte>=0xC0 and:{byte<=0xCF}, {  //footer
+					if(byte>=0xC0 and:{byte<=0xCF}, {  //check valid footer
 						num= buffer[1];  //sample number
 						data= Array.fill(numChannels, {|i|  //eight channels of 24bit data
 							var msb= buffer[i*3+2];
@@ -176,18 +176,22 @@ Cyton : OpenBCI {
 							});
 							pre+(msb<<16)+(buffer[i*3+3]<<8)+buffer[i*3+4];
 						});
-						if(byte==0xC0 and:{aux.any{|i| buffer[i]!=0}}, {
-							accel= Array.fill(3, {|i|  //three dimensions of 16bit data
-								var msb= buffer[i*2+26];
-								var pre= 0;
-								if(msb&128>0, {
-									pre= -0x010000;
+						switch(byte,  //footer / stop byte
+							0xC0, {  //accelerometer
+								if(aux.any{|i| buffer[i]!=0}, {
+									accel= Array.fill(3, {|i|  //three dimensions of 16bit data
+										var msb= buffer[i*2+26];
+										var pre= 0;
+										if(msb&128>0, {
+											pre= -0x010000;
+										});
+										pre+(msb<<8)+buffer[i*2+27];
+									});
+									accelAction.value(accel);
 								});
-								pre+(msb<<8)+buffer[i*2+27];
-							});
-						});
-						dataAction.value(num, data, accel);
-						//TODO: parse aux data depending on footer
+							};
+						);
+						dataAction.value(num, data, aux, byte);
 					}, {
 						buffer.postln;
 						("% read error").format(this.class.name).postln;

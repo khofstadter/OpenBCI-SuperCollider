@@ -25,7 +25,7 @@ code::
 SerialPort.listDevices;
 
 //just posting data
-c= Cyton("/dev/tty.OpenBCI-DM00DRM0", dataAction:{|num, data, aux| [num, data, aux].postln})
+c= Cyton("/dev/tty.OpenBCI-DM00DRM0", dataAction:{|num, data, aux, stop| [num, data, aux, stop].postln})
 c.start
 c.stop
 c.getVersion
@@ -45,13 +45,25 @@ c.test2AmpSlow
 c.test2AmpFast
 c.stop
 
+c.softReset
+c.data  //last sample data reading
+c.accel  //last accelerometer reading
+c.accelAction= {|accel| accel.postln}
+c.dataAction= {}
+c.start  //should only post accelerometer now (notice the lower sample rate)
+c.accelAction= {|accel| (accel/32767).postln}  //normalize -1.0 to 1.0
+c.stop
+
+c.dataAction= {|num, data, aux, stop| [num, data/8388607, aux, stop].postln}  //normalize sample data
+c.start
+c.stop
+
 c.settings(1, 1)
 c.settings(1, 0)
 c.settings(1, 0, 0)
 c.settings(1, 0, 6)
 c.setDefaultChannelSettings
 c.getDefaultChannelSettings
-c.gains
 
 c.timeStamping(true)
 c.timeStamping(false)
