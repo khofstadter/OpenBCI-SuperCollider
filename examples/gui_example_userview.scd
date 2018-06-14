@@ -22,7 +22,7 @@ usr.drawFunc= {
 		};
 	});
 };
-~openbci= Cyton("/dev/tty.usbserial-DJ00DO0N", initAction:{~openbci.start});  //edit
+~openbci= Cyton("/dev/tty.OpenBCI-DM00DRM0", initAction:{~openbci.start});  //edit
 CmdPeriod.doOnce({win.close});
 )
 

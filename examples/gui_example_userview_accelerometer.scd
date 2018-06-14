@@ -15,7 +15,7 @@ usr.drawFunc= {
 	Pen.fillColor= Color.white;
 	Pen.fillRect(Rect(x, 0, 1, height));
 	Pen.fillColor= Color.grey(0.9);
-	Pen.fillRect(Rect(0, 0, 80, 70));
+	Pen.fillRect(Rect(0, 0, 70, 70));
 	if(~openbci.accel.notNil, {
 		Pen.fillColor= Color.red;
 		ax= ~openbci.accel[0];
@@ -31,7 +31,7 @@ usr.drawFunc= {
 		Pen.fillRect(Rect(x, az.linlin(-32767, 32767, height, 0), 1, 1));
 	});
 };
-~openbci= Cyton("/dev/tty.usbserial-DJ00DO0N", initAction:{~openbci.start});  //edit
+~openbci= Cyton("/dev/tty.OpenBCI-DM00DRM0", initAction:{~openbci.start});  //edit
 CmdPeriod.doOnce({win.close});
 )
 
