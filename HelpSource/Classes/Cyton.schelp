@@ -17,11 +17,13 @@ method::numChannels
 
 instancemethods::
 
-private:: prInit, prTask
+private:: prTask
 
 examples::
 
 code::
+SerialPort.listDevices;
+
 //just posting data
 c= Cyton("/dev/tty.OpenBCI-DM00DRM0", dataAction:{|num, data, aux| [num, data, aux].postln})
 c.start

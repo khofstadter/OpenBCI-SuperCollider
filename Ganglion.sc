@@ -36,7 +36,6 @@ Ganglion : OpenBCI {
 	}
 
 	//--private
-	prInit {}
 	prTask {  //TODO
 		var last3= [0, 0, 0];
 		var buffer= List(32);

@@ -11,7 +11,6 @@
 
 Cyton : OpenBCI {
 	classvar <numChannels= 8;
-	var <gains;
 
 	//--commands
 	testGnd {  //Connect to internal GND (VDD - VSS)
@@ -44,22 +43,12 @@ Cyton : OpenBCI {
 			port.put(srb2.clip(0, 1).asDigit);
 			port.put(srb1.clip(0, 1).asDigit);
 			port.put($X);
-			switch(gain,
-				0, {gains[channel-1]= 1},
-				1, {gains[channel-1]= 2},
-				2, {gains[channel-1]= 4},
-				3, {gains[channel-1]= 6},
-				4, {gains[channel-1]= 8},
-				5, {gains[channel-1]= 12},
-				6, {gains[channel-1]= 24}
-			);
 		}, {
 			"channel % out of range".format(channel).warn;
 		});
 	}
 	setDefaultChannelSettings {  //set all channels to default
 		port.put($d);
-		gains= 24!numChannels;
 	}
 	getDefaultChannelSettings {  //get a report
 		port.put($D);
@@ -138,14 +127,12 @@ Cyton : OpenBCI {
 	}
 
 	//--private
-	prInit {
-		gains= 24!numChannels;
-	}
 	prTask {
 		var last3= [0, 0, 0];
 		var buffer= List(32);
 		var state= 0;
 		var reply, num, aux= (26..31);
+		0.1.wait;
 		inf.do{|i|
 			var byte= port.read;
 			//byte.postln;  //debug
@@ -166,7 +153,6 @@ Cyton : OpenBCI {
 							reply= "";
 							(buffer.size-3).do{|i| reply= reply++buffer[i].asAscii};
 							if(reply.contains("OpenBCI V3 8-16 channel"), {
-								gains= 24!numChannels;
 								initAction.value(reply);
 							});
 							replyAction.value(reply);
@@ -190,7 +176,6 @@ Cyton : OpenBCI {
 							});
 							pre+(msb<<16)+(buffer[i*3+3]<<8)+buffer[i*3+4];
 						});
-						data= data*(4.5/gains/(2**23-1));  //channel data scale factor
 						if(byte==0xC0 and:{aux.any{|i| buffer[i]!=0}}, {
 							accel= Array.fill(3, {|i|  //three dimensions of 16bit data
 								var msb= buffer[i*2+26];
@@ -200,7 +185,6 @@ Cyton : OpenBCI {
 								});
 								pre+(msb<<8)+buffer[i*2+27];
 							});
-							accel= accel*(0.002/(2**4));  //accelerometer scale factor
 						});
 						dataAction.value(num, data, accel);
 						//TODO: parse aux data depending on footer
@@ -239,15 +223,6 @@ CytonDaisy : Cyton {
 			port.put(srb2.clip(0, 1).asDigit);
 			port.put(srb1.clip(0, 1).asDigit);
 			port.put($X);
-			switch(gain,
-				0, {gains[channel-1]= 1},
-				1, {gains[channel-1]= 2},
-				2, {gains[channel-1]= 4},
-				3, {gains[channel-1]= 6},
-				4, {gains[channel-1]= 8},
-				5, {gains[channel-1]= 12},
-				6, {gains[channel-1]= 24}
-			);
 		}, {
 			"channel % out of range".format(channel).warn;
 		});

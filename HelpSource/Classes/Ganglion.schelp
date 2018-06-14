@@ -17,7 +17,7 @@ method::numChannels
 
 instancemethods::
 
-private:: prInit, prTask
+private:: prTask
 
 examples::
 

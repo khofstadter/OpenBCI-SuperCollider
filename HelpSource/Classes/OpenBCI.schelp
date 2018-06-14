@@ -33,7 +33,7 @@ set the link::#-initAction::
 
 instancemethods::
 
-private:: initOpenBCI, prInit, prTask
+private:: initOpenBCI, prTask
 
 method::port
 the link::Classes/SerialPort:: object in use.

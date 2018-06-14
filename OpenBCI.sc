@@ -7,7 +7,7 @@ OpenBCI {
 	var <>dataAction, <>replyAction, <>initAction;  //callback functions
 	var <>data, <>accel;  //latest readings (can be nil)
 	*new {|port, baudrate= 115200, dataAction, replyAction, initAction|
-		^super.new.initOpenBCI(port, baudrate, dataAction, replyAction, initAction).prInit;
+		^super.new.initOpenBCI(port, baudrate, dataAction, replyAction, initAction);
 	}
 	initOpenBCI {|argPort, argBaudrate, argDataAction, argReplyAction, argInitAction|
 		port= SerialPort(argPort ? "/dev/tty.OpenBCI-DM00DRM0", argBaudrate, crtscts:true);
@@ -128,6 +128,5 @@ OpenBCI {
 		port.put($;);
 	}
 
-	prInit {^this.subclassResponsibility(thisMethod)}
 	prTask {^this.subclassResponsibility(thisMethod)}
 }
