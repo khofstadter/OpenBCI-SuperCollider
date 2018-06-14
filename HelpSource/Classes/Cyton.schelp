@@ -17,12 +17,13 @@ method::numChannels
 
 instancemethods::
 
-private:: initCyton
+private:: prInit, prTask
 
 examples::
 
 code::
-c= Cyton(dataAction:{|num, data, aux| [num, data, aux].postln})
+//just posting data
+c= Cyton("/dev/tty.OpenBCI-DM00DRM0", dataAction:{|num, data, aux| [num, data, aux].postln})
 c.start
 c.stop
 c.getVersion
