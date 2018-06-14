@@ -17,14 +17,23 @@ method::new
 open port
 
 argument::port
-a link::Classes/String:: with the name of the serial port. by default this is code::"/dev/tty.usbserial-DJ00DO0N"::
+a link::Classes/String:: with the name of the serial port. by default this is code::"/dev/tty.OpenBCI-DM00DRM0"::
 
 argument::baudrate
-it is not recommended to change this. (see setRadioHostBaudRate)
+it is not recommended to change this. leave it at the default code::115200:: (see setRadioHostBaudRate)
+
+argument::dataAction
+set the link::#-dataAction::
+
+argument::replyAction
+set the link::#-replyAction::. note that if none give a default function that just posts will be used.
+
+argument::initAction
+set the link::#-initAction::
 
 instancemethods::
 
-private:: initOpenBCI
+private:: initOpenBCI, prTask
 
 method::port
 the link::Classes/SerialPort:: object in use.
@@ -45,11 +54,33 @@ last brain wave data readings as an link::Classes/Array::. can be code::nil:: if
 method::accel
 last accelerometer readings as an link::Classes/Array::. can be code::nil:: if streaming has not yet been started.
 
+method::off
+turn off (mute) one ore more channels
+
+argument::channel
+can be an link::Classes/Integer:: or an link::Classes/Array:: of Integers.
+
+code::
+c.off(1)  //turn off the first channel
+c.off([2, 3, 4])  //turn off channels 2-4
+::
+
+method::on
+turn on (unmute) one ore more channels
+
+argument::channel
+can be an link::Classes/Integer:: or an link::Classes/Array:: of Integers.
+
+code::
+c.on(1)  //turn on the first channel
+c.on([2, 3, 4])  //turn on channels 2-4
+::
+
 method::startLogging
 start writing data to a file on the sd card.
 
 argument::time
-can be '5MIN', '15MIN', '30MIN', '1HR', '2HR', '4HR', '12HR', '24HR' or '14SEC'
+can be code::'5MIN'::, code::'15MIN'::, code::'30MIN'::, code::'1HR'::, code::'2HR'::, code::'4HR'::, code::'12HR'::, code::'24HR':: or code::'14SEC'::
 
 method::stopLogging
 stop writing data and close the file.
@@ -65,6 +96,18 @@ start streaming data.
 
 method::stop
 stop streaming data.
+
+method::attachWifi
+tries to attach a wifi shield.
+
+method::removeWifi
+remove an attached wifi shield.
+
+method::getWifiStatus
+get status of the wifi shield
+
+method::softResetWifi
+perform a soft reset of the wifi shield
 
 method::close
 stops main loop and closes the serial port.

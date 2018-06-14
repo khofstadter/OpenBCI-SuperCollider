@@ -11,130 +11,8 @@
 
 Cyton : OpenBCI {
 	classvar <numChannels= 8;
-	var <gains;
-	*new {|port, dataAction, replyAction, initAction|
-		^super.new(port).initCyton(dataAction, replyAction, initAction);
-	}
-	initCyton {|argDataAction, argReplyAction, argInitAction|
-
-		//--default actions
-		dataAction= argDataAction;
-		replyAction= argReplyAction ? {|reply| reply.postln};
-		initAction= argInitAction;
-
-		//--startup
-		("% starting...").format(this.class.name).postln;
-		this.softReset;
-		gains= 24!numChannels;
-
-		//--read loop
-		task= Routine({
-			var last3= [0, 0, 0];
-			var buffer= List(32);
-			var state= 0;
-			var reply, num, aux= (26..31);
-			inf.do{|i|
-				var byte= port.read;
-				//byte.postln;  //debug
-				buffer.add(byte);
-				switch(state,
-					0, {
-						if(byte==0xA0, {  //header
-							buffer= List(32);
-							buffer.add(byte);
-							state= 1;
-						}, {
-							last3[i%3]= byte;
-							if(last3==#[36, 36, 36], {  //eot $$$
-								if(buffer[0]==65, {  //TODO remove this
-									buffer= buffer.drop(32);
-									//"temp fix applied".postln;  //debug
-								});
-								reply= "";
-								(buffer.size-3).do{|i| reply= reply++buffer[i].asAscii};
-								if(reply.contains("OpenBCI V3 8-16 channel"), {
-									gains= 24!numChannels;
-									initAction.value(reply);
-								});
-								replyAction.value(reply);
-								buffer= List(32);
-							});
-						});
-					},
-					1, {
-						if(buffer.size>=32, {
-							state= 2;
-						});
-					},
-					2, {
-						if(byte>=0xC0 and:{byte<=0xCF}, {  //footer
-							num= buffer[1];  //sample number
-							data= Array.fill(numChannels, {|i|  //eight channels of 24bit data
-								var msb= buffer[i*3+2];
-								var pre= 0;
-								if(msb&128>0, {
-									pre= -0x01000000;
-								});
-								pre+(msb<<16)+(buffer[i*3+3]<<8)+buffer[i*3+4];
-							});
-							data= data*(4.5/gains/(2**23-1));  //channel data scale factor
-							if(byte==0xC0 and:{aux.any{|i| buffer[i]!=0}}, {
-								accel= Array.fill(3, {|i|  //three dimensions of 16bit data
-									var msb= buffer[i*2+26];
-									var pre= 0;
-									if(msb&128>0, {
-										pre= -0x010000;
-									});
-									pre+(msb<<8)+buffer[i*2+27];
-								});
-								accel= accel*(0.002/(2**4));  //accelerometer scale factor
-							});
-							dataAction.value(num, data, accel);
-							//TODO: parse aux data depending on footer
-						}, {
-							buffer.postln;
-							("% read error").format(this.class.name).postln;
-						});
-						buffer= List(32);
-						state= 0;
-					}
-				);
-			};
-		}).play(SystemClock);
-	}
 
 	//--commands
-	off {|channel= 1|  //Turn Channels OFF
-		channel.asArray.do{|c|
-			switch(c,
-				1, {port.put($1)},
-				2, {port.put($2)},
-				3, {port.put($3)},
-				4, {port.put($4)},
-				5, {port.put($5)},
-				6, {port.put($6)},
-				7, {port.put($7)},
-				8, {port.put($8)},
-				{"channel % not in the range 1-8".format(c).warn}
-			);
-		};
-	}
-	on {|channel= 1|  //Turn Channels ON
-		channel.asArray.do{|c|
-			switch(c,
-				1, {port.put($!)},
-				2, {port.put($@)},
-				3, {port.put($#)},
-				4, {port.put($$)},
-				5, {port.put($%)},
-				6, {port.put($^)},
-				7, {port.put($&)},
-				8, {port.put($*)},
-				{"channel % not in the range 1-8".format(c).warn}
-			);
-		};
-	}
-
 	testGnd {  //Connect to internal GND (VDD - VSS)
 		port.put($0);
 	}
@@ -165,22 +43,12 @@ Cyton : OpenBCI {
 			port.put(srb2.clip(0, 1).asDigit);
 			port.put(srb1.clip(0, 1).asDigit);
 			port.put($X);
-			switch(gain,
-				0, {gains[channel-1]= 1},
-				1, {gains[channel-1]= 2},
-				2, {gains[channel-1]= 4},
-				3, {gains[channel-1]= 6},
-				4, {gains[channel-1]= 8},
-				5, {gains[channel-1]= 12},
-				6, {gains[channel-1]= 24}
-			);
 		}, {
 			"channel % out of range".format(channel).warn;
 		});
 	}
 	setDefaultChannelSettings {  //set all channels to default
 		port.put($d);
-		gains= 24!numChannels;
 	}
 	getDefaultChannelSettings {  //get a report
 		port.put($D);
@@ -254,72 +122,86 @@ Cyton : OpenBCI {
 		port.putAll("/"++mode.clip(0, 4));
 	}
 
-	attachWifi {
-		port.put(${);
-	}
-	removeWifi {
-		port.put($});
-	}
-	getWifiStatus {
-		port.put($:);
-	}
-	softResetWifi {
-		port.put($;);
-	}
-
 	getVersion {  //get firmware version
 		port.put($V);
+	}
+
+	//--private
+	prTask {
+		var last3= [0, 0, 0];
+		var buffer= List(32);
+		var state= 0;
+		var reply, num, aux= (26..31);
+		0.1.wait;
+		inf.do{|i|
+			var byte= port.read;
+			//byte.postln;  //debug
+			buffer.add(byte);
+			switch(state,
+				0, {
+					if(byte==0xA0, {  //header
+						buffer= List(32);
+						buffer.add(byte);
+						state= 1;
+					}, {
+						last3[i%3]= byte;
+						if(last3==#[36, 36, 36], {  //eot $$$
+							if(buffer[0]==65, {  //TODO remove this
+								buffer= buffer.drop(32);
+								//"temp fix applied".postln;  //debug
+							});
+							reply= "";
+							(buffer.size-3).do{|i| reply= reply++buffer[i].asAscii};
+							if(reply.contains("OpenBCI V3 8-16 channel"), {
+								initAction.value(reply);
+							});
+							replyAction.value(reply);
+							buffer= List(32);
+						});
+					});
+				},
+				1, {
+					if(buffer.size>=32, {
+						state= 2;
+					});
+				},
+				2, {
+					if(byte>=0xC0 and:{byte<=0xCF}, {  //footer
+						num= buffer[1];  //sample number
+						data= Array.fill(numChannels, {|i|  //eight channels of 24bit data
+							var msb= buffer[i*3+2];
+							var pre= 0;
+							if(msb&128>0, {
+								pre= -0x01000000;
+							});
+							pre+(msb<<16)+(buffer[i*3+3]<<8)+buffer[i*3+4];
+						});
+						if(byte==0xC0 and:{aux.any{|i| buffer[i]!=0}}, {
+							accel= Array.fill(3, {|i|  //three dimensions of 16bit data
+								var msb= buffer[i*2+26];
+								var pre= 0;
+								if(msb&128>0, {
+									pre= -0x010000;
+								});
+								pre+(msb<<8)+buffer[i*2+27];
+							});
+						});
+						dataAction.value(num, data, accel);
+						//TODO: parse aux data depending on footer
+					}, {
+						buffer.postln;
+						("% read error").format(this.class.name).postln;
+					});
+					buffer= List(32);
+					state= 0;
+				}
+			);
+		};
 	}
 }
 
 CytonDaisy : Cyton {
 	classvar <numChannels= 16;
-	off {|channel= 1|  //Turn Channels OFF
-		channel.asArray.do{|c|
-			switch(c,
-				1, {port.put($1)},
-				2, {port.put($2)},
-				3, {port.put($3)},
-				4, {port.put($4)},
-				5, {port.put($5)},
-				6, {port.put($6)},
-				7, {port.put($7)},
-				8, {port.put($8)},
-				9, {port.put($q)},
-				10, {port.put($w)},
-				11, {port.put($e)},
-				12, {port.put($r)},
-				13, {port.put($t)},
-				14, {port.put($y)},
-				15, {port.put($u)},
-				16, {port.put($i)},
-				{"channel % not in the range 1-16".format(c).warn}
-			);
-		};
-	}
-	on {|channel= 1|  //Turn Channels ON
-		channel.asArray.do{|c|
-			switch(c,
-				1, {port.put($!)},
-				2, {port.put($@)},
-				3, {port.put($#)},
-				4, {port.put($$)},
-				5, {port.put($%)},
-				6, {port.put($^)},
-				7, {port.put($&)},
-				8, {port.put($*)},
-				9, {port.put($Q)},
-				10, {port.put($W)},
-				11, {port.put($E)},
-				12, {port.put($R)},
-				13, {port.put($T)},
-				14, {port.put($Y)},
-				15, {port.put($U)},
-				16, {port.put($I)},
-				{"channel % not in the range 1-16".format(c).warn}
-			);
-		};
-	}
 	settings {|channel= 1, powerDown= 0, gain= 6, type= 0, bias= 1, srb2= 1, srb1= 0|
 		if(channel>=1 and:{channel<=16}, {
 			port.put($x);
@@ -341,15 +223,6 @@ CytonDaisy : Cyton {
 			port.put(srb2.clip(0, 1).asDigit);
 			port.put(srb1.clip(0, 1).asDigit);
 			port.put($X);
-			switch(gain,
-				0, {gains[channel-1]= 1},
-				1, {gains[channel-1]= 2},
-				2, {gains[channel-1]= 4},
-				3, {gains[channel-1]= 6},
-				4, {gains[channel-1]= 8},
-				5, {gains[channel-1]= 12},
-				6, {gains[channel-1]= 24}
-			);
 		}, {
 			"channel % out of range".format(channel).warn;
 		});
@@ -360,5 +233,12 @@ CytonDaisy : Cyton {
 			16, {port.put($C)},
 			{"channels can only be 8 or 16".warn}
 		);
+	}
+
+	//--private
+	prTask {  //TODO
+		var last3= [0, 0, 0];
+		var buffer= List(32);
+		var state= 0;
 	}
 }
