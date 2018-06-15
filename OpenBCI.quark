@@ -1,7 +1,7 @@
 (
 	\name: 				"OpenBCI",
 	\summary:			"communicating with OpenBCI",
-	\version:			"0.94",
+	\version:			"0.95",
 	\schelp:			"OpenBCI",
 	\author: 			"Fredrik Olofsson & Krisztian Hofstadter",
 	\country: 			"Germany & UK",

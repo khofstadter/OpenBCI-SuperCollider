@@ -65,8 +65,8 @@ c.settings(1, 0, 6)
 c.setDefaultChannelSettings
 c.getDefaultChannelSettings
 
-c.timeStamping(true)
-c.timeStamping(false)
+c.timeStampingON
+c.timeStampingOFF
 
 c.attachWifi
 c.removeWifi

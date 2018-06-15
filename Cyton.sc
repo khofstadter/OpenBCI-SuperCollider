@@ -65,12 +65,11 @@ Cyton : OpenBCI {
 		});
 	}
 
-	timeStamping {|on= true|
-		if(on, {
-			port.put($<);
-		}, {
-			port.put($>);
-		});
+	timeStampingON {
+		port.put($<);
+	}
+	timeStampingOFF {
+		port.put($>);
 	}
 	getRadioChannel {  //Get Radio Channel Number
 		port.putAll(Int8Array[0xF0, 0x00]);
@@ -140,8 +139,10 @@ Cyton : OpenBCI {
 			switch(state,
 				0, {
 					if(byte==0xA0, {  //header
-						buffer= List(32);
-						buffer.add(byte);
+						if(buffer.size>1, {
+							buffer= List(32);
+							buffer.add(byte);
+						});
 						state= 1;
 					}, {
 						last3[i%3]= byte;
@@ -191,7 +192,7 @@ Cyton : OpenBCI {
 								});
 							};
 						);
-						dataAction.value(num, data, aux, byte);
+						dataAction.value(num, data, buffer[aux], byte);
 					}, {
 						buffer.postln;
 						("% read error").format(this.class.name).postln;
