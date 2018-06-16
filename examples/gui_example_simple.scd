@@ -1,4 +1,7 @@
 //simple gui example just displaying data using sliders and numberboxes
+
+SerialPort.listDevices;
+
 (
 var board= Cyton;  //edit here to match you board e.g. Ganglion
 var port= "/dev/tty.OpenBCI-DM00DRM0";  //edit

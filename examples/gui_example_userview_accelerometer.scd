@@ -1,5 +1,8 @@
 //gui example with userview / pen graphics
 //only plotting accelerometer data
+
+SerialPort.listDevices;
+
 (
 var width= 640, height= 320;
 var win, usr;
