@@ -20,3 +20,19 @@ OpenBCI.openHelpFile
 ```
 
 for more info see http://openbci.com
+
+## troubleshooting
+
+**mac os 10.12.x** and later with cyton + dongle...
+if you experience freezes and sporadic updates in the stream of serial data, make sure that you are using the AppleUSBFTDI driver and *not* the 'official' ftdichip.com driver.  to check plug in the dongle, open terminal and type...
+`kextstat | grep FTDI`
+if it is reporting ```com.FTDI.driver.FTDIUSBSerialDriver (2.4.2)``` then unload this driver with the following terminal command...
+`sudo kextunload -b com.FTDI.driver.FTDIUSBSerialDriver`
+unplug and plug in the dongle and once again run...
+`kextstat | grep FTDI`
+it should now report...
+`com.apple.driver.AppleUSBFTDI (5.0.0)`
+and the data should come streaming in a smooth rate when you run for example `gui_example_userview_accelerometer.scd`.
+
+**mac os 10.11.x** and earlier with cyton + dongle...
+if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI_Driver_Fix
