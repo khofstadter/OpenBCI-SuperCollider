@@ -1,0 +1,54 @@
+class:: OpenBCIfft
+summary:: collect data and perform fft
+categories:: External Control
+related:: Classes/OpenBCI
+
+description::
+collects data from OpenBCI board and calculate fft.
+
+CLASSMETHODS::
+
+method::new
+create a new instance
+
+argument::board
+an instance of a link::Classes/OpenBCI:: subclass (for example a link::Classes/Cyton:: or link::Classes/Ganglion::).
+
+argument::sampleRate
+the current sampling rate. e.g. 250 is the default for Cyton, 200 for Ganglion
+
+INSTANCEMETHODS::
+
+private::initOpenBCIfft, prInit
+
+method::board
+get the board instance
+
+method::start
+start collecting and calculating
+
+method::stop
+stop collecting
+
+method::data
+the raw signals collected as an link::Classes/Array:: of n-channel arrays. The sizes of the arrays depend on the board samplerate and will be the next higher power of two e.g. code::250.nextPowerOfTwo::
+
+method::fft
+the fft data (magnitudes) as an link::Classes/Array:: of n-channel arrays (e.g. 8 for Cyton, 4 for Ganglion). The sizes of the arrays depend on the board samplerate i.e. code::250.nextPowerOfTwo.div(2):: (note the divide by two here)
+
+examples::
+
+code::
+SerialPort.listDevices;
+
+c= Cyton("/dev/tty.OpenBCI-DM00DRM0");
+c.start;
+f= OpenBCIfft(c);
+f.start;
+f.fft.plot
+f.fft.plot
+f.fft[0].plot  //only first channel
+f.data.plot
+f.stop;
+c.stop;
+::

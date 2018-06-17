@@ -1,4 +1,7 @@
 //gui example with userview / pen graphics
+
+SerialPort.listDevices;
+
 (
 var width= 640, height= 480;
 var win, usr;

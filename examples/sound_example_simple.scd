@@ -1,4 +1,7 @@
 //simple sound example - just some sines
+
+SerialPort.listDevices;
+
 (
 var board= Cyton;  //edit here to match you board e.g. Ganglion
 var port= "/dev/tty.OpenBCI-DM00DRM0";  //edit
