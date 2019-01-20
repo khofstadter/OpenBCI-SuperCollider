@@ -6,7 +6,6 @@
 //TODO: implement and test the different aux commands
 //TODO: low pass filter
 //TODO: notch filter (60/50 hz)
-//TODO: test wifi shield commands
 //TODO: test Daisy commands
 
 Cyton : OpenBCI {
@@ -33,7 +32,7 @@ Cyton : OpenBCI {
 	}
 
 	settings {|channel= 1, powerDown= 0, gain= 6, type= 0, bias= 1, srb2= 1, srb1= 0|
-		if(channel>=1 and:{channel<=8}, {
+		if(channel>=1 and:{channel<=numChannels}, {
 			port.put($x);
 			port.put(channel.asDigit);
 			port.put(powerDown.clip(0, 1).asDigit);
@@ -54,7 +53,7 @@ Cyton : OpenBCI {
 		port.put($D);
 	}
 	impedance {|channel= 1, pchan= 0, nchan= 0|
-		if(channel>=1 and:{channel<=8}, {
+		if(channel>=1 and:{channel<=numChannels}, {
 			port.put($z);
 			port.put(channel.asDigit);
 			port.put(pchan.clip(0, 1).asDigit);
@@ -168,6 +167,9 @@ Cyton : OpenBCI {
 				},
 				2, {
 					if(byte>=0xC0 and:{byte<=0xCF}, {  //check valid footer
+						if(num.notNil and:{buffer[1]-1%256!=num}, {
+							"dropped package % %".format(buffer[1], num).warn;
+						});
 						num= buffer[1];  //sample number
 						data= Array.fill(numChannels, {|i|  //eight channels of 24bit data
 							var msb= buffer[i*3+2];
@@ -208,7 +210,7 @@ Cyton : OpenBCI {
 CytonDaisy : Cyton {
 	classvar <numChannels= 16;
 	settings {|channel= 1, powerDown= 0, gain= 6, type= 0, bias= 1, srb2= 1, srb1= 0|
-		if(channel>=1 and:{channel<=16}, {
+		if(channel>=1 and:{channel<=numChannels}, {
 			port.put($x);
 			switch(channel,
 				9, {port.put($Q)},
