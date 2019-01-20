@@ -23,7 +23,7 @@ for more info see http://openbci.com
 
 ## overview
 
-* Cyton, CytonDaisy, Ganglion - use these SuperCollider classes if you connect to your board via bluetooth serial (the dongle). Maximum sample rate is 250Hz.
+* Cyton, CytonDaisy, Ganglion - use these SuperCollider classes if you connect to your board via bluetooth serial (the dongle). Maximum sample rate is 250Hz (Cyton) and 200Hz (Ganglion).
 
 ## troubleshooting
 
@@ -39,8 +39,10 @@ if it is reporting `com.FTDI.driver.FTDIUSBSerialDriver (2.4.2)` then unload thi
 sudo kextunload -b com.FTDI.driver.FTDIUSBSerialDriver
 ```
 unplug and plug in the dongle and once again run...
-```kextstat | grep FTDI```
-it should now report `com.apple.driver.AppleUSBFTDI (5.0.0)` and the data should come streaming in a smooth rate when you run for example `gui_example_userview_accelerometer.scd`.
+```
+kextstat | grep FTDI
+```
+it should now report `com.apple.driver.AppleUSBFTDI (5.0.0)` and the data should come streaming in at a smooth rate and without hickups. test this with for example the file `gui_example_userview_accelerometer.scd`.
 
 **mac os 10.11.x** and earlier with cyton + dongle...
 if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI_Driver_Fix
