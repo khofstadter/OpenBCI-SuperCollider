@@ -1,0 +1,119 @@
+class:: CytonSerial
+summary:: for communicating with the Cyton board (8ch)
+categories:: External Control
+related:: Classes/OpenBCI, Classes/Cyton, Classes/GanglionSerial
+
+description::
+this class is for communication via bluetooth serial (dongle). use link::Classes/CytonWifi:: for the wifi shield.
+
+note::
+does not survive link::Classes/CmdPeriod::.
+::
+
+classmethods::
+
+method::new
+open port
+
+argument::port
+a link::Classes/String:: with the name of the serial port. by default this is code::"/dev/tty.OpenBCI-DM00DRM0"::
+
+argument::baudrate
+it is not recommended to change this. leave it at the default code::115200:: (see link::Classes/Cyton#-setRadioHostBaudRate::)
+
+argument::dataAction
+set the link::Classes/OpenBCI#-dataAction::
+
+argument::replyAction
+set the link::Classes/OpenBCI#-replyAction::. note that if none give a default function that just posts will be used.
+
+argument::initAction
+set the link::Classes/OpenBCI#-initAction::
+
+instancemethods::
+
+private:: initCytonSerial, prTask, prCommand, prCommandArray
+
+method::port
+the link::Classes/SerialPort::.
+
+method::close
+stops main loop and closes the serial port.
+
+examples::
+
+code::
+SerialPort.listDevices;
+
+//just posting data
+c= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", dataAction:{|num, data, aux, stop| [num, data, aux, stop].postln})
+c.getVersion  //get firmware version
+c.start
+c.stop
+
+c.start
+c.off(1)  //turn off the first channel
+c.off([2, 3, 4])
+c.off((1..8))  //all off
+c.on(3)
+c.on((1..8))  //all on
+
+c.testGnd  //test signal
+c.test1AmpSlow
+c.test1AmpFast
+c.testDC
+c.test2AmpSlow
+c.test2AmpFast
+c.stop
+
+c.softReset
+c.data  //last sample data reading
+c.accel  //last accelerometer reading
+c.accelAction= {|accel| accel.postln}
+c.dataAction= {}
+c.start  //should only post accelerometer now (notice the lower sample rate)
+c.accelAction= {|accel| (accel/32767).postln}  //normalize -1.0 to 1.0
+c.stop
+
+c.dataAction= {|num, data, aux, stop| [num, data/8388607, aux, stop].postln}  //normalize sample data
+c.start
+c.stop
+c.close  //finish and close the serial port
+
+//--
+c= CytonSerial("/dev/tty.OpenBCI-DM00DRM0")
+c.settings(1, 1)  //channel 1, power down
+c.settings(1, 0)  //channel 1, power up
+c.settings(1, 0, 0)  //channel 1, power up, set gain to 1
+c.settings(1, 0, 6)  //channel 1, power up, set gain to 24 (the default)
+c.getDefaultChannelSettings
+c.setDefaultChannelSettings
+
+c.timeStampingON
+c.timeStampingOFF
+
+c.attachWifi
+c.getWifiStatus
+c.softResetWifi
+c.removeWifi
+c.getWifiStatus
+
+c.getRadioChannel
+c.setRadioChannel(7)
+c.getRadioPollTime
+c.setRadioPollTime(80)  //the default is 80ms
+c.setRadioHostBaudRate(0)
+c.getRadioSystemStatus
+c.getBoardMode
+c.setBoardMode(2)
+c.getSampleRate
+c.setSampleRate(4)
+c.startLogging
+c.stopLogging
+c.getVersion  //get firmware version
+c.query  //query register settings
+c.softReset
+c.start
+c.stop
+c.close
+::

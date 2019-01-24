@@ -1,12 +1,10 @@
 //fft gui example with multisliders
 
-SerialPort.listDevices;
-
 (
-var board= Cyton;  //edit here to match you board e.g. Ganglion
-var port= "/dev/tty.OpenBCI-DM00DRM0";  //edit
+var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match you board
+//var board= CytonWifi(NetAddr("192.168.1.103", 13999), initAction: {|b| b.start});
 var win, msliders;
-win= Window("fft gui example scrolling", Rect(100, 100, 640, 480)).front;
+win= Window("fft gui example scrolling", Rect(100, 100, 640, 640)).front;
 msliders= {
 	MultiSliderView()
 	.canFocus_(false)
@@ -16,9 +14,8 @@ msliders= {
 	.elasticMode_(1);
 }.dup(board.numChannels);
 win.layout= VLayout(*msliders);
-~openbci= board.new(port, initAction:{~openbci.start});
 Routine({
-	var f= OpenBCIfft(~openbci, 250);
+	var f= OpenBCIfft(board, 250);
 	f.start;
 	inf.do{
 		msliders.do{|m, i|
@@ -28,7 +25,10 @@ Routine({
 	};
 }).play(AppClock);
 CmdPeriod.doOnce({win.close});
+~openbci= board;
 )
 
 ~openbci.softReset;
 ~openbci.start;
+~openbci.stop;
+SerialPort.listDevices;

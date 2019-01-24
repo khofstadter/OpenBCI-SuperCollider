@@ -1,0 +1,45 @@
+class:: GanglionWifi
+summary:: for communicating with the Ganglion board (4ch)
+categories:: External Control
+related:: Classes/OpenBCI, Classes/Ganglion, Classes/CytonWifi
+
+description::
+this class is for communication via wifi osc (wifishield). use link::Classes/GanglionSerial:: for the bluetooth dongle.
+
+note::
+does not survive link::Classes/CmdPeriod::.
+::
+
+classmethods::
+
+method::new
+open communication
+
+argument::netAddr
+a link::Classes/NetAddr:: with the ip and port of the wifi shield. by default this is code::NetAddr("OpenBCI_WifiShieldOSC.local", 13999)::
+
+argument::reset
+perform a soft reset at startup or not.
+
+argument::dataAction
+set the link::Classes/OpenBCI#-dataAction::
+
+argument::replyAction
+set the link::Classes/OpenBCI#-replyAction::. note that if none give a default function that just posts will be used.
+
+argument::initAction
+set the link::Classes/OpenBCI#-initAction::
+
+instancemethods::
+
+private:: initGanglionWifi, prCommand, prCommandArray
+
+method::netAddr
+the link::Classes/NetAddr:: of the wifi shield.
+
+method::close
+stops main loop and closes the serial port.
+
+examples::
+
+//TODO

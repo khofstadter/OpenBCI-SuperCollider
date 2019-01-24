@@ -25,6 +25,8 @@ for more info see http://openbci.com
 
 * Cyton, CytonDaisy, Ganglion - use these SuperCollider classes if you connect to your board via bluetooth serial (the dongle). Maximum sample rate is 250Hz (Cyton) and 200Hz (Ganglion).
 
+* CytonWifi, CytonDaisyWifi, GanglionWifi - these SuperCollider classes require the WiFi Shield and a special firmware ( [arduino sketch](https://github.com/redFrik/OpenBCI_WIFI/blob/OpenSoundControl/examples/WifiShieldOSC/WifiShieldOSC.ino) ) for sending OSC. Maximum sample rate for these classes is 16000Hz.
+
 ## troubleshooting
 
 **mac os 10.12.x** and later with cyton + dongle...
@@ -46,3 +48,18 @@ it should now report `com.apple.driver.AppleUSBFTDI (5.0.0)` and the data should
 
 **mac os 10.11.x** and earlier with cyton + dongle...
 if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI_Driver_Fix
+
+## changelog
+
+* 1.0 big breaking rewrite and restructure of classes, added osc wifi classes
+
+## todo
+
+* are getRadioChannel, setRadioChannel, setRadioHostChannel, getRadioPollTime, setRadioPollTime, setRadioHostBaudRate, getRadioSystemStatus, attachWifi, removeWifi supposed to work with wifishield?
+* document all methods in Cyton, CytonDaisy and Ganglion classes
+* low pass and bandpass filters
+* notch filter (60/50 hz)
+* being able to play back and record files in OpenBCI_GUI SavedData format
+* implement and test the different aux commands
+* finish and test Ganlion classes - both serial and wifi
+* finish and test Daisy classes - both serial and wifi

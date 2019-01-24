@@ -1,9 +1,9 @@
 //gui example with userview / pen graphics
 
-SerialPort.listDevices;
-
 (
-var width= 640, height= 480;
+var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match you board
+//var board= CytonWifi(NetAddr("192.168.1.103", 13999), initAction: {|b| b.start});
+var width= 640, height= 640;
 var win, usr;
 win= Window("gui example userview", Rect(100, 100, width, height)).front;
 usr= UserView(win, Rect(0, 0, width, height));
@@ -17,17 +17,19 @@ usr.drawFunc= {
 	Pen.smoothing_(false);
 	Pen.fillColor= Color.grey(0, 0.5);  //alpha
 	Pen.fillRect(Rect(x, 0, 1, height));
-	if(~openbci.data.notNil, {
-		chanHeight= height/~openbci.data.size;
+	if(board.data.notNil, {
+		chanHeight= height/board.data.size;
 		Pen.fillColor= Color.white;
-		~openbci.data.do{|val, y|
+		board.data.do{|val, y|
 			Pen.fillRect(Rect(x, val.linlin(-8388607, 8388607, 0, chanHeight)+(y*chanHeight), 1, 1));
 		};
 	});
 };
-~openbci= Cyton("/dev/tty.OpenBCI-DM00DRM0", initAction:{~openbci.start});  //edit
 CmdPeriod.doOnce({win.close});
+~openbci= board;
 )
 
 ~openbci.softReset;
 ~openbci.start;
+~openbci.stop;
+SerialPort.listDevices;

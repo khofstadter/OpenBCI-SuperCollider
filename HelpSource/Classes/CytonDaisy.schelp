@@ -1,26 +1,20 @@
 class:: CytonDaisy
-summary:: for communicating with the Cyton+Daisy board (16ch)
+summary:: Abstract class for Cyton+Daisy board
 categories:: External Control
 related:: Classes/OpenBCI, Classes/Cyton, Classes/Ganglion
 
 description::
-see link::Classes/Cyton:: and link::Classes/OpenBCI:: for more help.
+see http://docs.openbci.com/OpenBCI%20Software/04-OpenBCI_Cyton_SDK for more information about the commands.
 
 note::
-does not survive link::Classes/CmdPeriod::.
+this is an abstract class - do not instantiate. use the link::Classes/CytonDaisySerial:: or link::Classes/CytonDaisyWifi:: subclasses.
 ::
 
-classmethods::
+instancemethods::
 
 method::numChannels
 16
 
-instancemethods::
-
-private:: prTask
-
 examples::
 
-code::
-//todo
-::
+see link::Classes/CytonDaisySerial:: or link::Classes/CytonDaisyWifi:: help files.

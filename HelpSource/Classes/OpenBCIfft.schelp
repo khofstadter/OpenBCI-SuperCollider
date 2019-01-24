@@ -12,7 +12,7 @@ method::new
 create a new instance
 
 argument::board
-an instance of a link::Classes/OpenBCI:: subclass (for example a link::Classes/Cyton:: or link::Classes/Ganglion::).
+an instance of a link::Classes/OpenBCI:: subclass (for example a link::Classes/CytonSerial:: or link::Classes/GanglionWifi::).
 
 argument::sampleRate
 the current sampling rate. e.g. 250 is the default for Cyton, 200 for Ganglion
@@ -39,9 +39,10 @@ the fft data (magnitudes) as an link::Classes/Array:: of n-channel arrays (e.g. 
 examples::
 
 code::
-SerialPort.listDevices;
 
-c= Cyton("/dev/tty.OpenBCI-DM00DRM0");
+SerialPort.listDevices;
+c= CytonSerial("/dev/tty.OpenBCI-DM00DRM0");
+//c= CytonWifi(NetAddr("192.168.1.103", 13999));
 c.start;
 f= OpenBCIfft(c);
 f.start;

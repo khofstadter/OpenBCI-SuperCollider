@@ -1,44 +1,37 @@
-//--supercollider openbci ganglion biosensing board (4-channels) communication
+//--abstract class for openbci ganglion biosensing board communication
+
+//related: GanglionSerial GanglionWifi Cyton
 
 //http://docs.openbci.com/Hardware/08-Ganglion_Data_Format
 //http://docs.openbci.com/OpenBCI%20Software/06-OpenBCI_Ganglion_SDK
 
 Ganglion : OpenBCI {
-	classvar <numChannels= 4;
+	var <numChannels= 4;
 
+	//--commands
 	getSampleRate {  //get current sample rate
-		port.putAll("~~");
+		this.prCommandArray("~~");
 	}
 	setSampleRate {|rate= 7|  //set sample rate
-		port.putAll("~"++rate.clip(0, 7));
-		if(rate<7, {
-			"The Ganglion cannot and will not stream data over 200SPS".warn;
-		});
+		this.prCommandArray("~"++rate.clip(0, 7));
 	}
 
 	startSquareWave {
-		port.put($[);
+		this.prCommand($[);
 	}
 	stopSquareWave {
-		port.put($]);
+		this.prCommand($]);
 	}
 	startImpedanceTest {
-		port.put($z);
+		this.prCommand($z);
 	}
 	stopImpedanceTest {
-		port.put($Z);
+		this.prCommand($Z);
 	}
 	startAccelerometer {
-		port.put($n);
+		this.prCommand($n);
 	}
 	stopAccelerometer {
-		port.put($N);
-	}
-
-	//--private
-	prTask {  //TODO
-		var last3= [0, 0, 0];
-		var buffer= List(32);
-		var state= 0;
+		this.prCommand($N);
 	}
 }

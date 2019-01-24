@@ -1,11 +1,9 @@
 //fft gui example with userview / pen graphics
 
-SerialPort.listDevices;
-
 (
-var board= Cyton;  //edit here to match you board e.g. Ganglion
-var port= "/dev/tty.OpenBCI-DM00DRM0";  //edit
-var width= 640, height= 480;
+var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match you board
+//var board= CytonWifi(NetAddr("192.168.1.103", 13999), initAction: {|b| b.start});
+var width= 640, height= 640;
 var chanHeight= height/board.numChannels;
 var win, usr, f;
 win= Window("fft gui example userview", Rect(100, 100, width, height)).front;
@@ -25,11 +23,13 @@ usr.drawFunc= {
 		};
 	};
 };
-~openbci= board.new(port, initAction:{~openbci.start});
-f= OpenBCIfft(~openbci, 250);
+f= OpenBCIfft(board, 250);
 f.start;
 CmdPeriod.doOnce({win.close});
+~openbci= board;
 )
 
 ~openbci.softReset;
 ~openbci.start;
+~openbci.stop;
+SerialPort.listDevices;
