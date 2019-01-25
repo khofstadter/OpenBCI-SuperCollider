@@ -1,0 +1,15 @@
+class:: CytonDaisyWifi
+summary:: for communicating with the Cyton + Daisy board (16ch)
+categories:: External Control
+related:: Classes/OpenBCI, Classes/CytonDaisy, Classes/CytonWifi
+
+description::
+this class is for communication via wifi osc (wifishield). use link::Classes/CytonDaisySerial:: for the bluetooth dongle.
+
+note::
+does not survive link::Classes/CmdPeriod::.
+::
+
+examples::
+
+//TODO

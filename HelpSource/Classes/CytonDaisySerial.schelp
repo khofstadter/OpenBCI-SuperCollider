@@ -1,0 +1,19 @@
+class:: CytonDaisySerial
+summary:: for communicating with the Cyton+Daisy board (16ch)
+categories:: External Control
+related:: Classes/OpenBCI, Classes/CytonDaisy, Classes/CytonSerial
+
+description::
+this class is for communication via bluetooth serial (dongle). use link::Classes/CytonDaisyWifi:: for the wifi shield.
+
+note::
+does not survive link::Classes/CmdPeriod::.
+::
+
+instancemethods::
+
+private:: prTask
+
+examples::
+
+//TODO

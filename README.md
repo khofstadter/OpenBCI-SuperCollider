@@ -21,18 +21,45 @@ OpenBCI.openHelpFile
 
 for more info see http://openbci.com
 
+## overview
+
+* Cyton, CytonDaisy, Ganglion - use these SuperCollider classes if you connect to your board via bluetooth serial (the dongle). Maximum sample rate is 250Hz (Cyton) and 200Hz (Ganglion).
+
+* CytonWifi, CytonDaisyWifi, GanglionWifi - these SuperCollider classes require the WiFi Shield and a special firmware ( [arduino sketch](https://github.com/redFrik/OpenBCI_WIFI/blob/OpenSoundControl/examples/WifiShieldOSC/WifiShieldOSC.ino) ) for sending OSC. Maximum sample rate for these classes is 16000Hz.
+
 ## troubleshooting
 
 **mac os 10.12.x** and later with cyton + dongle...
-if you experience freezes and sporadic updates in the stream of serial data, make sure that you are using the AppleUSBFTDI driver and *not* the 'official' ftdichip.com driver.  to check plug in the dongle, open terminal and type...
-`kextstat | grep FTDI`
-if it is reporting ```com.FTDI.driver.FTDIUSBSerialDriver (2.4.2)``` then unload this driver with the following terminal command...
-`sudo kextunload -b com.FTDI.driver.FTDIUSBSerialDriver`
+
+if you experience freezes and sporadic updates in the stream of serial data, make sure that you are using the AppleUSBFTDI driver and *not* the driver from ftdichip.com.
+to check plug in the dongle, open terminal and type...
+```
+kextstat | grep FTDI
+```
+if it is reporting `com.FTDI.driver.FTDIUSBSerialDriver (2.4.2)` then unload this driver with the following terminal command...
+```
+sudo kextunload -b com.FTDI.driver.FTDIUSBSerialDriver
+```
 unplug and plug in the dongle and once again run...
-`kextstat | grep FTDI`
-it should now report...
-`com.apple.driver.AppleUSBFTDI (5.0.0)`
-and the data should come streaming in a smooth rate when you run for example `gui_example_userview_accelerometer.scd`.
+```
+kextstat | grep FTDI
+```
+it should now report `com.apple.driver.AppleUSBFTDI (5.0.0)` and the data should come streaming in at a smooth rate and without hickups. test this with for example the file `gui_example_userview_accelerometer.scd`.
 
 **mac os 10.11.x** and earlier with cyton + dongle...
 if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI_Driver_Fix
+
+## changelog
+
+* 1.0 big breaking rewrite and restructure of classes, added osc wifi classes
+
+## todo
+
+* are getRadioChannel, setRadioChannel, setRadioHostChannel, getRadioPollTime, setRadioPollTime, setRadioHostBaudRate, getRadioSystemStatus, attachWifi, removeWifi supposed to work with wifishield?
+* document all methods in Cyton, CytonDaisy and Ganglion classes
+* low pass and bandpass filters
+* notch filter (60/50 hz)
+* being able to play back and record files in OpenBCI_GUI SavedData format
+* implement and test the different aux commands
+* finish and test Ganlion classes - both serial and wifi
+* finish and test Daisy classes - both serial and wifi

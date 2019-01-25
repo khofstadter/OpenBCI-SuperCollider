@@ -1,0 +1,19 @@
+class:: GanglionSerial
+summary:: for communicating with the Ganglion board (4ch)
+categories:: External Control
+related:: Classes/OpenBCI, Classes/Ganglion, Classes/CytonSerial
+
+description::
+this class is for communication via bluetooth serial (dongle). use link::Classes/GanglionWifi:: for the wifi shield.
+
+note::
+does not survive link::Classes/CmdPeriod::.
+::
+
+instancemethods::
+
+private:: initGanglionSerial, prTask, prCommand, prCommandArray
+
+examples::
+
+//TODO

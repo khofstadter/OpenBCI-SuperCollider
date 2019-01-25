@@ -1,94 +1,36 @@
 class:: Cyton
-summary:: for communicating with the Cyton board (8ch)
+summary:: Abstract class for Cyton board
 categories:: External Control
 related:: Classes/OpenBCI, Classes/CytonDaisy, Classes/Ganglion
 
 description::
-see link::Classes/OpenBCI:: for more help.
+see http://docs.openbci.com/OpenBCI%20Software/04-OpenBCI_Cyton_SDK for more information about the commands.
 
 note::
-does not survive link::Classes/CmdPeriod::.
+this is an abstract class - do not instantiate. use the link::Classes/CytonSerial:: or link::Classes/CytonWifi:: subclasses.
 ::
 
-classmethods::
+instancemethods::
 
 method::numChannels
 8
 
-instancemethods::
+method::setSampleRate
+The Cyton with USB Dongle (link::Classes/CytonSerial::) cannot and will not stream data over 250SPS. With the WifiShield all rates are possible (link::Classes/CytonWifi::).
 
-private:: prTask
+code::
+0 = 16000 Hz
+1 = 8000 Hz
+2 = 4000 Hz
+3 = 2000 Hz
+4 = 1000 Hz
+5 = 500 Hz
+6 = 250 Hz (default)
+::
+
+method::getVersion
+Get firmware version.
 
 examples::
 
-code::
-SerialPort.listDevices;
-
-//just posting data
-c= Cyton("/dev/tty.OpenBCI-DM00DRM0", dataAction:{|num, data, aux, stop| [num, data, aux, stop].postln})
-c.start
-c.stop
-c.getVersion
-
-c.start
-c.off(1)  //turn off the first channel
-c.off([2, 3, 4])
-c.off((1..8))  //all off
-c.on(3)
-c.on((1..8))  //all on
-
-c.testGnd  //test signal
-c.test1AmpSlow
-c.test1AmpFast
-c.testDC
-c.test2AmpSlow
-c.test2AmpFast
-c.stop
-
-c.softReset
-c.data  //last sample data reading
-c.accel  //last accelerometer reading
-c.accelAction= {|accel| accel.postln}
-c.dataAction= {}
-c.start  //should only post accelerometer now (notice the lower sample rate)
-c.accelAction= {|accel| (accel/32767).postln}  //normalize -1.0 to 1.0
-c.stop
-
-c.dataAction= {|num, data, aux, stop| [num, data/8388607, aux, stop].postln}  //normalize sample data
-c.start
-c.stop
-
-c.settings(1, 1)
-c.settings(1, 0)
-c.settings(1, 0, 0)
-c.settings(1, 0, 6)
-c.setDefaultChannelSettings
-c.getDefaultChannelSettings
-
-c.timeStampingON
-c.timeStampingOFF
-
-c.attachWifi
-c.removeWifi
-c.getWifiStatus
-c.softResetWifi
-
-c.getRadioChannel
-c.setRadioChannel(7)
-c.getRadioPollTime
-c.setRadioPollTime(80)
-c.setRadioHostBaudRate(0)
-c.getRadioSystemStatus
-c.getBoardMode
-c.setBoardMode(2)
-c.getSampleRate
-c.setSampleRate(4)
-c.startLogging
-c.stopLogging
-c.getVersion
-c.query
-c.softReset
-c.start
-c.stop
-c.close
-::
+see link::Classes/CytonSerial:: or link::Classes/CytonWifi:: help files.

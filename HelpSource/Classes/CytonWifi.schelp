@@ -1,0 +1,96 @@
+class:: CytonWifi
+summary:: for communicating with the Cyton board (8ch)
+categories:: External Control
+related:: Classes/OpenBCI, Classes/Cyton, Classes/GanglionWifi
+
+description::
+this class is for communication via wifi osc (wifishield). use link::Classes/CytonSerial:: for the bluetooth dongle.
+
+note::
+does not survive link::Classes/CmdPeriod::.
+::
+
+classmethods::
+
+method::new
+open communication
+
+argument::netAddr
+a link::Classes/NetAddr:: with the ip and port of the wifi shield. by default this is code::NetAddr("OpenBCI_WifiShieldOSC.local", 13999)::
+
+argument::reset
+perform a soft reset at startup or not.
+
+argument::dataAction
+set the link::Classes/OpenBCI#-dataAction::
+
+argument::replyAction
+set the link::Classes/OpenBCI#-replyAction::. note that if none give a default function that just posts will be used.
+
+argument::initAction
+set the link::Classes/OpenBCI#-initAction::
+
+instancemethods::
+
+private:: initCytonWifi, prCommand, prCommandArray
+
+method::netAddr
+the link::Classes/NetAddr:: of the wifi shield.
+
+method::close
+stops main loop and closes the serial port.
+
+examples::
+
+code::
+c= CytonWifi(NetAddr("192.168.1.101", 13999), dataAction:{|num, data, aux, byte| if(num==0, {[num, data].postln})}, initAction:{|b| b.start});
+c.ip= "192.168.1.100"  //by default the board is broadcasting to x.x.x.255 and that is slow. so set this to send directly to this computer
+c.port= 14000  //change port
+c.port= 57120  //by default sclang port is used
+c.latency= 4000  //tune latency in microseconds. 100-10000 are 
+c.dataAction= {|num, data, aux, byte| data.postln}  //post everything (note: might crash)
+c.dataAction= nil;
+c.accelAction= {|accel| accel.postln}
+c.accelAction= nil;
+c.name
+c.version
+c.board
+c.all
+
+c.getSampleRate
+c.dataAction= {|num, data, aux, byte| if(num==0, {[num, data].postln})}  //only post every 256th package
+c.setSampleRate(6)
+c.setSampleRate(5)
+c.setSampleRate(4)
+c.setSampleRate(3)
+c.setSampleRate(2)
+c.setSampleRate(1)
+c.setSampleRate(0)
+c.stop
+c.getBoardMode
+c.getVersion
+c.getDefaultChannelSettings
+c.getWifiStatus
+
+c.query
+
+c.softReset
+c.softResetWifi
+c.start
+c.stop
+c.close
+
+
+
+
+//TODO - these does not work - why?  (all commands starting with 0xF0)
+c.getRadioChannel
+c.setRadioChannel(7)
+c.setRadioHostChannel(7, true)
+c.getRadioPollTime
+c.setRadioPollTime(80)
+c.setRadioHostBaudRate(0, true)
+c.getRadioSystemStatus
+c.attachWifi
+c.removeWifi
+::

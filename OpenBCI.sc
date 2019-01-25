@@ -1,133 +1,123 @@
 //--abstract class for supercollider openbci communication
 
-//related: Cyton Ganglion
+//related: Cyton Ganglion CytonSerial GanglionSerial CytonWifi GanglionWifi
 
 OpenBCI {
-	var <port, task;
 	var <>dataAction, <>replyAction, <>initAction;  //callback functions
 	var <>accelAction;  //more callback functions
 	var <>data, <>accel;  //latest readings (can be nil)
-	*new {|port, baudrate= 115200, dataAction, replyAction, initAction|
-		^super.new.initOpenBCI(port, baudrate, dataAction, replyAction, initAction);
+	*new {|dataAction, replyAction, initAction|
+		^super.new.init(dataAction, replyAction, initAction);
 	}
-	initOpenBCI {|argPort, argBaudrate, argDataAction, argReplyAction, argInitAction|
-		port= SerialPort(argPort ? "/dev/tty.OpenBCI-DM00DRM0", argBaudrate, crtscts:true);
-		CmdPeriod.doOnce({port.close});
+	init {|argDataAction, argReplyAction, argInitAction|
 
 		//--default actions
 		dataAction= argDataAction;
 		replyAction= argReplyAction ? {|reply| reply.postln};
 		initAction= argInitAction;
 
-		//--startup
-		("% starting...").format(this.class.name).postln;
-		this.softReset;
-
-		//--read loop
-		task= Routine({this.prTask}).play(SystemClock);
-	}
-	close {
-		task.stop;
-		port.close;
+		("%: starting...").format(this.class.name).postln;
 	}
 
 	//--commands
 	off {|channel= 1|  //Turn Channels OFF
 		channel.asArray.do{|c|
-			if(c>=1 and:{c<=this.class.numChannels}, {
+			if(c>=1 and:{c<=this.numChannels}, {
 				switch(c,
-					1, {port.put($1)},
-					2, {port.put($2)},
-					3, {port.put($3)},
-					4, {port.put($4)},
-					5, {port.put($5)},
-					6, {port.put($6)},
-					7, {port.put($7)},
-					8, {port.put($8)},
-					9, {port.put($q)},
-					10, {port.put($w)},
-					11, {port.put($e)},
-					12, {port.put($r)},
-					13, {port.put($t)},
-					14, {port.put($y)},
-					15, {port.put($u)},
-					16, {port.put($i)}
+					1, {this.prCommand($1)},
+					2, {this.prCommand($2)},
+					3, {this.prCommand($3)},
+					4, {this.prCommand($4)},
+					5, {this.prCommand($5)},
+					6, {this.prCommand($6)},
+					7, {this.prCommand($7)},
+					8, {this.prCommand($8)},
+					9, {this.prCommand($q)},
+					10, {this.prCommand($w)},
+					11, {this.prCommand($e)},
+					12, {this.prCommand($r)},
+					13, {this.prCommand($t)},
+					14, {this.prCommand($y)},
+					15, {this.prCommand($u)},
+					16, {this.prCommand($i)}
 				);
 			}, {
-				"channel % not in the range 1-%".format(c, this.class.numChannels).warn;
+				"channel % not in the range 1-%".format(c, this.numChannels).warn;
 			});
 		};
 	}
 	on {|channel= 1|  //Turn Channels ON
 		channel.asArray.do{|c|
-			if(c>=1 and:{c<=this.class.numChannels}, {
+			if(c>=1 and:{c<=this.numChannels}, {
 				switch(c,
-					1, {port.put($!)},
-					2, {port.put($@)},
-					3, {port.put($#)},
-					4, {port.put($$)},
-					5, {port.put($%)},
-					6, {port.put($^)},
-					7, {port.put($&)},
-					8, {port.put($*)},
-					9, {port.put($Q)},
-					10, {port.put($W)},
-					11, {port.put($E)},
-					12, {port.put($R)},
-					13, {port.put($T)},
-					14, {port.put($Y)},
-					15, {port.put($U)},
-					16, {port.put($I)}
+					1, {this.prCommand($!)},
+					2, {this.prCommand($@)},
+					3, {this.prCommand($#)},
+					4, {this.prCommand($$)},
+					5, {this.prCommand($%)},
+					6, {this.prCommand($^)},
+					7, {this.prCommand($&)},
+					8, {this.prCommand($*)},
+					9, {this.prCommand($Q)},
+					10, {this.prCommand($W)},
+					11, {this.prCommand($E)},
+					12, {this.prCommand($R)},
+					13, {this.prCommand($T)},
+					14, {this.prCommand($Y)},
+					15, {this.prCommand($U)},
+					16, {this.prCommand($I)}
 				);
 			}, {
-				"channel % not in the range 1-%".format(c, this.class.numChannels).warn;
+				"channel % not in the range 1-%".format(c, this.numChannels).warn;
 			});
 		};
 	}
 
 	startLogging {|time= '5MIN'|  //initiate sd card data logging for specified time
 		switch(time,
-			'5MIN', {port.put($A)},
-			'15MIN', {port.put($S)},
-			'30MIN', {port.put($F)},
-			'1HR', {port.put($G)},
-			'2HR', {port.put($H)},
-			'4HR', {port.put($J)},
-			'12HR', {port.put($K)},
-			'24HR', {port.put($L)},
-			'14SEC', {port.put($a)},
+			'5MIN', {this.prCommand($A)},
+			'15MIN', {this.prCommand($S)},
+			'30MIN', {this.prCommand($F)},
+			'1HR', {this.prCommand($G)},
+			'2HR', {this.prCommand($H)},
+			'4HR', {this.prCommand($J)},
+			'12HR', {this.prCommand($K)},
+			'24HR', {this.prCommand($L)},
+			'14SEC', {this.prCommand($a)},
 			{"time % not recognised".format(time).warn}
 		);
 	}
 	stopLogging {  //stop logging data and close sd file
-		port.put($j);
+		this.prCommand($j);
 	}
 
 	start {  //start streaming data
-		port.put($b);
+		this.prCommand($b);
 	}
 	stop {  //stop streaming data
-		port.put($s);
+		this.prCommand($s);
 	}
 	query {
-		port.put($?);  //query register settings
+		this.prCommand($?);  //query register settings
 	}
 	softReset {
-		port.put($v);  //soft reset for the board peripherals
+		this.prCommand($v);  //soft reset for the board peripherals
 	}
 
 	attachWifi {
-		port.put(${);
+		this.prCommand(${);
 	}
 	removeWifi {
-		port.put($});
+		this.prCommand($});
 	}
 	getWifiStatus {
-		port.put($:);
+		this.prCommand($:);
 	}
 	softResetWifi {
-		port.put($;);
+		this.prCommand($;);
 	}
 
-	prTask {^this.subclassResponsibility(thisMethod)}
+	//--private
+	prCommand {|cmd| ^this.subclassResponsibility(thisMethod)}
+	prCommandArray {|arr| ^this.subclassResponsibility(thisMethod)}
 }

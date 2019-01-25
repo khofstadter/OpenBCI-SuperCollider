@@ -1,26 +1,34 @@
 class:: Ganglion
-summary:: for communicating with the Ganglion board (4ch)
+summary:: Abstract class for Ganglion board
 categories:: External Control
 related:: Classes/OpenBCI, Classes/Cyton, Classes/CytonDaisy
 
 description::
-see link::Classes/OpenBCI:: for more help.
+see http://docs.openbci.com/OpenBCI%20Software/06-OpenBCI_Ganglion_SDK for more information about the commands.
 
 note::
-does not survive link::Classes/CmdPeriod::.
+this is an abstract class - do not instantiate. use the link::Classes/GanglionSerial:: or link::Classes/GanglionWifi:: subclasses.
 ::
 
-classmethods::
+instancemethods::
 
 method::numChannels
 4
 
-instancemethods::
+method::setSampleRate
+The Ganglion with USB Dongle (link::Classes/GanglionSerial::) cannot and will not stream data over 200SPS. With the WifiShield all rates are possible (link::Classes/GanglionWifi::).
 
-private:: prTask
+code::
+0 = 25600 Hz
+1 = 12800 Hz
+2 = 6400 Hz
+3 = 3200 Hz
+4 = 1600 Hz
+5 = 800 Hz
+6 = 400 Hz
+7 = 200 Hz (default)
+::
 
 examples::
 
-code::
-//todo
-::
+see link::Classes/GanglionSerial:: or link::Classes/GanglionWifi:: help files.
