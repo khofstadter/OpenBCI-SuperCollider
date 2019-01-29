@@ -34,8 +34,37 @@ instancemethods::
 
 private:: initCytonWifi, prCommand, prCommandArray
 
+method::ip
+set the address that the wifi shield is sending to. by default this is broadcasting to all addresses ("x.x.x.255").
+
+note::
+it is important to set this to your laptop's ip to get reliable and fast data transfer.
+::
+
+code::c.ip= "192.168.1.100"  //send to specific address::
+
+method::port
+set the port that the wifi shield is sending to. by default this is 57120 (supercollider)
+
+code::c.port= 9998  //send to port 9998::
+
+method::latency
+set the minimum time between packet sends in micro seconds. usable values are in the range of 100 to 15000. by default this is 5000. for high sampling rates (16000Hz) a lower number might be needed here (~4000). else the packages will fill up the internal buffer inside the wifi shield before the data is sent out. for lower sampling rates (250Hz) this latency value can be set to a higher value (~10000).
+
 method::netAddr
 the link::Classes/NetAddr:: of the wifi shield.
+
+method::all
+get heap info and other general info.
+
+method::board
+get information about the attached board.
+
+method::name
+get the unique name of the wifi shield.
+
+method::version
+gives the version number of the firmware.
 
 method::close
 stops main loop and closes the serial port.
@@ -43,22 +72,33 @@ stops main loop and closes the serial port.
 examples::
 
 code::
-c= CytonWifi(NetAddr("192.168.1.101", 13999), dataAction:{|num, data, aux, byte| if(num==0, {[num, data].postln})}, initAction:{|b| b.start});
-c.ip= "192.168.1.100"  //by default the board is broadcasting to x.x.x.255 and that is slow. so set this to send directly to this computer
+//start and post every 256th data package (num is the package counter 0-255)
+c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), dataAction:{|num, data, aux, byte| if(num==0, {[num, data].postln})}, initAction:{|b| b.start});
+
+//by default the board is broadcasting to x.x.x.255 and that is slow. so set this to send directly to this computer
+c.ip= "192.168.1.100"
+
 c.port= 14000  //change port
 c.port= 57120  //by default sclang port is used
-c.latency= 4000  //tune latency in microseconds. 100-10000 are 
+
+c.latency= 4000  //tune latency in microseconds. 100-15000 are usable values
+
 c.dataAction= {|num, data, aux, byte| data.postln}  //post everything (note: might crash)
 c.dataAction= nil;
-c.accelAction= {|accel| accel.postln}
+
+c.dataAction= {|num, data, aux, stop| (data/8388607).postln}  //normalize sample data
+c.dataAction= nil;
+
+c.accelAction= {|accel| accel.postln}  //post xyz accelerometer data
 c.accelAction= nil;
+
 c.name
 c.version
 c.board
 c.all
 
 c.getSampleRate
-c.dataAction= {|num, data, aux, byte| if(num==0, {[num, data].postln})}  //only post every 256th package
+c.dataAction= {|num, data, aux, byte| if(num==0, {[num, data].postln})}  //again only post every 256th package
 c.setSampleRate(6)
 c.setSampleRate(5)
 c.setSampleRate(4)
@@ -67,12 +107,13 @@ c.setSampleRate(2)
 c.setSampleRate(1)
 c.setSampleRate(0)
 c.stop
+
 c.getBoardMode
 c.getVersion
 c.getDefaultChannelSettings
 c.getWifiStatus
 
-c.query
+c.query  //register settings. slow to reply
 
 c.softReset
 c.softResetWifi
@@ -80,6 +121,34 @@ c.start
 c.stop
 c.close
 
+
+//--more tests
+c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999));
+c.dataAction= {|num, data, aux, stop| data.postln}
+c.ip= "192.168.1.100"
+
+c.start
+c.off(1)  //turn off the first channel
+c.off([2, 3, 4])
+c.off((1..8))  //all off
+c.on(3)
+c.on((1..8))  //all on
+
+c.test1AmpSlow  //test signal
+c.test1AmpFast
+c.testGnd
+c.test2AmpSlow
+c.test2AmpFast
+c.testDC
+c.stop
+
+c.start
+c.getDefaultChannelSettings
+c.settings(3, 0, 2, 0, 1, 1, 0)  //set channel 3 gain to 2 (default is 6)
+c.stop
+
+c.impedance(4, 1, 0)  //channel 4 is set up to measure impedance on the P input (N input off)
+c.impedance(4, 0, 1)  //channel 4 is set up to measure impedance on the N input (P input off)
 
 
 
