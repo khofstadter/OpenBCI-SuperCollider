@@ -11,7 +11,10 @@ CytonWifi : Cyton {
 		CmdPeriod.add(this);
 		if(argReset, {this.softReset});
 		responders= List[
-			OSCFunc({|msg, time, addr, port| initAction.value(this, addr)}, \ready, netAddr),
+			OSCFunc({|msg, time, addr, port|
+				"% shield ready (%)".format(this.class.name, addr.ip).postln;
+				initAction.value(this, addr);
+			}, \ready, netAddr),
 			OSCFunc({|msg| replyAction.value(msg[1..].join(Char.space))}, \reply, netAddr),
 			OSCFunc({|msg| msg[1].postln}, \version, netAddr),
 			OSCFunc({|msg| msg[1].postln}, \name, netAddr),

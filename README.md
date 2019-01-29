@@ -51,12 +51,14 @@ if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI
 
 ## changelog
 
-* 1.0 big breaking rewrite and restructure of classes, added osc wifi classes
+* 1.01 - improved helpfile, added initAction feedback, new advanced example
+* 1.0 - big breaking rewrite and restructure of classes, added osc wifi classes
 
 ## todo
 
 * are getRadioChannel, setRadioChannel, setRadioHostChannel, getRadioPollTime, setRadioPollTime, setRadioHostBaudRate, getRadioSystemStatus, attachWifi, removeWifi supposed to work with wifishield?
 * document all methods in Cyton, CytonDaisy and Ganglion classes
+* add a 10sec timeout on initAction
 * low pass and bandpass filters
 * notch filter (60/50 hz)
 * being able to play back and record files in OpenBCI_GUI SavedData format
