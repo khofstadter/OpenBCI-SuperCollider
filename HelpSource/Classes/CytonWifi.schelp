@@ -34,15 +34,6 @@ instancemethods::
 
 private:: initCytonWifi, prCommand, prCommandArray
 
-method::ip
-set the address that the wifi shield is sending to. by default this is broadcasting to all addresses ("x.x.x.255").
-
-note::
-it is important to set this to your laptop's ip to get reliable and fast data transfer.
-::
-
-code::c.ip= "192.168.1.100"  //send to specific address::
-
 method::port
 set the port that the wifi shield is sending to. by default this is 57120 (supercollider)
 
@@ -73,10 +64,7 @@ examples::
 
 code::
 //start and post every 256th data package (num is the package counter 0-255)
-c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), dataAction:{|num, data, aux, byte| if(num==0, {[num, data].postln})}, initAction:{|b| b.start});
-
-//by default the board is broadcasting to x.x.x.255 and that is slow. so set this to send directly to this computer
-c.ip= "192.168.1.100"
+c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), dataAction:{|num, data, aux, byte| if(num==0, {data.postln})}, initAction:{|b| b.start});
 
 c.port= 14000  //change port
 c.port= 57120  //by default sclang port is used
@@ -98,7 +86,7 @@ c.board
 c.all
 
 c.getSampleRate
-c.dataAction= {|num, data, aux, byte| if(num==0, {[num, data].postln})}  //again only post every 256th package
+c.dataAction= {|num, data, aux, byte| if(num==0, {data.postln})}  //again only post every 256th package
 c.setSampleRate(6)
 c.setSampleRate(5)
 c.setSampleRate(4)
@@ -125,7 +113,6 @@ c.close
 //--more tests
 c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999));
 c.dataAction= {|num, data, aux, stop| data.postln}
-c.ip= "192.168.1.100"
 
 c.start
 c.off(1)  //turn off the first channel
@@ -142,8 +129,8 @@ c.test2AmpFast
 c.testDC
 c.stop
 
-c.start
 c.getDefaultChannelSettings
+c.start
 c.settings(3, 0, 2, 0, 1, 1, 0)  //set channel 3 gain to 2 (default is 6)
 c.stop
 
