@@ -66,9 +66,6 @@ CytonWifi : Cyton {
 			}, \data, netAddr)
 		];
 	}
-	ip_ {|str|
-		netAddr.sendMsg(\ip, *str.split($.).asInteger);
-	}
 	port_ {|val|
 		netAddr.sendMsg(\port, val);
 	}

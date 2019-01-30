@@ -51,6 +51,7 @@ if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI
 
 ## changelog
 
+* 1.02 - changed to direct ip instead of broadcast - need latest WifiShieldOSC
 * 1.01 - improved helpfile, added initAction feedback, new advanced example
 * 1.0 - big breaking rewrite and restructure of classes, added osc wifi classes
 
