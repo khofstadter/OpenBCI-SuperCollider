@@ -23,35 +23,24 @@ CytonWifi : Cyton {
 			OSCFunc({|msg|
 				var buffer, byte, numByte;
 				(msg.size-1).do{|i|
-					buffer= msg[i+1];
-					byte= 256+buffer[0];
+					buffer= msg[i+1].collect{|x| if(x<0, {256+x}, {x})};
+					byte= buffer[0];
 					if(byte>=0xC0 and:{byte<=0xCF}, {  //check valid footer
 						numByte= buffer[1];
-						if(numByte&128>0, {
-							numByte= 256+numByte;
-						});
 						if(num.notNil and:{numByte-1%256!=num}, {
 							"dropped package % %".format(numByte, num).warn;
 						});
 						num= numByte;
 						data= Array.fill(numChannels, {|i|  //eight channels of 24bit data
-							var msb= buffer[i*3+2];
-							var pre= 0;
-							if(msb&128>0, {
-								pre= -0x01000000;
-							});
-							pre+(msb<<16)+(buffer[i*3+3]<<8)+buffer[i*3+4];
+							var v= (buffer[i*3+2]<<16)|(buffer[i*3+3]<<8)|buffer[i*3+4];
+							if((v&0x800000)>0, {v|0xFF000000}, {v&0x00FFFFFF});
 						});
 						switch(byte,  //footer / stop byte
 							0xC0, {  //accelerometer
 								if(aux.any{|i| buffer[i]!=0}, {
 									accel= Array.fill(3, {|i|  //three dimensions of 16bit data
-										var msb= buffer[i*2+26];
-										var pre= 0;
-										if(msb&128>0, {
-											pre= -0x010000;
-										});
-										pre+(msb<<8)+buffer[i*2+27];
+										var v= (buffer[i*2+26]<<8)|buffer[i*2+27];
+										if((v&0x8000)>0, {v|0xFFFF0000}, {v&0x0000FFFF});
 									});
 									accelAction.value(accel);
 								});

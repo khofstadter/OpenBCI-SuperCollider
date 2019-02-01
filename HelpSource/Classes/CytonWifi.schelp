@@ -74,7 +74,7 @@ c.latency= 4000  //tune latency in microseconds. 100-15000 are usable values
 c.dataAction= {|num, data, aux, byte| data.postln}  //post everything (note: might crash)
 c.dataAction= nil;
 
-c.dataAction= {|num, data, aux, stop| (data/8388607).postln}  //normalize sample data
+c.dataAction= {|num, data, aux, stop| data.linlin(-8388608, 8388607, 0, 1).postln}  //normalize sample data
 c.dataAction= nil;
 
 c.accelAction= {|accel| accel.postln}  //post xyz accelerometer data

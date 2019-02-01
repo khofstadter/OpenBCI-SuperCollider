@@ -1,8 +1,8 @@
 //fft gui example with multisliders
 
 (
-var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match you board
-//var board= CytonWifi(NetAddr("192.168.1.103", 13999), initAction: {|b| b.start});
+//var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match you board
+var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 var win, msliders;
 win= Window("fft gui example scrolling", Rect(100, 100, 640, 640)).front;
 msliders= {
@@ -15,11 +15,11 @@ msliders= {
 }.dup(board.numChannels);
 win.layout= VLayout(*msliders);
 Routine({
-	var f= OpenBCIfft(board, 250);
+	var f= OpenBCIfft(board, 256);
 	f.start;
 	inf.do{
 		msliders.do{|m, i|
-			m.value= f.fft[i].dbamp-1*0.1;
+			m.value= f.fft(i).drop(1).sqrt;
 		};
 		(1/60).wait;  //framerate
 	};

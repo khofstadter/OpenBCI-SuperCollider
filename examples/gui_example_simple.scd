@@ -1,8 +1,8 @@
 //simple gui example just displaying data using sliders and numberboxes
 
 (
-var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match you board
-//var board= CytonWifi(NetAddr("192.168.1.103", 13999), initAction: {|b| b.start});
+//var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match you board
+var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 var lastValues= -1.dup(board.numChannels);
 var lastTime= 0;
 var win, sliders, numbers;
@@ -20,8 +20,8 @@ board.dataAction= {|num, data, aux, stop|
 			if(x!=lastValues[i], {  //filter out repeats
 				lastValues[i]= x;
 				{
-					sliders[i].value= x.linlin(-8388607, 8388607, 0, 1);
-					numbers[i].value= x;
+					sliders[i].value= x.linlin(-8388608, 8388607, 0, 1);
+					numbers[i].value= x.linlin(-8388608, 8388607, -1, 1);
 				}.defer;
 			});
 		};
