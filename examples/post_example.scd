@@ -1,8 +1,8 @@
 //very simple example - just posting
 
 (
-var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match you board
-//var board= CytonWifi(NetAddr("192.168.1.103", 13999), initAction: {|b| b.start});
+//var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match you board
+var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 board.dataAction= {|...args| args.postln};
 ~openbci= board;
 )
@@ -16,9 +16,9 @@ SerialPort.listDevices;
 ~openbci.dataAction= {|num, data, aux, stop| if(num%50==0, {data.postln})};
 
 //normalize electrode data and post
-~openbci.dataAction= {|num, data, aux, stop| if(num%50==0, {(data/(2**23-1)).postln})};
+~openbci.dataAction= {|num, data, aux, stop| if(num%50==0, {data.linlin(-8388608, 8388607, -1, 1).postln})};
 
 //normalize and post latest decoded accelerometer data
-~openbci.dataAction= {|num, data, aux, stop| if(num%50==0, {(~openbci.accel/(2**15-1)).postln})};
+~openbci.dataAction= {|num, data, aux, stop| if(num%50==0, {~openbci.accel.linlin(-32768, 32767, -1, 1).postln})};
 
 ~openbci.close;

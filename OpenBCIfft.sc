@@ -1,21 +1,34 @@
 //for collecting OpenBCI data and perform fft
 
 OpenBCIfft {
-	var <board, <data, <fft, func, table, imag, size;
-	*new {|board, sampleRate= 250|
-		^super.new.initOpenBCIfft(board, sampleRate);
+	var <board, data, func, table, imag, <fftSize, fftSize2;
+	*new {|board, fftSize= 256|
+		^super.new.initOpenBCIfft(board, fftSize);
 	}
-	initOpenBCIfft {|argBoard, argSampleRate|
+	initOpenBCIfft {|argBoard, argSize|
 		board= argBoard;
-		this.prInit(argSampleRate);
+		if(argSize.isPowerOfTwo.not, {
+			argSize= argSize.nextPowerOfTwo;
+			"%: not power-of-two. setting fftSize to %".format(this.class.name, argSize).warn;
+		});
+		fftSize= argSize;
+		fftSize2= argSize.div(2);
+		table= Signal.fftCosTable(fftSize);
+		imag= Signal.newClear(fftSize);
+		data= {Signal.newClear(fftSize)}.dup(board.numChannels);
 		func= {|num, d, aux, stop|
 			board.numChannels.do{|i|
 				data[i].pop;
-				data[i].insert(0, d[i]/8388607);
-				fft[i]= fft(data[i], imag, table).magnitude.copyRange(0, size.div(2));
+				data[i].insert(0, d[i].linlin(-8388608, 8388607, -1, 1));
 			};
-			fft;
 		};
+	}
+	fft {|channel= 0|
+		if(channel>=board.numChannels or:{channel<0}, {
+			"%: channel out of range. clipped to 0-%".format(this.class.name, board.numChannels-1).warn;
+			channel= channel.clip(0, board.numChannels-1);
+		});
+		^fft(data[channel], imag, table).magnitude.copyRange(0, fftSize2)/fftSize2;
 	}
 	start {
 		"%: fft started".format(board.class.name).postln;
@@ -30,14 +43,5 @@ OpenBCIfft {
 	}
 	cmdPeriod {
 		this.stop;
-	}
-
-	//--private
-	prInit {|sr|
-		size= sr.nextPowerOfTwo;
-		table= Signal.fftCosTable(size);
-		imag= Signal.newClear(size);
-		data= {Signal.newClear(size)}.dup(board.numChannels);
-		fft= {Signal.newClear(size.div(2))}.dup(board.numChannels);
 	}
 }

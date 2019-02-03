@@ -1,0 +1,79 @@
+class:: OpenBCIbuf
+summary:: buffer data and accelerometer values
+categories:: External Control
+related:: Classes/OpenBCI
+
+description::
+Collects data from any OpenBCI board into buffers.
+
+CLASSMETHODS::
+
+method::new
+create a new instance
+
+argument::board
+an instance of a link::Classes/OpenBCI:: subclass (for example a link::Classes/CytonSerial:: or link::Classes/GanglionWifi::).
+
+argument::maxSize
+the number of slots in both data and accelerometer buffers. If the data is not read fast enough, the buffers will fill up to this size and then start dropping values (fifo).
+
+INSTANCEMETHODS::
+
+private::initOpenBCIbuf
+
+method::board
+get the board instance
+
+method::start
+start buffering
+
+method::stop
+stop buffering
+
+method::readData
+read the data buffer and clear it. This should be called at regular intervals. Faster than the buffer is filling up (depends on sample rate).
+
+returns::
+a link::Classes/List:: of arrays with n-channels data values.
+
+method::readAccel
+read the accelerometer buffer and clear it. This should be called at regular intervals. Faster than the buffer is filling up (depends on sample rate).
+
+returns::
+a link::Classes/List:: of arrays with xyz values.
+
+method::dataFull
+a link::Classes/Boolean:: flag indicating if the data buffer filled up to its maximum.
+
+method::accelFull
+a link::Classes/Boolean:: flag indicating if the accel buffer filled up to its maximum.
+
+method::size
+get or set the maxSize.
+
+method::data
+current data buffer. Read without clearing.
+
+method::accel
+current accel buffer. Read without clearing.
+
+method::clear
+clear buffers and flags
+
+examples::
+
+code::
+
+SerialPort.listDevices;
+c= CytonSerial("/dev/tty.OpenBCI-DM00DRM0");
+//c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999));
+d= OpenBCIbuf(c);
+c.start;
+d.start;
+r= Routine.run({inf.do{d.readData.postln; 0.1.wait}});
+d.data.size;
+d.accel.size;  //will be 1000 because we are not reading from it
+r.stop;
+d.stop;
+c.stop;
+::

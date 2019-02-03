@@ -2,10 +2,11 @@
 
 //if "ERROR: Primitive '_GetHostByName' failed." then press cmd+. wait a few seconds and try again
 
+//TODO rewrite. does not work properly
+
 (
 //--settings
 var index= 0;  //edit which channel to read from (cyton 0-7)
-var ip= "192.168.1.100";  //edit to match laptop ip
 var bufferSize= 16384;  //fft window size (full spectrum)
 var bins= 64;  //number of bins to process and display (lower part of spectrum)
 var width= 640, height= 480;
@@ -23,7 +24,7 @@ s.waitForBoot{
 		chain= FFT(LocalBuf(bufferSize), sig);  //fft
 		Array.fill(bins, {|i|
 			var v= Demand.kr(chain>=0, 0, Unpack1FFT(chain, bufferSize, i));
-			Out.kr(bus+i, v.sqrt.lag(lag).min(1));  //smooth and clip
+			Out.kr(bus+i, v.sqrt.min(1).lag(lag));  //smooth and clip
 		});
 	}).load;
 	bus= Bus.control(s, bins);
@@ -37,12 +38,10 @@ s.waitForBoot{
 		s.sync;
 		board.port= NetAddr.localAddr.port;
 		0.1.wait;
-		board.ip= ip;
-		0.1.wait;
 		board.setSampleRate(3);  //2000Hz
 		0.1.wait;
 		board.dataAction= {|num, data, aux, stop|
-			synth.set(\data, data[index]/8388607);
+			synth.set(\data, data[index].linlin(-8388608, 8388607, -1, 1));
 		};
 		board.start;
 		task.stop;

@@ -4,7 +4,9 @@ categories:: External Control
 related:: Classes/OpenBCI
 
 description::
-collects data from OpenBCI board and calculate fft.
+Collects data from any OpenBCI board and calculate FFT for a selected channel. This class has its own internal buffer so no need for a link::Classes/OpenBCIbuf::.
+
+Remember that FFT only analyse frequencies up to half of the current sampling rate.
 
 CLASSMETHODS::
 
@@ -14,27 +16,33 @@ create a new instance
 argument::board
 an instance of a link::Classes/OpenBCI:: subclass (for example a link::Classes/CytonSerial:: or link::Classes/GanglionWifi::).
 
-argument::sampleRate
-the current sampling rate. e.g. 250 is the default for Cyton, 200 for Ganglion
+argument::fftSize
+the FFT window size. Should be a power-of-two.
 
 INSTANCEMETHODS::
 
-private::initOpenBCIfft, prInit
+private::initOpenBCIfft
 
 method::board
 get the board instance
 
 method::start
-start collecting and calculating
+start collecting
 
 method::stop
 stop collecting
 
-method::data
-the raw signals collected as an link::Classes/Array:: of n-channel arrays. The sizes of the arrays depend on the board samplerate and will be the next higher power of two e.g. code::250.nextPowerOfTwo::
-
 method::fft
-the fft data (magnitudes) as an link::Classes/Array:: of n-channel arrays (e.g. 8 for Cyton, 4 for Ganglion). The sizes of the arrays depend on the board samplerate i.e. code::250.nextPowerOfTwo.div(2):: (note the divide by two here)
+perform FFT calculation for a specific channel.
+
+argument::channel
+an link::Classes/Integer:: representing the board channel you want to calculate. (e.g. 0-7 for Cyton, 0-3 for Ganglion)
+
+returns::
+the FFT data (normalised magnitudes only) as an link::Classes/Array::. The size of the array is half the fftSize + 1.
+
+method::fftSize
+the FFT window size
 
 examples::
 
@@ -42,14 +50,12 @@ code::
 
 SerialPort.listDevices;
 c= CytonSerial("/dev/tty.OpenBCI-DM00DRM0");
-//c= CytonWifi(NetAddr("192.168.1.103", 13999));
+//c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999));
 c.start;
 f= OpenBCIfft(c);
 f.start;
-f.fft.plot
-f.fft.plot
-f.fft[0].plot  //only first channel
-f.data.plot
+f.fft(0).plot
+f.fft(1).plot  //second channel
 f.stop;
 c.stop;
 ::
