@@ -40,7 +40,7 @@ set the port that the wifi shield is sending to. by default this is 57120 (super
 code::c.port= 9998  //send to port 9998::
 
 method::latency
-set the minimum time between packet sends in micro seconds. usable values are in the range of 100 to 15000. by default this is 5000. for high sampling rates (16000Hz) a lower number might be needed here (~4000). else the packages will fill up the internal buffer inside the wifi shield before the data is sent out. for lower sampling rates (250Hz) this latency value can be set to a higher value (~10000).
+set the minimum time between packet sends in micro seconds. usable values are in the range of 100 to 15000. by default this is 5000. for high sample rates (16000Hz) a lower number might be needed here (~4000). else the packages will fill up the internal buffer inside the wifi shield before the data is sent out. for lower sample rates (250Hz) this latency value can be set to a higher value (~10000).
 
 method::netAddr
 the link::Classes/NetAddr:: of the wifi shield.
