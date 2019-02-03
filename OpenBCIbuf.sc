@@ -1,7 +1,7 @@
 //for collecting OpenBCI data and accelerometer values into buffers
 
 OpenBCIbuf {
-	var <board, <data, <accel, funcData, funcAccel, <>size;
+	var <board, <data, <accel, dataFunc, accelFunc, <>size;
 	var <dataFull, <accelFull;  //maxed out flags
 	*new {|board, maxSize= 1000|
 		^super.new.initOpenBCIbuf(board, maxSize);
@@ -13,7 +13,7 @@ OpenBCIbuf {
 		accel= List.new;
 		dataFull= false;
 		accelFull= false;
-		funcData= {|num, d, aux, stop|
+		dataFunc= {|num, d, aux, stop|
 			if(data.size>=size, {
 				data.pop;
 				if(dataFull.not, {
@@ -23,7 +23,7 @@ OpenBCIbuf {
 			});
 			data.insert(0, d);
 		};
-		funcAccel= {|a|
+		accelFunc= {|a|
 			if(accel.size>=size, {
 				accel.pop;
 				if(accelFull.not, {
@@ -52,15 +52,15 @@ OpenBCIbuf {
 	}
 	start {
 		"%: buffering started".format(board.class.name).postln;
-		board.dataAction= board.dataAction.removeFunc(funcData);  //safety
-		board.accelAction= board.accelAction.removeFunc(funcAccel);  //safety
-		board.dataAction= board.dataAction.addFunc(funcData);
-		board.accelAction= board.accelAction.addFunc(funcAccel);
+		board.dataAction= board.dataAction.removeFunc(dataFunc);  //safety
+		board.accelAction= board.accelAction.removeFunc(accelFunc);  //safety
+		board.dataAction= board.dataAction.addFunc(dataFunc);
+		board.accelAction= board.accelAction.addFunc(accelFunc);
 		CmdPeriod.add(this);
 	}
 	stop {
-		board.dataAction= board.dataAction.removeFunc(funcData);
-		board.dataAction= board.accelAction.removeFunc(funcAccel);
+		board.dataAction= board.dataAction.removeFunc(dataFunc);
+		board.dataAction= board.accelAction.removeFunc(accelFunc);
 		"%: buffering stopped".format(board.class.name).postln;
 		CmdPeriod.remove(this);
 	}
