@@ -4,7 +4,7 @@ categories:: External Control
 related:: Classes/OpenBCI
 
 description::
-Collects data from any OpenBCI board and calculate FFT for a selected channel.
+Collects data from any OpenBCI board and calculate FFT for a selected channel. This class has its own internal buffer so no need for a link::Classes/OpenBCIbuf::.
 
 Remember that FFT only analyse frequencies up to half of the current sampling rate.
 

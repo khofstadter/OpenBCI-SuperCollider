@@ -1,5 +1,5 @@
 //simple sound example - just some sines
-
+//TODO spread out in time using buffer?
 (
 //var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match you board
 var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
