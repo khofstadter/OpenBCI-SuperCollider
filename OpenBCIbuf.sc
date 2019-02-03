@@ -60,7 +60,7 @@ OpenBCIbuf {
 	}
 	stop {
 		board.dataAction= board.dataAction.removeFunc(dataFunc);
-		board.dataAction= board.accelAction.removeFunc(accelFunc);
+		board.accelAction= board.accelAction.removeFunc(accelFunc);
 		"%: buffering stopped".format(board.class.name).postln;
 		CmdPeriod.remove(this);
 	}
