@@ -1,7 +1,7 @@
 //--supercollider openbci cyton biosensing board (8-channels) communication via osc (wifi shield)
 
 CytonWifi : Cyton {
-	var <netAddr, responders, num, aux= #[26, 27, 28, 29, 30, 31];
+	var <netAddr, responders, num, aux= #[26, 27, 28, 29, 30, 31], >warn= true;
 
 	*new {|netAddr, reset= true, dataAction, replyAction, initAction|
 		^super.new(dataAction, replyAction, initAction).initCytonWifi(netAddr, reset);
@@ -21,16 +21,15 @@ CytonWifi : Cyton {
 			OSCFunc({|msg| msg[1].postln}, \board, netAddr),
 			OSCFunc({|msg| msg[1].postln}, \all, netAddr),
 			OSCFunc({|msg|
-				var buffer, byte, numByte;
+				var buffer, byte;
 				(msg.size-1).do{|i|
 					buffer= msg[i+1].collect{|x| if(x<0, {256+x}, {x})};
 					byte= buffer[0];
 					if(byte>=0xC0 and:{byte<=0xCF}, {  //check valid footer
-						numByte= buffer[1];
-						if(num.notNil and:{numByte-1%256!=num}, {
-							"dropped package % %".format(numByte, num).warn;
+						if(warn and:{num.notNil and:{buffer[1]-1%256!=num}}, {
+							"% dropped package(s) % %".format(this.class.name, num, buffer[1]).warn;
 						});
-						num= numByte;
+						num= buffer[1];  //sample number
 						data= Array.fill(numChannels, {|i|  //eight channels of 24bit data
 							var v= (buffer[i*3+2]<<16)|(buffer[i*3+3]<<8)|buffer[i*3+4];
 							if((v&0x800000)>0, {v|0xFF000000}, {v&0x00FFFFFF});

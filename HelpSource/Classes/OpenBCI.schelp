@@ -1,7 +1,7 @@
 class:: OpenBCI
 summary:: Abstract class for OpenBCI boards
 categories:: External Control
-related:: Classes/Cyton, Classes/CytonDaisy, Classes/Ganglion, Classes/OpenBCIfft
+related:: Classes/OpenBCIfft, Classes/OpenBCIbuf, Classes/OpenBCIseq
 
 description::
 for more information about the biosensing hardware see http://openbci.com
