@@ -51,10 +51,10 @@ a link::Classes/Boolean:: flag indicating if the accel buffer filled up to its m
 method::size
 get or set the maxSize.
 
-method::data
+method::dataBuffer
 current data buffer. Read without clearing.
 
-method::accel
+method::accelBuffer
 current accel buffer. Read without clearing.
 
 method::clear
@@ -71,9 +71,9 @@ d= OpenBCIbuf(c);
 c.start;
 d.start;
 r= Routine.run({inf.do{d.readData.postln; 0.1.wait}});
-d.data.size;
-d.accel.size;  //will be 1000 because we are not reading from it
+d.dataBuffer.size;  //will vary from 0 up to ~100 depending on network
+d.accelBuffer.size;  //will grow up to 1000 because we are not reading from it
 r.stop;
 d.stop;
-c.stop;
+c.close;
 ::

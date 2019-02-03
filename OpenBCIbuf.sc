@@ -1,7 +1,8 @@
 //for collecting OpenBCI data and accelerometer values into buffers
 
 OpenBCIbuf {
-	var <board, <data, <accel, dataFunc, accelFunc, <>size;
+	var <board, <>size, dataFunc, accelFunc;
+	var <dataBuffer, <accelBuffer;
 	var <dataFull, <accelFull;  //maxed out flags
 	*new {|board, maxSize= 1000|
 		^super.new.initOpenBCIbuf(board, maxSize);
@@ -9,44 +10,44 @@ OpenBCIbuf {
 	initOpenBCIbuf {|argBoard, argMaxSize|
 		board= argBoard;
 		size= argMaxSize;
-		data= List.new;
-		accel= List.new;
+		dataBuffer= List.new;
+		accelBuffer= List.new;
 		dataFull= false;
 		accelFull= false;
 		dataFunc= {|num, d, aux, stop|
-			if(data.size>=size, {
-				data.pop;
+			if(dataBuffer.size>=size, {
+				dataBuffer.pop;
 				if(dataFull.not, {
 					"%: buffer data full. call readData more often or increase size".format(board.class.name).warn;
 					dataFull= true;
 				});
 			});
-			data.insert(0, d);
+			dataBuffer.insert(0, d);
 		};
 		accelFunc= {|a|
-			if(accel.size>=size, {
-				accel.pop;
+			if(accelBuffer.size>=size, {
+				accelBuffer.pop;
 				if(accelFull.not, {
 					"%: buffer accel full. call readAccel more often or increase size".format(board.class.name).warn;
 					accelFull= true;
 				});
 			});
-			accel.insert(0, a);
+			accelBuffer.insert(0, a);
 		};
 	}
 	readData {
-		var copy= data;
-		data= List.new;
+		var copy= dataBuffer;
+		dataBuffer= List.new;
 		^copy.reverse;
 	}
 	readAccel {
-		var copy= accel;
-		accel= List.new;
+		var copy= accelBuffer;
+		accelBuffer= List.new;
 		^copy.reverse;
 	}
 	clear {
-		data= List.new;
-		accel= List.new;
+		dataBuffer= List.new;
+		accelBuffer= List.new;
 		dataFull= false;
 		accelFull= false;
 	}
