@@ -60,6 +60,9 @@ gives the version number of the firmware.
 method::close
 stops main loop and closes the serial port.
 
+method::warn
+a link::Classes/Boolean:: that turn on or off dropped package warning.
+
 examples::
 
 code::

@@ -1,7 +1,7 @@
 //--supercollider openbci cyton biosensing board (8-channels), communication via serial (bluetooth dongle)
 
 CytonSerial : Cyton {
-	var <port, task;
+	var <port, task, >warn= true;
 
 	*new {|port, baudrate= 115200, dataAction, replyAction, initAction|
 		^super.new(dataAction, replyAction, initAction).initCytonSerial(port, baudrate);
@@ -67,8 +67,8 @@ CytonSerial : Cyton {
 				},
 				2, {
 					if(byte>=0xC0 and:{byte<=0xCF}, {  //check valid footer
-						if(num.notNil and:{buffer[1]-1%256!=num}, {
-							"dropped package % %".format(buffer[1], num).warn;
+						if(warn and:{num.notNil and:{buffer[1]-1%256!=num}}, {
+							"% dropped package(s) % %".format(this.class.name, num, buffer[1]).warn;
 						});
 						num= buffer[1];  //sample number
 						data= Array.fill(numChannels, {|i|  //eight channels of 24bit data
