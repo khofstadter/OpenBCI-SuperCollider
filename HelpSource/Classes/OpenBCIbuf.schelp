@@ -1,7 +1,7 @@
 class:: OpenBCIbuf
 summary:: buffer data and accelerometer values
 categories:: External Control
-related:: Classes/OpenBCI
+related:: Classes/OpenBCI, Classes/OpenBCIseq
 
 description::
 Collects data from any OpenBCI board into buffers.

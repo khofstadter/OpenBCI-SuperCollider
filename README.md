@@ -51,6 +51,8 @@ if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI
 
 ## changelog
 
+* 1.12 - added new sequencer class, buffer class stop bugfix, fixed examples
+* 1.11 - added new buffer class
 * 1.1 - big fixes to fft, clean up examples
 * 1.02 - changed to direct ip instead of broadcast - need latest WifiShieldOSC
 * 1.01 - improved helpfile, added initAction feedback, new advanced example
