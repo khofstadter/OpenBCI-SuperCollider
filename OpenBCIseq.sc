@@ -6,37 +6,44 @@ OpenBCIseq {
 	var dataTask, accelTask, sampleDur;
 	var <>dataAction, <>accelAction;  //callback functions
 	var <dataFull, <accelFull;  //maxed out flags
+	var <>dataActive, <>accelActive;
 	var <>factor= 0.99;
-	*new {|board, sampleRate= 250, maxSize= 1000|
-		^super.new.initOpenBCIseq(board, sampleRate, maxSize);
+	*new {|board, sampleRate= 250, maxSize= 1000, dataActive= true, accelActive= true|
+		^super.new.initOpenBCIseq(board, sampleRate, maxSize, dataActive, accelActive);
 	}
-	initOpenBCIseq {|argBoard, argSampleRate, argMaxSize|
+	initOpenBCIseq {|argBoard, argSampleRate, argMaxSize, argDataActive, argAccelActive|
 		board= argBoard;
 		sampleDur= 1/argSampleRate;
 		size= argMaxSize;
+		dataActive= argDataActive;
+		accelActive= argAccelActive;
 		dataBuffer= List.new;
 		accelBuffer= List.new;
 		dataFull= false;
 		accelFull= false;
 		dataFunc= {|num, d, aux, stop|
-			if(dataBuffer.size>=size, {
-				dataBuffer.pop;
-				if(dataFull.not, {
-					"%: buffer data full. increase size".format(board.class.name).warn;
-					dataFull= true;
+			if(dataActive, {
+				if(dataBuffer.size>=size, {
+					dataBuffer.pop;
+					if(dataFull.not, {
+						"%: buffer data full. increase size".format(board.class.name).warn;
+						dataFull= true;
+					});
 				});
+				dataBuffer.insert(0, [num, d, aux, stop]);
 			});
-			dataBuffer.insert(0, [num, d, aux, stop]);
 		};
 		accelFunc= {|a|
-			if(accelBuffer.size>=size, {
-				accelBuffer.pop;
-				if(accelFull.not, {
-					"%: buffer accel full. increase size".format(board.class.name).warn;
-					accelFull= true;
+			if(accelActive, {
+				if(accelBuffer.size>=size, {
+					accelBuffer.pop;
+					if(accelFull.not, {
+						"%: buffer accel full. increase size".format(board.class.name).warn;
+						accelFull= true;
+					});
 				});
+				accelBuffer.insert(0, a);
 			});
-			accelBuffer.insert(0, a);
 		};
 		dataTask= Routine({
 			inf.do{

@@ -20,6 +20,12 @@ should correspond with board sample rate.
 argument::maxSize
 the number of slots in both data and accelerometer buffers. If the data is not read fast enough, the buffers will fill up to this size and then start dropping values (fifo).
 
+argument::dataActive
+a link::Classes/Boolean:: flag indicating if data should be buffered or not.
+
+argument::accelActive
+a link::Classes/Boolean:: flag indicating if accelerometer data should be buffered or not.
+
 INSTANCEMETHODS::
 
 private::initOpenBCIseq
@@ -44,6 +50,12 @@ last brain wave data readings as an link::Classes/Array::.
 
 method::accel
 last accelerometer readings as an link::Classes/Array::.
+
+method::dataActive
+a link::Classes/Boolean:: flag indicating if data should be buffered or not.
+
+method::accelActive
+a link::Classes/Boolean:: flag indicating if accelerometer data should be buffered or not.
 
 method::dataFull
 a link::Classes/Boolean:: flag indicating if the data buffer filled up to its maximum.
