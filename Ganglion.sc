@@ -7,13 +7,20 @@
 
 Ganglion : OpenBCI {
 	var <numChannels= 4;
+	var <defaultSampleRate= 200;
 
 	//--commands
 	getSampleRate {  //get current sample rate
 		this.prCommandArray("~~");
 	}
 	setSampleRate {|rate= 7|  //set sample rate
-		this.prCommandArray("~"++rate.clip(0, 7));
+		rate= rate.asInteger.clip(0, 7);
+		if(this.isKindOf(GanglionSerial) and:{rate<7}, {
+			rate= 7;
+			"only 200Hz available for serial".warn;
+		});
+		this.prCommandArray("~"++rate);
+		currentSampleRate= #[25600, 12800, 6400, 3200, 1600, 800, 400, 200][rate];
 	}
 
 	startSquareWave {

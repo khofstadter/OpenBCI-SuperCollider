@@ -3,7 +3,7 @@
 (
 //~openbci= CytonSerial("/dev/tty.usbserial-DJ00DO0N", initAction: {|b| b.start});  //edit here to match you board
 ~openbci= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
-~sequencer= OpenBCIseq(~openbci, 250);  //edit samplerate
+~sequencer= OpenBCIseq(~openbci);
 ~sequencer.start;
 ~openbci.warn= false;
 )

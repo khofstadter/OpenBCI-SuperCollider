@@ -3,14 +3,14 @@
 (
 //var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match you board
 var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
-var sequencer= OpenBCIseq(board, 250);  //edit samplerate
+var sequencer= OpenBCIseq(board);
 sequencer.start;
 board.warn= false;
 s.latency= 0.05;
 s.waitForBoot{
 	Ndef(\sines, {|t_trig= 0|
 		var f= \freq.kr(400!board.numChannels);
-		Timer.kr(t_trig).poll;
+		Timer.kr(t_trig).poll;  //post time between updates in seconds
 		Splay.ar(SinOsc.ar(f, 0, 1/board.numChannels));
 	}).play(fadeTime: 3);
 	sequencer.dataAction= {|num, data, aux, stop|  //try to exchange with board.dataAction and compare timing
@@ -20,6 +20,8 @@ s.waitForBoot{
 ~openbci= board;
 )
 
+~openbci.currentSampleRate
+~openbci.setSampleRate(4)  //with wifi shield one can increase the samplerate
 ~openbci.softReset;
 ~openbci.start;
 ~openbci.stop;

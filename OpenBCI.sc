@@ -6,6 +6,7 @@ OpenBCI {
 	var <>dataAction, <>replyAction, <>initAction;  //callback functions
 	var <>accelAction;  //more callback functions
 	var <>data, <>accel;  //latest readings (can be nil)
+	var <currentSampleRate;
 	*new {|dataAction, replyAction, initAction|
 		^super.new.init(dataAction, replyAction, initAction);
 	}
@@ -16,6 +17,7 @@ OpenBCI {
 		replyAction= argReplyAction ? {|reply| reply.postln};
 		initAction= argInitAction;
 
+		currentSampleRate= this.defaultSampleRate;
 		("%: starting...").format(this.class.name).postln;
 	}
 
@@ -102,6 +104,7 @@ OpenBCI {
 	}
 	softReset {
 		this.prCommand($v);  //soft reset for the board peripherals
+		currentSampleRate= this.defaultSampleRate;
 	}
 
 	attachWifi {

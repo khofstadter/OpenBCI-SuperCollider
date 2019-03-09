@@ -7,6 +7,7 @@
 
 Cyton : OpenBCI {
 	var <numChannels= 8;
+	var <defaultSampleRate= 250;
 
 	//--commands
 	testGnd {  //Connect to internal GND (VDD - VSS)
@@ -105,7 +106,13 @@ Cyton : OpenBCI {
 		this.prCommandArray("~~");
 	}
 	setSampleRate {|rate= 6|  //set sample rate
-		this.prCommandArray("~"++rate.clip(0, 6));
+		rate= rate.asInteger.clip(0, 6);
+		if(this.isKindOf(CytonSerial) and:{rate<6}, {
+			rate= 6;
+			"only 250Hz available for serial".warn;
+		});
+		this.prCommandArray("~"++rate);
+		currentSampleRate= #[16000, 8000, 4000, 2000, 1000, 500, 250][rate];
 	}
 	getBoardMode {  //get current board mode
 		this.prCommandArray("//");
