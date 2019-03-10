@@ -27,6 +27,8 @@ for more info see http://openbci.com
 
 * CytonWifi, CytonDaisyWifi, GanglionWifi - these SuperCollider classes require the WiFi Shield and a special firmware ( [arduino sketch](https://github.com/redFrik/OpenBCI_WIFI/blob/OpenSoundControl/examples/WifiShieldOSC/WifiShieldOSC.ino) ) for sending OSC. Maximum sample rate for these classes is 16000Hz.
 
+* CytonTest, CytonDaisyTest, GanglionTest - with these classes you generate test synthetic data. No hardware board needed.
+
 ## troubleshooting
 
 **mac os 10.12.x** and later with cyton + dongle...
@@ -51,6 +53,7 @@ if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI
 
 ## changelog
 
+* 1.13 - ported some openbci_gui widgets, added tests, currentSampleRate, active flags
 * 1.12 - added new sequencer class, buffer class stop bugfix, fixed examples
 * 1.11 - added new buffer class
 * 1.1 - big fixes to fft, clean up examples
@@ -69,3 +72,4 @@ if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI
 * implement and test the different aux commands
 * finish and test Ganlion classes - both serial and wifi
 * finish and test Daisy classes - both serial and wifi
+* deal with muted channels in test and fft classes
