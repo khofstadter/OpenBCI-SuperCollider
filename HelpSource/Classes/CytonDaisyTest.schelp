@@ -1,0 +1,19 @@
+class:: CytonDaisyTest
+summary:: for generating synthetic test data coming from a Cyton+Daisy board (16ch)
+categories:: External Control
+related:: Classes/OpenBCI, Classes/CytonDaisy, Classes/CytonSerial
+
+description::
+this class acts like a drop-in replacement for link::Classes/CytonDaisySerial:: and link::Classes/CytonDaisyWifi::.
+
+note::
+does not survive link::Classes/CmdPeriod::.
+::
+
+instancemethods::
+
+private:: initCytonDaisyTest, prTask, prCommand, prCommandArray
+
+examples::
+
+//TODO

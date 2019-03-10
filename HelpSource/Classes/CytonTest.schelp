@@ -1,0 +1,55 @@
+class:: CytonTest
+summary:: for generating synthetic test data coming from a Cyton board (8ch)
+categories:: External Control
+related:: Classes/OpenBCI, Classes/Cyton, Classes/GanglionSerial
+
+description::
+this class acts like a drop-in replacement for link::Classes/CytonSerial:: and link::Classes/CytonWifi::.
+
+note::
+does not survive link::Classes/CmdPeriod::.
+::
+
+classmethods::
+
+method::new
+start generating test data
+
+argument::dummy1
+just a placeholder. unused and can be anything.
+
+argument::dummy2
+just a placeholder. unused and can be anything.
+
+argument::dataAction
+set the link::Classes/OpenBCI#-dataAction::
+
+argument::replyAction
+set the link::Classes/OpenBCI#-replyAction::. note that if none give a default function that just posts will be used.
+
+argument::initAction
+set the link::Classes/OpenBCI#-initAction::
+
+instancemethods::
+
+private:: initCytonTest, prTask, prCommand, prCommandArray
+
+method::close
+stops main loop.
+
+method::warn
+unused
+
+examples::
+
+this show how to just rename the board class to get test data instead. no dongle or shield needs to be connected.
+code::
+(
+//var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});
+var board= CytonTest("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});
+~board= board;
+)
+
+~board.accelAction= {|xyz| xyz.postln};  //start posting synthetic accelerometer data
+~board.close;
+::

@@ -14,11 +14,14 @@ create a new instance
 argument::board
 an instance of a link::Classes/OpenBCI:: subclass (for example a link::Classes/CytonWifi:: or link::Classes/GanglionWifi::).
 
-argument::sampleRate
-should correspond with board sample rate.
-
 argument::maxSize
 the number of slots in both data and accelerometer buffers. If the data is not read fast enough, the buffers will fill up to this size and then start dropping values (fifo).
+
+argument::dataActive
+a link::Classes/Boolean:: flag indicating if data should be buffered or not.
+
+argument::accelActive
+a link::Classes/Boolean:: flag indicating if accelerometer data should be buffered or not.
 
 INSTANCEMETHODS::
 
@@ -45,6 +48,12 @@ last brain wave data readings as an link::Classes/Array::.
 method::accel
 last accelerometer readings as an link::Classes/Array::.
 
+method::dataActive
+a link::Classes/Boolean:: flag indicating if data should be buffered or not.
+
+method::accelActive
+a link::Classes/Boolean:: flag indicating if accelerometer data should be buffered or not.
+
 method::dataFull
 a link::Classes/Boolean:: flag indicating if the data buffer filled up to its maximum.
 
@@ -66,16 +75,13 @@ clear buffers and flags
 method::factor
 get or set the time scaling factor. For safety keep this slightly under 1.0.
 
-method::sampleRate
-get or set the sample rate. This should correspond with current board sample rate.
-
 examples::
 
 code::
 
 c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 c.setSampleRate(6);
-d= OpenBCIseq(c, 250);  //sample rate should be same as board sample rate
+d= OpenBCIseq(c);
 d.start;
 //like OpenBCI dataAction function but spread out in time (~ board sample rate)
 d.dataAction= {|num, data, aux, byte| if(num==0, {data.postln})};  //only post every 256th

@@ -3,40 +3,46 @@
 OpenBCIseq {
 	var <board, <data, <accel, <>size, dataFunc, accelFunc;
 	var <dataBuffer, <accelBuffer;
-	var dataTask, accelTask, sampleDur;
+	var dataTask, accelTask;
 	var <>dataAction, <>accelAction;  //callback functions
 	var <dataFull, <accelFull;  //maxed out flags
+	var <>dataActive, <>accelActive;
 	var <>factor= 0.99;
-	*new {|board, sampleRate= 250, maxSize= 1000|
-		^super.new.initOpenBCIseq(board, sampleRate, maxSize);
+	*new {|board, maxSize= 1000, dataActive= true, accelActive= true|
+		^super.new.initOpenBCIseq(board, maxSize, dataActive, accelActive);
 	}
-	initOpenBCIseq {|argBoard, argSampleRate, argMaxSize|
+	initOpenBCIseq {|argBoard, argMaxSize, argDataActive, argAccelActive|
 		board= argBoard;
-		sampleDur= 1/argSampleRate;
 		size= argMaxSize;
+		dataActive= argDataActive;
+		accelActive= argAccelActive;
 		dataBuffer= List.new;
 		accelBuffer= List.new;
 		dataFull= false;
 		accelFull= false;
 		dataFunc= {|num, d, aux, stop|
-			if(dataBuffer.size>=size, {
-				dataBuffer.pop;
-				if(dataFull.not, {
-					"%: buffer data full. increase size".format(board.class.name).warn;
-					dataFull= true;
+			if(dataActive, {
+				if(dataBuffer.size>=size, {
+					dataBuffer.pop;
+					if(dataFull.not, {
+						"%: buffer data full. increase size".format(board.class.name).warn;
+						dataFull= true;
+					});
 				});
+				dataBuffer.insert(0, [num, d, aux, stop]);
 			});
-			dataBuffer.insert(0, [num, d, aux, stop]);
 		};
 		accelFunc= {|a|
-			if(accelBuffer.size>=size, {
-				accelBuffer.pop;
-				if(accelFull.not, {
-					"%: buffer accel full. increase size".format(board.class.name).warn;
-					accelFull= true;
+			if(accelActive, {
+				if(accelBuffer.size>=size, {
+					accelBuffer.pop;
+					if(accelFull.not, {
+						"%: buffer accel full. increase size".format(board.class.name).warn;
+						accelFull= true;
+					});
 				});
+				accelBuffer.insert(0, a);
 			});
-			accelBuffer.insert(0, a);
 		};
 		dataTask= Routine({
 			inf.do{
@@ -45,7 +51,7 @@ OpenBCIseq {
 					data= d[1];
 					dataAction.value(*d);  //num, data, aux, byte
 				});
-				(sampleDur*factor).wait;  //depend on board sample rate
+				(1/board.currentSampleRate*factor).wait;
 			};
 		});
 		accelTask= Routine({
@@ -84,12 +90,6 @@ OpenBCIseq {
 		board.accelAction= board.accelAction.removeFunc(accelFunc);
 		"%: sequencing stopped".format(board.class.name).postln;
 		CmdPeriod.remove(this);
-	}
-	sampleRate {
-		^1/sampleDur;
-	}
-	sampleRate_ {|rate|
-		sampleDur= 1/rate;
 	}
 	cmdPeriod {
 		this.stop;

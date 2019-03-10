@@ -17,6 +17,12 @@ an instance of a link::Classes/OpenBCI:: subclass (for example a link::Classes/C
 argument::maxSize
 the number of slots in both data and accelerometer buffers. If the data is not read fast enough, the buffers will fill up to this size and then start dropping values (fifo).
 
+argument::dataActive
+a link::Classes/Boolean:: flag indicating if data should be buffered or not.
+
+argument::accelActive
+a link::Classes/Boolean:: flag indicating if accelerometer data should be buffered or not.
+
 INSTANCEMETHODS::
 
 private::initOpenBCIbuf
@@ -41,6 +47,12 @@ read the accelerometer buffer and clear it. This should be called at regular int
 
 returns::
 a link::Classes/List:: of arrays with xyz values.
+
+method::dataActive
+a link::Classes/Boolean:: flag indicating if data should be buffered or not.
+
+method::accelActive
+a link::Classes/Boolean:: flag indicating if accelerometer data should be buffered or not.
 
 method::dataFull
 a link::Classes/Boolean:: flag indicating if the data buffer filled up to its maximum.

@@ -4,35 +4,42 @@ OpenBCIbuf {
 	var <board, <>size, dataFunc, accelFunc;
 	var <dataBuffer, <accelBuffer;
 	var <dataFull, <accelFull;  //maxed out flags
-	*new {|board, maxSize= 1000|
-		^super.new.initOpenBCIbuf(board, maxSize);
+	var <>dataActive, <>accelActive;
+	*new {|board, maxSize= 1000, dataActive= true, accelActive= true|
+		^super.new.initOpenBCIbuf(board, maxSize, dataActive, accelActive);
 	}
-	initOpenBCIbuf {|argBoard, argMaxSize|
+	initOpenBCIbuf {|argBoard, argMaxSize, argDataActive, argAccelActive|
 		board= argBoard;
 		size= argMaxSize;
+		dataActive= argDataActive;
+		accelActive= argAccelActive;
 		dataBuffer= List.new;
 		accelBuffer= List.new;
 		dataFull= false;
 		accelFull= false;
 		dataFunc= {|num, d, aux, stop|
-			if(dataBuffer.size>=size, {
-				dataBuffer.pop;
-				if(dataFull.not, {
-					"%: buffer data full. call readData more often or increase size".format(board.class.name).warn;
-					dataFull= true;
+			if(dataActive, {
+				if(dataBuffer.size>=size, {
+					dataBuffer.pop;
+					if(dataFull.not, {
+						"%: buffer data full. call readData more often or increase size".format(board.class.name).warn;
+						dataFull= true;
+					});
 				});
+				dataBuffer.insert(0, d);
 			});
-			dataBuffer.insert(0, d);
 		};
 		accelFunc= {|a|
-			if(accelBuffer.size>=size, {
-				accelBuffer.pop;
-				if(accelFull.not, {
-					"%: buffer accel full. call readAccel more often or increase size".format(board.class.name).warn;
-					accelFull= true;
+			if(accelActive, {
+				if(accelBuffer.size>=size, {
+					accelBuffer.pop;
+					if(accelFull.not, {
+						"%: buffer accel full. call readAccel more often or increase size".format(board.class.name).warn;
+						accelFull= true;
+					});
 				});
+				accelBuffer.insert(0, a);
 			});
-			accelBuffer.insert(0, a);
 		};
 	}
 	readData {

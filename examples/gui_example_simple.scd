@@ -1,14 +1,15 @@
 //simple gui example just displaying data using sliders and numberboxes
 
 (
-//var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match you board
-var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
+var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
+//var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
+//var board= CytonTest(initAction: {|b| b.start});
 var lastValues= -1.dup(board.numChannels);
 var lastTime= 0;
 var win, sliders, numbers;
-win= Window("gui example simple", Rect(100, 100, 75*board.numChannels, 240)).front;
+win= Window("gui example simple", Rect(100, 100, 80*board.numChannels, 240)).front;
 sliders= {Slider().canFocus_(false)}.dup(board.numChannels);
-numbers= {NumberBox().canFocus_(false)}.dup(board.numChannels);
+numbers= {NumberBox().canFocus_(false).decimals= 6}.dup(board.numChannels);
 win.layout= VLayout(*[
 	HLayout(*sliders),
 	HLayout(*numbers)

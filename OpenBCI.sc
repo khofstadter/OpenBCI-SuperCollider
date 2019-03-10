@@ -6,6 +6,7 @@ OpenBCI {
 	var <>dataAction, <>replyAction, <>initAction;  //callback functions
 	var <>accelAction;  //more callback functions
 	var <>data, <>accel;  //latest readings (can be nil)
+	var <currentSampleRate;
 	*new {|dataAction, replyAction, initAction|
 		^super.new.init(dataAction, replyAction, initAction);
 	}
@@ -16,6 +17,7 @@ OpenBCI {
 		replyAction= argReplyAction ? {|reply| reply.postln};
 		initAction= argInitAction;
 
+		currentSampleRate= this.defaultSampleRate;
 		("%: starting...").format(this.class.name).postln;
 	}
 
@@ -102,6 +104,7 @@ OpenBCI {
 	}
 	softReset {
 		this.prCommand($v);  //soft reset for the board peripherals
+		currentSampleRate= this.defaultSampleRate;
 	}
 
 	attachWifi {
@@ -120,4 +123,51 @@ OpenBCI {
 	//--private
 	prCommand {|cmd| ^this.subclassResponsibility(thisMethod)}
 	prCommandArray {|arr| ^this.subclassResponsibility(thisMethod)}
+
+	prSyntheticData {
+		var uVscale= 4.5/24/(2**23-1)*1000000;
+		var amp1= 10*2.sqrt, amp2= 50*2.sqrt;
+		var thetas= 0.0!this.numChannels;
+		var atheta= 0.0;
+		var aux= [0, 0, 0];  //TODO
+		var lastTime= 0, deltaTime;
+		initAction.value(this, "init synthetic data");
+		data= 0.dup(this.numChannels);
+		inf.do{|num|
+			this.numChannels.do{|i|
+				//TODO deal with muted channels here?
+				var val= 0.gauss(1)*(currentSampleRate/2).sqrt;
+				switch(i,
+					0, {
+						val= val*10;
+					},
+					1, {
+						val= val+(amp1*sin(thetas[i]*2pi*10));
+						thetas[i]= thetas[i]+(1/currentSampleRate);
+					},
+					2, {
+						val= val+(amp2*sin(thetas[i]*2pi*50));
+						thetas[i]= thetas[i]+(1/currentSampleRate);
+					},
+					3, {
+						val= val+(amp2*sin(thetas[i]*2pi*60));
+						thetas[i]= thetas[i]+(1/currentSampleRate);
+					}
+				);
+				data[i]= (val/uVscale).round.asInteger;
+			};
+
+			deltaTime= Main.elapsedTime-lastTime;
+			if(deltaTime>=0.04, {  //25Hz
+				accel= {|j| sin(atheta*2pi/3.75+(j*0.5pi)).linlin(-1, 1, -32768, 32767).asInteger}!3;
+				accelAction.value(accel);
+				atheta= atheta+deltaTime;
+				lastTime= Main.elapsedTime;
+			});
+
+			dataAction.value(num.asInteger%256, data, aux, 0);  //TODO should set aux and byte too for accelerometer
+
+			(1/currentSampleRate).wait;
+		};
+	}
 }
