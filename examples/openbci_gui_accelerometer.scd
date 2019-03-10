@@ -5,8 +5,9 @@
 //TODO auto and sync menu selections
 
 (
-var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match you board
+var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
+//var board= CytonTest(initAction: {|b| b.start});  //synthetic test data
 var buffer= OpenBCIbuf(board, 500, false, true).start;
 var fps= 60;
 var usr, pop1, pop2, pw;
@@ -26,6 +27,7 @@ var data= List[[0, 0, 0]];
 var win= Window("accelerometer widget", Rect(10, 100, 512, 360));
 var ts= "Time (s)";
 var as= "Acceleration (g)";
+win.view.minSize= Size(330, 275);
 win.background= Color.white;
 win.drawFunc= {
 	var wb= win.bounds;
@@ -142,7 +144,7 @@ usr.drawFunc= {
 		Pen.fillRect(Rect(0, 0, ab.width, ab.height));
 
 		Pen.translate(0, ab.height/2);
-		step= numPointsToDraw/ab.width;
+		step= numPointsToDraw-1/ab.width;
 		3.do{|i|
 			Pen.strokeColor= colors[i];
 			ab.width.do{|x|
@@ -198,16 +200,6 @@ pop2= PopUpMenu(win, Rect(win.bounds.width-((pw+2)*1), 20, pw, 20))
 win.view.children.reject{|v| v==usr}.do{|v| v.resize_(3).font_(f2)};
 
 ~openbci= board;
-
-//--test. uncomment to bypass board and generate signals
-/*Routine.run({
-	board.close;
-	inf.do{|j|
-		var xyz= {|i| sin(j/25*2pi/3.75+(i*0.5pi)).linlin(-1, 1, -32768, 32767).asInteger}!3;
-		board.accelAction.value(xyz);
-		(1/25).wait;  //match 25hz hardware accelerometer
-	};
-});*/
 )
 
 ~openbci.start;

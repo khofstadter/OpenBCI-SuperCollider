@@ -1,8 +1,9 @@
 //advanced sound+gui example - performing notch, bandpass and fft with scsynth
 
 (
-//~openbci= CytonSerial("/dev/tty.usbserial-DJ00DO0N", initAction: {|b| b.start});  //edit here to match you board
-~openbci= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
+~openbci= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
+//~openbci= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
+//~openbci= CytonTest(initAction: {|b| b.start});
 ~sequencer= OpenBCIseq(~openbci);
 ~sequencer.start;
 ~openbci.warn= false;
@@ -13,7 +14,7 @@
 var bufferSize= 16384;  //fft window size (full spectrum)
 var numBins= 64;  //number of bins to process and display (lower part of spectrum)
 var width= 640, height= 480;
-~index= 0;  //edit which channel to read from (cyton 0-7)
+~channel= 0;  //edit which channel to read from (cyton 0-7)
 s.latency= 0.05;
 
 s.waitForBoot{
@@ -39,7 +40,7 @@ s.waitForBoot{
 	s.sync;
 	~openbci.setSampleRate(6);  //250Hz
 	~sequencer.dataAction= {|num, data, aux, stop|
-		s.bind{~synth.set(\data, data[~index].linlin(-8388608, 8388607, -1, 1))};
+		s.bind{~synth.set(\data, data[~channel].linlin(-8388608, 8388607, -1, 1))};
 	};
 	Routine.run({
 		inf.do{
@@ -72,6 +73,7 @@ s.waitForBoot{
 };
 )
 
+~channel= 3
 ~synth.set(\notchFreq, 60)
 ~synth.set(\notchFreq, 50)  //europa
 ~synth.set(\nf, 0)  //notch filter off
