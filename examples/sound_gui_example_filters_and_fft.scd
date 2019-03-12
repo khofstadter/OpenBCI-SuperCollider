@@ -48,7 +48,6 @@ s.waitForBoot{
 			(1/61).wait;  //a tiny bit faster than framerate
 		};
 	});
-	if(win.notNil, {win.close});
 	win= Window("fft", Rect(10, 100, width, height), false);
 	usr= UserView(win, Rect(0, 0, width, height));
 	usr.animate= true;
@@ -58,9 +57,9 @@ s.waitForBoot{
 		Pen.fillColor= Color.white;
 		numBins.do{|i|
 			var freq;
-			if(i%6==0, {
+			if(i%3==0, {
 				freq= (s.sampleRate/bufferSize*i).asInteger;
-				Pen.stringAtPoint(freq.asString, Point(i/numBins*width-4, 10));
+				Pen.stringAtPoint(freq.asString, Point(i/numBins*width-8, 10));
 			});
 		};
 		fftArray.do{|y, x|
@@ -73,19 +72,24 @@ s.waitForBoot{
 };
 )
 
+~channel= 2
+~synth.set(\nf, 0)  //notch filter off
+~synth.set(\nf, 1)  //notch filter on
 ~channel= 3
 ~synth.set(\notchFreq, 60)
 ~synth.set(\notchFreq, 50)  //europa
-~synth.set(\nf, 0)  //notch filter off
-~synth.set(\nf, 1)  //notch filter on
 ~synth.set(\notchRQ, 0.3)  //notch filter rq
+~synth.set(\notchRQ, 1)
 
-~synth.set(\loFreq, 3)
-~synth.set(\hiFreq, 33)
 ~synth.set(\bf, 0)  //bandpass filter off
 ~synth.set(\bf, 1)  //bandpass filter on
+~synth.set(\loFreq, 3)
+~synth.set(\hiFreq, 33)
+~synth.set(\loFreq, 10)
+~synth.set(\hiFreq, 100)
 
 ~synth.set(\lag, 0)
+~synth.set(\lag, 0.5)
 ~synth.set(\lag, 1)  //the default
 
 SerialPort.listDevices

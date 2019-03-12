@@ -9,7 +9,7 @@ var lastTime= 0;
 var win, sliders, numbers;
 win= Window("gui example simple", Rect(100, 100, 80*board.numChannels, 240)).front;
 sliders= {Slider().canFocus_(false)}.dup(board.numChannels);
-numbers= {NumberBox().canFocus_(false).decimals= 6}.dup(board.numChannels);
+numbers= {NumberBox().canFocus_(false)}.dup(board.numChannels);
 win.layout= VLayout(*[
 	HLayout(*sliders),
 	HLayout(*numbers)
@@ -22,7 +22,7 @@ board.dataAction= {|num, data, aux, stop|
 				lastValues[i]= x;
 				{
 					sliders[i].value= x.linlin(-8388608, 8388607, 0, 1);
-					numbers[i].value= x.linlin(-8388608, 8388607, -1, 1);
+					numbers[i].value= x;  //display raw values
 				}.defer;
 			});
 		};

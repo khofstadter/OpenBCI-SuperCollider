@@ -20,7 +20,7 @@ Routine({
 	f.start;
 	inf.do{
 		msliders.do{|m, i|
-			m.value= f.fft(i).drop(1).sqrt;
+			m.value= (f.fft(i)*100000).explin(0.1, 200, 0, 1);  0.1-200 uV
 		};
 		(1/60).wait;  //framerate
 	};

@@ -146,18 +146,18 @@ usr.drawFunc= {
 		Pen.translate(0, ab.height/2);
 		step= numPointsToDraw-1/ab.width;
 		3.do{|i|
+			var lastIndex= 0;
+			var y= (data[0][i]/verticalScale[0]).clip(-1, 1)*ab.height*0.5;
 			Pen.strokeColor= colors[i];
+			Pen.moveTo(Point(ab.width, y));
 			ab.width.do{|x|
-				var y, xyz;
+				var xyz;
 				var index= (x*step).round.asInteger;
-				if(data[index]!=nil, {
+				if(index>lastIndex and:{data[index]!=nil}, {
 					xyz= data[index];
 					y= (xyz[i]/verticalScale[0]).clip(-1, 1)*ab.height*0.5;
-					if(x==0, {
-						Pen.moveTo(Point(ab.width-x, y));
-					}, {
-						Pen.lineTo(Point(ab.width-x, y));
-					});
+					Pen.lineTo(Point(ab.width-x, y));
+					lastIndex= index;
 				});
 			};
 			Pen.stroke;
@@ -188,12 +188,12 @@ pop2= PopUpMenu(win, Rect(win.bounds.width-((pw+2)*1), 20, pw, 20))
 .items_(#["Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"])
 .action_{|v|
 	horizontalScale= [
-		(-5, -4 .. 0),  //TODO
+		(-5..0),  //TODO
 		(-1, -0.9 .. 0).round(0.1),
-		(-3, -2 .. 0),
-		(-5, -4 .. 0),
-		(-10, -9 .. 0),
-		(-20, -19 .. 0)
+		(-3..0),
+		(-5..0),
+		(-10..0),
+		(-20..0)
 	][v.value];
 	win.refresh;
 }.valueAction_(3);

@@ -7,6 +7,7 @@ var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start}); 
 var buffer= OpenBCIbuf(board);
 var width= 640, height= 640;
 var win, usr, x= 0;
+~amp= 1000;  //boost
 buffer.start;
 win= Window("gui example userview", Rect(10, 100, width, height)).front;
 usr= UserView(win, Rect(0, 0, width, height));
@@ -22,7 +23,8 @@ usr.drawFunc= {
 		Pen.fillRect(Rect(x, 0, 1, height));
 		Pen.fillColor= Color.white;
 		data.do{|val, y|
-			Pen.fillRect(Rect(x, val.linlin(-8388608, 8388607, 0, chanHeight)+(y*chanHeight), 1, 1));
+			val= (val*~amp).linlin(-8388608, 8388607, 0, chanHeight);
+			Pen.fillRect(Rect(x, val+(y*chanHeight), 1, 1));
 		};
 		x= x+1%width;
 	};
@@ -38,3 +40,6 @@ SerialPort.listDevices;
 ~openbci.setSampleRate(6);
 ~openbci.setSampleRate(3);
 ~openbci.test2AmpFast;
+~amp= 500;
+~amp= 1000;
+~amp= 2000;

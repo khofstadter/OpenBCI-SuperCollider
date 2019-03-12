@@ -6,8 +6,7 @@ var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start}); 
 //var board= CytonTest(initAction: {|b| b.start});
 var width= 640, height= 256;
 var win, usr, f;
-~amp= 15;     //just boost colour
-~channel= 0;  //which channel to read
+~channel= 2;  //which channel to read
 win= Window("fft gui example userview", Rect(100, 100, width, height)).front;
 usr= UserView(win, Rect(0, 0, width, height));
 usr.animate= true;
@@ -16,10 +15,10 @@ usr.background= Color.black;
 usr.clearOnRefresh= false;
 usr.drawFunc= {
 	var x= usr.frame%width;
-	var d= f.fft(~channel);
+	var d= f.fft(~channel)*100000;
 	//d.postln;  //debug
 	d.drop(1).do{|val, y|
-		Pen.fillColor= Color.grey((val*~amp).sqrt);
+		Pen.fillColor= Color.grey(val.explin(0.1, 200, 0, 1));  //0.1-200 uV
 		Pen.fillRect(Rect(x, y.linlin(0, f.fftSize*0.5, height, 0), 1, 1));
 	};
 };
@@ -33,8 +32,6 @@ CmdPeriod.doOnce({win.close});
 ~openbci.start;
 ~openbci.stop;
 SerialPort.listDevices;
-~amp= 5;
-~amp= 50;
 ~channel= 1;
 ~channel= 2;
 ~openbci.setSampleRate(3)

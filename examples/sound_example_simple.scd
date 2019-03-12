@@ -10,12 +10,12 @@ board.warn= false;
 s.latency= 0.05;
 s.waitForBoot{
 	Ndef(\sines, {|t_trig= 0|
-		var f= \freq.kr(400!board.numChannels);
+		var f= \freq.kr(400!board.numChannels, 0);
 		Timer.kr(t_trig).poll;  //post time between updates in seconds
 		Splay.ar(SinOsc.ar(f, 0, 1/board.numChannels));
 	}).play(fadeTime: 3);
 	sequencer.dataAction= {|num, data, aux, stop|  //try to exchange with board.dataAction and compare timing
-		Ndef(\sines).set(\freq, data.linexp(-8388608, 8388607, 200, 2000), \t_trig, 1);
+		Ndef(\sines).set(\freq, data.linexp(-8388608, 8388607, 20, 20000), \t_trig, 1);
 	};
 };
 ~openbci= board;
