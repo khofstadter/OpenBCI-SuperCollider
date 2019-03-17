@@ -75,10 +75,10 @@ c.accel  //last accelerometer reading
 c.accelAction= {|accel| accel.postln}
 c.dataAction= {}
 c.start  //should only post accelerometer now (notice the lower sample rate)
-c.accelAction= {|accel| accel.linlin(-32768, 32767, -1, 1).postln}  //normalize -1.0 to 1.0
+c.accelAction= {|accel| accel.postln}  //-4 to 4 g
 c.stop
 
-c.dataAction= {|num, data, aux, stop| [num, data.linlin(-8388608, 8388607, 0, 1), aux, stop].postln}  //normalize sample data
+c.dataAction= {|num, data, aux, stop| [num, data, aux, stop].postln}  //sample data in uV
 c.start
 c.stop
 c.close  //finish and close the serial port

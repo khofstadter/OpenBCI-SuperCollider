@@ -16,6 +16,10 @@ what you should use in your code are the serial or wifi classes - not the abstra
 
 CLASSTREE:: OpenBCI
 
+for filtering see link::Classes/DataFilter:: and its subclasses.
+
+CLASSTREE:: DataFilter
+
 classmethods::
 
 method::new
@@ -38,7 +42,7 @@ the current board sample rate in Hertz.
 
 method::dataAction
 a link::Classes/Function:: that is evaluated as new packages with brain wave data arrives. no data is transmitted until you call the code::start:: method.
-there are four arguments passed in to the function: code::num, data, aux, stop:: where code::num:: is a running counter (0-255), code::data:: is the N channels of data from the electrodes (in the range -8388608 to 8388607), and code::aux:: normally the accelerometer but can also be analog inputs etc (depends on which board mode you set) and last code::stop:: which is the stop byte (code::0xC0:: to code::0xCF::) that denotes what kind of data is found in code::aux::.
+there are four arguments passed in to the function: code::num, data, aux, stop:: where code::num:: is a running counter (0-255), code::data:: is the N channels of data from the electrodes in microvolts (uV), and code::aux:: normally the accelerometer but can also be analog inputs etc (depends on which board mode you set) and last code::stop:: which is the stop byte (code::0xC0:: to code::0xCF::) that denotes what kind of data is found in code::aux::.
 
 note::
 specially when using wifi and a high samplerate, posting every data package can flood the post window and crash supercollider.
@@ -51,13 +55,40 @@ method::initAction
 a link::Classes/Function:: that is evaluated at startup and after each call to link::#-softReset::. initAction is often used to start the streaming. values passed in are the board instance and a link::Classes/NetAddr:: giving the network ip and port of the board.
 
 method::accelAction
-a link::Classes/Function:: that is evaluated at when new accelerometer arrives. the argument passed in is an link::Classes/Array:: with three integers (x, y, z) in the range -32768 to 32767.
+a link::Classes/Function:: that is evaluated at when new accelerometer arrives. the argument passed in is an link::Classes/Array:: with three integers (x, y, z) in the range -4.096 to 4.096 g.
 
 method::data
 last brain wave data readings as an link::Classes/Array::. can be code::nil:: if streaming has not yet been started.
 
 method::accel
 last accelerometer readings as an link::Classes/Array::. can be code::nil:: if streaming has not yet been started.
+
+method::numChannels
+an link::Classes/Integer:: that is different for each board.
+
+method::filter
+called automatically internally. if no filters added, the data will pass through unaffected.
+
+argument::data
+an n-channel array of raw unfiltered data.
+
+returns::
+an array of n-channels.
+
+method::addFilter
+add a filter to the incoming data. see link::Classes/DataFilter::
+
+code::
+~board= CytonTest(initAction: {|b| b.start});
+~board.addFilter(DataFilterNotch('50'));
+~board.filters;
+::
+
+method::removeFilter
+removes a filter from the list of active filters.
+
+method::filters
+a link::Classes/List:: of active filters.
 
 method::off
 turn off (mute) one ore more channels

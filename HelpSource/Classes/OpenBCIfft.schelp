@@ -1,7 +1,7 @@
 class:: OpenBCIfft
 summary:: collect data and perform fft
 categories:: External Control
-related:: Classes/OpenBCI
+related:: Classes/OpenBCI, Classes/OpenBCIbuf, Classes/OpenBCIseq
 
 description::
 Collects data from any OpenBCI board and calculate FFT for a selected channel. This class has its own internal buffer so no need for a link::Classes/OpenBCIbuf::.
@@ -39,7 +39,7 @@ argument::channel
 an link::Classes/Integer:: representing the board channel you want to calculate. (e.g. 0-7 for Cyton, 0-3 for Ganglion)
 
 returns::
-the FFT data (normalised magnitudes only) as an link::Classes/Array::. The size of the array is half the fftSize + 1.
+the FFT data (magnitudes only) as an link::Classes/Array::. The size of the array is half the fftSize + 1.
 
 method::fftSize
 the FFT window size

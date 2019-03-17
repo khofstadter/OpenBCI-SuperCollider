@@ -6,8 +6,10 @@
 //http://docs.openbci.com/OpenBCI%20Software/06-OpenBCI_Ganglion_SDK
 
 Ganglion : OpenBCI {
-	var <numChannels= 4;
-	var <defaultSampleRate= 200;
+	classvar <numChannels= 4;
+	classvar <defaultSampleRate= 200;
+	uVScale {^(1.2*1000000)/(8388607*1.5*51)}
+	accScale {^0.032}
 
 	//--commands
 	getSampleRate {  //get current sample rate

@@ -8,9 +8,9 @@
 var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 //var board= CytonTest(initAction: {|b| b.start});  //synthetic test data
-var buffer= OpenBCIbuf(board, 500, false, true).start;
+var buffer= OpenBCIbuf(board, 100, false, true).start;
 var fps= 60;
-var usr, pop1, pop2, pw;
+var usr, pop1, pop2, pw, po;
 var verticalScale, horizontalScale;
 var f0= Font("Helvetiva", 16);
 var f1= Font("Helvetiva", 14);
@@ -88,7 +88,7 @@ usr.drawFunc= {
 		rad= 55;  //circleRadius
 
 		numPointsToDraw= 25*horizontalScale[0].abs;  //25hz dependant
-		buffer.readAccel.do{|xyz| data.addFirst(xyz/8000)};
+		buffer.readAccel.do{|xyz| data.addFirst(xyz)};
 		while({data.size>numPointsToDraw}, {data.pop});
 
 		Pen.fillColor= Color.white;
@@ -146,18 +146,18 @@ usr.drawFunc= {
 		Pen.translate(0, ab.height/2);
 		step= numPointsToDraw-1/ab.width;
 		3.do{|i|
+			var lastIndex= 0;
+			var y= (data[0][i]/verticalScale[0]).clip(-1, 1)*ab.height*0.5;
 			Pen.strokeColor= colors[i];
+			Pen.moveTo(Point(ab.width, y));
 			ab.width.do{|x|
-				var y, xyz;
+				var xyz;
 				var index= (x*step).round.asInteger;
-				if(data[index]!=nil, {
+				if(index>lastIndex and:{data[index]!=nil}, {
 					xyz= data[index];
 					y= (xyz[i]/verticalScale[0]).clip(-1, 1)*ab.height*0.5;
-					if(x==0, {
-						Pen.moveTo(Point(ab.width-x, y));
-					}, {
-						Pen.lineTo(Point(ab.width-x, y));
-					});
+					Pen.lineTo(Point(ab.width-x, y));
+					lastIndex= index;
 				});
 			};
 			Pen.stroke;
@@ -171,9 +171,10 @@ usr.resize= 5;
 
 //--menus
 pw= win.bounds.width*0.125;
-StaticText(win, Rect(win.bounds.width-((pw+2)*2), 1, pw, 20)).align_(\center).string_("Vert Scale");
-StaticText(win, Rect(win.bounds.width-((pw+2)*1), 1, pw, 20)).align_(\center).string_("Window");
-pop1= PopUpMenu(win, Rect(win.bounds.width-((pw+2)*2), 20, pw, 20))
+po= win.bounds.width-((pw+2)*2);
+StaticText(win, Rect(po, 1, pw, 20)).align_(\center).string_("Vert Scale");
+StaticText(win, Rect((pw+2)+po, 1, pw, 20)).align_(\center).string_("Window");
+pop1= PopUpMenu(win, Rect(po, 20, pw, 20))
 .items_(#["Auto", "1 g", "2 g", "4 g"])
 .action_{|v|
 	verticalScale= [
@@ -184,16 +185,16 @@ pop1= PopUpMenu(win, Rect(win.bounds.width-((pw+2)*2), 20, pw, 20))
 	][v.value];
 	win.refresh;
 }.valueAction_(2);
-pop2= PopUpMenu(win, Rect(win.bounds.width-((pw+2)*1), 20, pw, 20))
+pop2= PopUpMenu(win, Rect((pw+2)+po, 20, pw, 20))
 .items_(#["Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"])
 .action_{|v|
 	horizontalScale= [
-		(-5, -4 .. 0),  //TODO
+		(-5..0),  //TODO
 		(-1, -0.9 .. 0).round(0.1),
-		(-3, -2 .. 0),
-		(-5, -4 .. 0),
-		(-10, -9 .. 0),
-		(-20, -19 .. 0)
+		(-3..0),
+		(-5..0),
+		(-10..0),
+		(-20..0)
 	][v.value];
 	win.refresh;
 }.valueAction_(3);

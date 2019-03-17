@@ -26,7 +26,7 @@ OpenBCIbuf {
 						dataFull= true;
 					});
 				});
-				dataBuffer.insert(0, d);
+				dataBuffer.insert(0, d.copy);
 			});
 		};
 		accelFunc= {|a|

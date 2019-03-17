@@ -2,7 +2,6 @@
 //MIT License, Copyright (c) 2018 OpenBCI, https://github.com/OpenBCI/OpenBCI_GUI/blob/master/LICENSE
 
 //TODO test with ganglion and daisy
-//TODO how to do filters?
 //TODO smooth here or in OpenBCIfft class?
 //TODO (in)activate channels?
 
@@ -10,9 +9,11 @@
 var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 //var board= CytonTest(initAction: {|b, r| b.start});  //synthetic test data
+var notchFilter= DataFilterNotch('50');
+var bandpassFilter= DataFilterBandpass('1-50');
 var fft= OpenBCIfft(board, 256).start;
 var fps= 60;
-var usr, pop1, pop2, pop3, pop4, pop5, pw;
+var usr, pop1, pop2, pop3, pop4, btn1, btn2, pw, po;
 var horizontalScale, verticalScale, maxFreq, maxAmp;
 var smoothingFactor, prevData= 0.dup(fft.fftSize.div(2)).dup(board.numChannels);
 var f0= Font("Helvetiva", 16);
@@ -39,7 +40,7 @@ var channels= {|i|
 var win= Window("fft plot widget", Rect(10, 100, 512, 338));
 var fs= "Frequency (Hz)";
 var as= "Amplitude (uV)";
-win.view.minSize= Size(400, 145);
+win.view.minSize= Size(436, 145);
 win.background= Color.white;
 win.drawFunc= {
 	var wb= win.bounds;
@@ -109,7 +110,7 @@ usr.drawFunc= {
 	var data;
 	channels.do{|c, i|
 		if(c.active, {
-			data= fft.fft(i)*100000;
+			data= fft.fft(i);
 			if(pop4.value>0, {
 				data= smoothingFactor*prevData[i]+((1-smoothingFactor*data));
 				prevData[i]= data;
@@ -134,48 +135,64 @@ usr.resize= 5;
 
 //--menus
 pw= win.bounds.width*0.125;
-StaticText(win, Rect(win.bounds.width-((pw+2)*5), 1, pw, 20)).align_(\center).string_("Max Freq");
-StaticText(win, Rect(win.bounds.width-((pw+2)*4), 1, pw, 20)).align_(\center).string_("Max uV");
-StaticText(win, Rect(win.bounds.width-((pw+2)*3), 1, pw, 20)).align_(\center).string_("Log/Lin");
-StaticText(win, Rect(win.bounds.width-((pw+2)*2), 1, pw, 20)).align_(\center).string_("Smooth");
-StaticText(win, Rect(win.bounds.width-((pw+2)*1), 1, pw, 20)).align_(\center).string_("Filters?");
-pop1= PopUpMenu(win, Rect(win.bounds.width-((pw+2)*5), 20, pw, 20))
+po= win.bounds.width-((pw+2)*5.5);
+StaticText(win, Rect(po, 1, pw, 20)).align_(\center).string_("Max Freq");
+StaticText(win, Rect((pw+2)+po, 1, pw, 20)).align_(\center).string_("Max uV");
+StaticText(win, Rect((pw+2)*2+po, 1, pw, 20)).align_(\center).string_("Log/Lin");
+StaticText(win, Rect((pw+2)*3+po, 1, pw, 20)).align_(\center).string_("Smooth");
+StaticText(win, Rect((pw+2)*4+po, 1, pw, 20)).align_(\center).string_("Filters");
+pop1= PopUpMenu(win, Rect(po, 20, pw, 20))
 .items_(#["20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz", "500 Hz", "800 Hz"])
 .action_{|v|
 	maxFreq= v.item.asInteger;
-	horizontalScale= #[
-		[2, 6, 10, 14, 18],
-		[10, 20, 30, 40],
-		[10, 20, 30, 40, 50, 60],
-		[10, 30, 50, 70, 90],
-		[10, 30, 50, 70, 90, 110],
-		[30, 80, 130, 180, 230],
-		[100, 200, 300, 400, 500],
-		[100, 300, 500, 700],
+	horizontalScale= [
+		(2, 6 .. 18),
+		(10, 20 .. 40),
+		(10, 20 .. 60),
+		(10, 30 .. 90),
+		(10, 30 .. 110),
+		(30, 80 .. 230),
+		(100, 200 .. 500),
+		(100, 300 .. 700)
 	][v.value];
 	win.refresh;
 }.valueAction_(2);
-pop2= PopUpMenu(win, Rect(win.bounds.width-((pw+2)*4), 20, pw, 20))
+pop2= PopUpMenu(win, Rect((pw+2)+po, 20, pw, 20))
 .items_(#["10 uV", "50 uV", "100 uV", "1000 uV"])
 .action_{|v|
 	maxAmp= v.item.asInteger;
-	verticalScale= #[
-		[[0.1, 1, 10], [1, 2, 3, 4, 5, 6, 7, 8, 9]],
-		[[0.1, 1, 10], [1, 7, 13, 19, 25, 31, 37, 43, 49]],
-		[[0.1, 1, 10, 100], [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]],
-		[[0.1, 1, 10, 100, 1000], [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]]
+	verticalScale= [
+		[[0.1, 1, 10], (1..9)],
+		[[0.1, 1, 10], (1, 7 .. 49)],
+		[[0.1, 1, 10, 100], (10, 20 .. 100)],
+		[[0.1, 1, 10, 100, 1000], (100, 200 .. 1000)]
 	][v.value];
 	win.refresh;
 }.valueAction_(2);
-pop3= PopUpMenu(win, Rect(win.bounds.width-((pw+2)*3), 20, pw, 20))
+pop3= PopUpMenu(win, Rect((pw+2)*2+po, 20, pw, 20))
 .items_(#["Log", "Linear"])
 .action_{win.refresh}.value_(0);
-pop4= PopUpMenu(win, Rect(win.bounds.width-((pw+2)*2), 20, pw, 20))
+pop4= PopUpMenu(win, Rect((pw+2)*3+po, 20, pw, 20))
 .items_(#["0.0", "0.5", "0.75", "0.9", "0.95", "0.98"])
 .action_{|v| smoothingFactor= v.item.asFloat}.valueAction_(3);
-pop5= PopUpMenu(win, Rect(win.bounds.width-((pw+2)*1), 20, pw, 20))
-.items_(#["Filtered", "Unfilt."])
-.action_{|v| [v.value, v.item].postln}.value_(0);
+btn1= Button(win, Rect((pw+2)*4+po, 20, pw/2, 20)).states_(
+	[["Off"]]++DataFilterNotch.keys.collect{|x| [x.asString+"Hz"]}
+).action_{|v|
+	board.removeFilter(notchFilter);
+	if(v.value>0, {
+		notchFilter= DataFilterNotch(DataFilterNotch.keys[v.value-1]);
+		board.addFilter(notchFilter);
+	});
+}.valueAction_(1);
+btn2= Button(win, Rect((pw+2)*4.5+po, 20, pw/2, 20)).states_(
+	[["Off"]]++DataFilterBandpass.keys.collect{|x| [x.asString]}
+).action_{|v|
+	board.removeFilter(bandpassFilter);
+	if(v.value>0, {
+		bandpassFilter= DataFilterBandpass(DataFilterBandpass.keys[v.value-1]);
+		board.addFilter(bandpassFilter);
+	});
+}.valueAction_(1);
 win.view.children.reject{|v| v==usr}.do{|v| v.resize_(3).font_(f2)};
 
 ~openbci= board;

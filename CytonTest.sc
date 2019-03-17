@@ -26,4 +26,5 @@ CytonTest : Cyton {
 }
 
 CytonDaisyTest : CytonTest {
+	classvar <numChannels= 16;
 }

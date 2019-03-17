@@ -10,6 +10,11 @@ note::
 does not survive link::Classes/CmdPeriod::.
 ::
 
+classmethods::
+
+method::numChannels
+16
+
 instancemethods::
 
 private:: initCytonDaisyTest, prTask, prCommand, prCommandArray

@@ -6,7 +6,8 @@ OpenBCI {
 	var <>dataAction, <>replyAction, <>initAction;  //callback functions
 	var <>accelAction;  //more callback functions
 	var <>data, <>accel;  //latest readings (can be nil)
-	var <currentSampleRate;
+	var <>filters;  //a list of DataFilter objects
+	var <numChannels, <currentSampleRate;
 	*new {|dataAction, replyAction, initAction|
 		^super.new.init(dataAction, replyAction, initAction);
 	}
@@ -17,14 +18,27 @@ OpenBCI {
 		replyAction= argReplyAction ? {|reply| reply.postln};
 		initAction= argInitAction;
 
-		currentSampleRate= this.defaultSampleRate;
+		numChannels= this.class.numChannels;
+		currentSampleRate= this.class.defaultSampleRate;
+		filters= List.new;
 		("%: starting...").format(this.class.name).postln;
+	}
+	addFilter {|filter|
+		filter.board= this;
+		filters.add(filter);
+	}
+	removeFilter {|filter|
+		filters.remove(filter);
+	}
+	filter {|data|
+		filters.do{|f| data= f.filter(data)};
+		^data;
 	}
 
 	//--commands
 	off {|channel= 1|  //Turn Channels OFF
 		channel.asArray.do{|c|
-			if(c>=1 and:{c<=this.numChannels}, {
+			if(c>=1 and:{c<=numChannels}, {
 				switch(c,
 					1, {this.prCommand($1)},
 					2, {this.prCommand($2)},
@@ -44,13 +58,13 @@ OpenBCI {
 					16, {this.prCommand($i)}
 				);
 			}, {
-				"channel % not in the range 1-%".format(c, this.numChannels).warn;
+				"channel % not in the range 1-%".format(c, numChannels).warn;
 			});
 		};
 	}
 	on {|channel= 1|  //Turn Channels ON
 		channel.asArray.do{|c|
-			if(c>=1 and:{c<=this.numChannels}, {
+			if(c>=1 and:{c<=numChannels}, {
 				switch(c,
 					1, {this.prCommand($!)},
 					2, {this.prCommand($@)},
@@ -70,7 +84,7 @@ OpenBCI {
 					16, {this.prCommand($I)}
 				);
 			}, {
-				"channel % not in the range 1-%".format(c, this.numChannels).warn;
+				"channel % not in the range 1-%".format(c, numChannels).warn;
 			});
 		};
 	}
@@ -104,7 +118,7 @@ OpenBCI {
 	}
 	softReset {
 		this.prCommand($v);  //soft reset for the board peripherals
-		currentSampleRate= this.defaultSampleRate;
+		currentSampleRate= this.class.defaultSampleRate;
 	}
 
 	attachWifi {
@@ -125,16 +139,15 @@ OpenBCI {
 	prCommandArray {|arr| ^this.subclassResponsibility(thisMethod)}
 
 	prSyntheticData {
-		var uVscale= 4.5/24/(2**23-1)*1000000;
 		var amp1= 10*2.sqrt, amp2= 50*2.sqrt;
-		var thetas= 0.0!this.numChannels;
+		var thetas= 0.0!numChannels;
 		var atheta= 0.0;
 		var aux= [0, 0, 0];  //TODO
 		var lastTime= 0, deltaTime;
 		initAction.value(this, "init synthetic data");
-		data= 0.dup(this.numChannels);
+		data= 0.dup(numChannels);
 		inf.do{|num|
-			this.numChannels.do{|i|
+			numChannels.do{|i|
 				//TODO deal with muted channels here?
 				var val= 0.gauss(1)*(currentSampleRate/2).sqrt;
 				switch(i,
@@ -154,17 +167,18 @@ OpenBCI {
 						thetas[i]= thetas[i]+(1/currentSampleRate);
 					}
 				);
-				data[i]= (val/uVscale).round.asInteger;
+				data[i]= (val/this.uVScale(24)).round*this.uVScale(24);  //TODO deal with gain changes
 			};
 
 			deltaTime= Main.elapsedTime-lastTime;
 			if(deltaTime>=0.04, {  //25Hz
-				accel= {|j| sin(atheta*2pi/3.75+(j*0.5pi)).linlin(-1, 1, -32768, 32767).asInteger}!3;
+				accel= {|j| (sin(atheta*2pi/3.75+(j*0.5pi))*32767).asInteger*this.accScale}!3;
 				accelAction.value(accel);
 				atheta= atheta+deltaTime;
 				lastTime= Main.elapsedTime;
 			});
 
+			data= this.filter(data);
 			dataAction.value(num.asInteger%256, data, aux, 0);  //TODO should set aux and byte too for accelerometer
 
 			(1/currentSampleRate).wait;

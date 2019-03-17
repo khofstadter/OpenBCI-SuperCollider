@@ -19,7 +19,7 @@ OpenBCIfft {
 		func= {|num, d, aux, stop|
 			board.numChannels.do{|i|
 				data[i].pop;
-				data[i].insert(0, d[i].linlin(-8388608, 8388607, -1, 1));
+				data[i].insert(0, d[i]);
 			};
 		};
 	}

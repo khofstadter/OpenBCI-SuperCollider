@@ -1,0 +1,42 @@
+class:: DataFilter
+summary:: Abstract class for digital filters
+categories:: External Control
+related:: Classes/OpenBCI
+
+description::
+for filtering data from openbci boards.
+
+note::
+this is an abstract class - do not instantiate. use link::Classes/OpenBCI#-addFilter:: with the link::Classes/DataFilterBandpass:: or link::Classes/DataFilterNotch:: etc subclasses.
+::
+
+CLASSMETHODS::
+
+method::new
+create a new filter instance. to use it add it to a board with link::Classes/OpenBCI#-addFilter::.
+
+argument::type
+a link::Classes/Symbol:: for looking up the filter constants.
+
+method::keys
+
+an link::Classes/Array:: of symbols which can be used to look up filter constants.
+
+code::
+k= DataFilterBandpass.keys;
+DataFilterBandpass.constants[k[0]]
+::
+
+INSTANCEMETHODS::
+
+method::board
+automatically set when a filter is added to a board.
+
+method::filter
+perform the filter calculations. normally called automatically by classes like for example CytonSerial.
+
+argument::rawData
+an link::Classes/Array:: of n-channel data.
+
+method::type
+a link::Classes/Symbol:: for current filter frequency/frequencies.

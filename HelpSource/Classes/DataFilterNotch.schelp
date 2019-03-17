@@ -1,0 +1,18 @@
+class:: DataFilterNotch
+summary:: butterworth notch filter
+categories:: External Control
+related:: Classes/DataFilterBandpass, Classes/DataFilter, Classes/OpenBCI
+
+description::
+butterworth band-reject filter for openbci board data. removes 50 or 60 Hz powergrid noise. use 50 Hz for europe.
+
+CLASSMETHODS::
+
+method::constants
+a dictionary of dictionaries containing filter constants for different sampling rates.
+
+code::
+//filter constants for 50 Hz, 250 samples per second
+DataFilterNotch.constants['50'][250].b;
+DataFilterNotch.constants['50'][250].a;
+::

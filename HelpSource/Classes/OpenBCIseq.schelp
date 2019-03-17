@@ -1,7 +1,7 @@
 class:: OpenBCIseq
 summary:: distributing data and accelerometer values over time
 categories:: External Control
-related:: Classes/OpenBCI, Classes/OpenBCIbuf
+related:: Classes/OpenBCI, Classes/OpenBCIbuf, Classes/OpenBCIfft
 
 description::
 Collects data from any OpenBCI board and spread out over time. Mainly useful with wifi shield where packages arrives in chunks.

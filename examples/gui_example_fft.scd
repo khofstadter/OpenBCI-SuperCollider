@@ -5,7 +5,7 @@ var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start}); 
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 //var board= CytonTest(initAction: {|b| b.start});
 var win, msliders;
-win= Window("fft gui example scrolling", Rect(100, 100, 640, 640)).front;
+win= Window("fft gui example multislider", Rect(100, 100, 640, 640)).front;
 msliders= {
 	MultiSliderView()
 	.canFocus_(false)
@@ -20,7 +20,7 @@ Routine({
 	f.start;
 	inf.do{
 		msliders.do{|m, i|
-			m.value= f.fft(i).drop(1).sqrt;
+			m.value= f.fft(i).explin(0.1, 200, 0, 1);  //0.1-200 uV
 		};
 		(1/60).wait;  //framerate
 	};
@@ -28,6 +28,13 @@ Routine({
 CmdPeriod.doOnce({win.close});
 ~openbci= board;
 )
+
+~br= DataFilterNotch('50');
+~openbci.addFilter(~br);
+~bp= DataFilterBandpass('5-50');
+~openbci.addFilter(~bp);
+~openbci.filters;
+~openbci.removeFilter(~br);
 
 ~openbci.softReset;
 ~openbci.start;
