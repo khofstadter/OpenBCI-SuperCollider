@@ -10,10 +10,21 @@ note::
 this is an abstract class - do not instantiate. use the link::Classes/CytonSerial:: or link::Classes/CytonWifi:: subclasses.
 ::
 
-instancemethods::
+classmethods::
 
 method::numChannels
 8
+
+method::defaultSampleRate
+An link::Classes/Integer:: that is different for each board. For Cyton boards it is 250 (Hz).
+
+instancemethods::
+
+method::uVScale
+A link::Classes/Float:: scaling factor used internally to convert from 24bit to microvolt (uV). This factor differ for each board.
+
+method::accScale
+A link::Classes/Float:: scaling factor used internally to convert from 16bit to -4 to 4 g. This factor differ for each board.
 
 method::setSampleRate
 The Cyton with USB Dongle (link::Classes/CytonSerial::) cannot and will not stream data over 250SPS. With the WifiShield all rates are possible (link::Classes/CytonWifi::).

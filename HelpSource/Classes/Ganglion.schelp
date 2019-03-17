@@ -10,10 +10,21 @@ note::
 this is an abstract class - do not instantiate. use the link::Classes/GanglionSerial:: or link::Classes/GanglionWifi:: subclasses.
 ::
 
-instancemethods::
+classmethods::
 
 method::numChannels
 4
+
+method::defaultSampleRate
+An link::Classes/Integer:: that is different for each board. For Ganglion boards it is 200 (Hz).
+
+instancemethods::
+
+method::uVScale
+A link::Classes/Float:: scaling factor used internally to convert from 24bit to microvolt (uV). This factor differ for each board.
+
+method::accScale
+A link::Classes/Float:: scaling factor used internally to convert from 16bit to -4 to 4 g. This factor differ for each board.
 
 method::setSampleRate
 The Ganglion with USB Dongle (link::Classes/GanglionSerial::) cannot and will not stream data over 200SPS. With the WifiShield all rates are possible (link::Classes/GanglionWifi::).

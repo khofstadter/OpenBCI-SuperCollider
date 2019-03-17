@@ -6,8 +6,10 @@
 //http://docs.openbci.com/OpenBCI%20Software/04-OpenBCI_Cyton_SDK
 
 Cyton : OpenBCI {
-	var <numChannels= 8;
-	var <defaultSampleRate= 250;
+	classvar <numChannels= 8;
+	classvar <defaultSampleRate= 250;
+	uVScale {|gain= 24| ^4.5/gain/(2**23-1)*1000000}
+	accScale {^0.002/(2**4)}
 
 	//--commands
 	testGnd {  //Connect to internal GND (VDD - VSS)
@@ -30,7 +32,7 @@ Cyton : OpenBCI {
 	}
 
 	settings {|channel= 1, powerDown= 0, gain= 6, type= 0, bias= 1, srb2= 1, srb1= 0|
-		if(channel>=1 and:{channel<=this.numChannels}, {
+		if(channel>=1 and:{channel<=numChannels}, {
 			this.prCommand($x);
 			this.prCommand(channel.asDigit);
 			this.prCommand(powerDown.clip(0, 1).asDigit);
@@ -51,7 +53,7 @@ Cyton : OpenBCI {
 		this.prCommand($D);
 	}
 	impedance {|channel= 1, pchan= 0, nchan= 0|
-		if(channel>=1 and:{channel<=this.numChannels}, {
+		if(channel>=1 and:{channel<=numChannels}, {
 			this.prCommand($z);
 			this.prCommand(channel.asDigit);
 			this.prCommand(pchan.clip(0, 1).asDigit);
@@ -127,7 +129,7 @@ Cyton : OpenBCI {
 }
 
 CytonDaisy : Cyton {
-	var <numChannels= 16;
+	classvar <numChannels= 16;
 
 	//--commands
 	settings {|channel= 1, powerDown= 0, gain= 6, type= 0, bias= 1, srb2= 1, srb1= 0|

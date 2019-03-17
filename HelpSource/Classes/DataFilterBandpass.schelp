@@ -1,0 +1,18 @@
+class:: DataFilterBandpass
+summary:: butterworth bandpass filter
+categories:: External Control
+related:: Classes/DataFilterNotch, Classes/DataFilter, Classes/OpenBCI
+
+description::
+butterworth band-pass filter for openbci board data.
+
+CLASSMETHODS::
+
+method::constants
+a dictionary of dictionaries containing filter constants for different sampling rates.
+
+code::
+//filter constants for 1-15 Hz, 250 samples per second
+DataFilterBandpass.constants['15-50'][250].b;
+DataFilterBandpass.constants['15-50'][250].a;
+::

@@ -7,6 +7,7 @@ var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start}); 
 var lastValues= -1.dup(board.numChannels);
 var lastTime= 0;
 var win, sliders, numbers;
+~maxuV= 1000;
 win= Window("gui example simple", Rect(100, 100, 80*board.numChannels, 240)).front;
 sliders= {Slider().canFocus_(false)}.dup(board.numChannels);
 numbers= {NumberBox().canFocus_(false)}.dup(board.numChannels);
@@ -21,7 +22,7 @@ board.dataAction= {|num, data, aux, stop|
 			if(x!=lastValues[i], {  //filter out repeats
 				lastValues[i]= x;
 				{
-					sliders[i].value= x.linlin(-8388608, 8388607, 0, 1);
+					sliders[i].value= x.linlin(0-~maxuV, ~maxuV, 0, 1);  //-500 to 500uV
 					numbers[i].value= x;  //display raw values
 				}.defer;
 			});

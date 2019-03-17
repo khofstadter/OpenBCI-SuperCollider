@@ -15,7 +15,7 @@ usr.background= Color.black;
 usr.clearOnRefresh= false;
 usr.drawFunc= {
 	var x= usr.frame%width;
-	var d= f.fft(~channel)*100000;
+	var d= f.fft(~channel);
 	//d.postln;  //debug
 	d.drop(1).do{|val, y|
 		Pen.fillColor= Color.grey(val.explin(0.1, 200, 0, 1));  //0.1-200 uV
@@ -27,6 +27,8 @@ f.start;
 CmdPeriod.doOnce({win.close});
 ~openbci= board;
 )
+
+~openbci.addFilter(DataFilterNotch('50'));
 
 ~openbci.softReset;
 ~openbci.start;

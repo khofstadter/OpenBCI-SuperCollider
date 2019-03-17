@@ -10,10 +10,12 @@ note::
 this is an abstract class - do not instantiate. use the link::Classes/CytonDaisySerial:: or link::Classes/CytonDaisyWifi:: subclasses.
 ::
 
-instancemethods::
+classmethods::
 
 method::numChannels
 16
+
+instancemethods::
 
 examples::
 
