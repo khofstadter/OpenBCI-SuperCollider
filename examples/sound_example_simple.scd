@@ -1,7 +1,7 @@
 //simple sound example - just some sines
 
 (
-var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
+var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 //var board= CytonTest(initAction: {|b| b.start});
 var sequencer= OpenBCIseq(board, 1000, true, false);
