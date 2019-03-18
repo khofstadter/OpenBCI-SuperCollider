@@ -45,8 +45,8 @@ examples::
 this show how to just rename the board class to get test data instead. no dongle or shield needs to be connected.
 code::
 (
-//var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});
-var board= CytonTest("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});
+//var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});
+var board= CytonTest("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});
 ~board= board;
 )
 
