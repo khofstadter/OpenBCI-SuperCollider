@@ -16,7 +16,7 @@ win.layout= VLayout(*[
 	HLayout(*numbers)
 ]);
 board.dataAction= {|num, data, aux, stop|
-	if(Main.elapsedTime-lastTime>0.016, {  //downsample to 60fps
+	if(Main.elapsedTime-lastTime>0.033, {  //downsample to 30fps
 		lastTime= Main.elapsedTime;
 		data.do{|x, i|
 			if(x!=lastValues[i], {  //filter out repeats

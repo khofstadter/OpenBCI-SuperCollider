@@ -110,12 +110,4 @@ DataFilterBandpass : DataFilter {
 			)
 		);
 	}
-	init {|argType|
-		type= argType;
-		if(constants.keys.includes(type).not, {
-			"frequencies % not supported. only: %".format(type, constants.keys.asArray).warn;
-			type= '1-50';
-		});
-		key= type;
-	}
 }

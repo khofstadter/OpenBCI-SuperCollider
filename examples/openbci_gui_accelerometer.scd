@@ -9,7 +9,7 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 //var board= CytonTest(initAction: {|b| b.start});  //synthetic test data
 var buffer= OpenBCIbuf(board, 100, false, true).start;
-var fps= 60;
+var fps= 30;
 var usr, pop1, pop2, pw, po;
 var verticalScale, horizontalScale;
 var f0= Font("Helvetiva", 16);

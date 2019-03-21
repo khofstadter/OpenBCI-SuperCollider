@@ -26,6 +26,7 @@ CytonSerial : Cyton {
 	prCommand {|cmd| port.put(cmd)}
 	prCommandArray {|cmd| port.putAll(cmd)}
 	prTask {
+		var eot= #[36, 36, 36];  //eot $$$
 		var last3= [0, 0, 0];
 		var buffer= List(32);
 		var state= 0;
@@ -45,7 +46,7 @@ CytonSerial : Cyton {
 						state= 1;
 					}, {
 						last3[i%3]= byte;
-						if(last3==#[36, 36, 36], {  //eot $$$
+						if(last3==eot, {
 							if(buffer[0]==65, {  //TODO remove this when openbci fixes firmware upstream
 								buffer= buffer.drop(32);
 								//"temp fix applied".postln;  //debug
@@ -86,7 +87,7 @@ CytonSerial : Cyton {
 								});
 							};
 						);
-						data= this.filter(data);
+						this.updateBuffer(data);
 						dataAction.value(num, data, buffer[aux], byte);
 					}, {
 						buffer.postln;

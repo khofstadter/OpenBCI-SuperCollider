@@ -66,29 +66,14 @@ last accelerometer readings as an link::Classes/Array::. can be code::nil:: if s
 method::numChannels
 an link::Classes/Integer:: that is different for each board.
 
-method::filter
-called automatically internally. if no filters added, the data will pass through unaffected.
+method::buffer
+internal buffer. use code::deepCopy:: before manipulating the data (filtering).
+
+method::updateBuffer
+called internally.
 
 argument::data
-an n-channel array of raw unfiltered data.
-
-returns::
-an array of n-channels.
-
-method::addFilter
-add a filter to the incoming data. see link::Classes/DataFilter::
-
-code::
-~board= CytonTest(initAction: {|b| b.start});
-~board.addFilter(DataFilterNotch('50'));
-~board.filters;
-::
-
-method::removeFilter
-removes a filter from the list of active filters.
-
-method::filters
-a link::Classes/List:: of active filters.
+an link::Classes/Array:: with n-channels of new data. this will be appended to the end of the internal buffer.
 
 method::off
 turn off (mute) one ore more channels

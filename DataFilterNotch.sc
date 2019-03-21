@@ -58,12 +58,4 @@ DataFilterNotch : DataFilter {
 			)
 		);
 	}
-	init {|argType|
-		type= argType;
-		if(constants.keys.includes(type).not, {
-			"frequency % not supported. only %".format(type, constants.keys.asArray).warn;
-			type= '50';
-		});
-		key= type;
-	}
 }

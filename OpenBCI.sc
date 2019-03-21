@@ -6,7 +6,7 @@ OpenBCI {
 	var <>dataAction, <>replyAction, <>initAction;  //callback functions
 	var <>accelAction;  //more callback functions
 	var <>data, <>accel;  //latest readings (can be nil)
-	var <>filters;  //a list of DataFilter objects
+	var <buffer;  //history readings
 	var <numChannels, <currentSampleRate;
 	*new {|dataAction, replyAction, initAction|
 		^super.new.init(dataAction, replyAction, initAction);
@@ -20,19 +20,14 @@ OpenBCI {
 
 		numChannels= this.class.numChannels;
 		currentSampleRate= this.class.defaultSampleRate;
-		filters= List.new;
+		buffer= {List.fill(5750, {0})}.dup(numChannels);
 		("%: starting...").format(this.class.name).postln;
 	}
-	addFilter {|filter|
-		filter.board= this;
-		filters.add(filter);
-	}
-	removeFilter {|filter|
-		filters.remove(filter);
-	}
-	filter {|data|
-		filters.do{|f| data= f.filter(data)};
-		^data;
+	updateBuffer {|data|
+		buffer.do{|buf, i|
+			buf.removeAt(0);
+			buf.add(data[i]);
+		};
 	}
 
 	//--commands
@@ -140,7 +135,7 @@ OpenBCI {
 
 	prSyntheticData {
 		var amp1= 10*2.sqrt, amp2= 50*2.sqrt;
-		var thetas= 0.0!numChannels;
+		var thetas= (0.0).dup(numChannels);
 		var atheta= 0.0;
 		var aux= [0, 0, 0];  //TODO
 		var lastTime= 0, deltaTime;
@@ -172,13 +167,13 @@ OpenBCI {
 
 			deltaTime= Main.elapsedTime-lastTime;
 			if(deltaTime>=0.04, {  //25Hz
-				accel= {|j| (sin(atheta*2pi/3.75+(j*0.5pi))*32767).asInteger*this.accScale}!3;
+				accel= {|j| (sin(atheta*2pi/3.75+(j*0.5pi))*32767).asInteger*this.accScale}.dup(3);
 				accelAction.value(accel);
 				atheta= atheta+deltaTime;
 				lastTime= Main.elapsedTime;
 			});
 
-			data= this.filter(data);
+			this.updateBuffer(data);
 			dataAction.value(num.asInteger%256, data, aux, 0);  //TODO should set aux and byte too for accelerometer
 
 			(1/currentSampleRate).wait;

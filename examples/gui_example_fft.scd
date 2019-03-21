@@ -17,24 +17,30 @@ msliders= {
 win.layout= VLayout(*msliders);
 Routine({
 	var f= OpenBCIfft(board, 256);
-	f.start;
 	inf.do{
+		var buffer= board.buffer.deepCopy;
+		if(~notchFilter.notNil, {
+			buffer= ~notchFilter.filter(buffer, 5000, 5750);
+		});
+		if(~bandpassFilter.notNil, {
+			buffer= ~bandpassFilter.filter(buffer, 5000, 5750);
+		});
 		msliders.do{|m, i|
-			m.value= f.fft(i).explin(0.1, 200, 0, 1);  //0.1-200 uV
+			m.value= f.fft(buffer, i).explin(0.1, 200, 0, 1);  //0.1-200 uV
 		};
-		(1/60).wait;  //framerate
+		(1/30).wait;  //framerate
 	};
 }).play(AppClock);
 CmdPeriod.doOnce({win.close});
 ~openbci= board;
 )
 
-~br= DataFilterNotch('50');
-~openbci.addFilter(~br);
-~bp= DataFilterBandpass('5-50');
-~openbci.addFilter(~bp);
-~openbci.filters;
-~openbci.removeFilter(~br);
+~notchFilter= DataFilterNotch('50');
+~notchFilter= nil;
+~bandpassFilter= DataFilterBandpass('5-50');
+~bandpassFilter= DataFilterBandpass('7-13');
+~bandpassFilter= nil;
+
 
 ~openbci.softReset;
 ~openbci.start;

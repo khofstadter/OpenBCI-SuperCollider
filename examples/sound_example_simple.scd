@@ -30,11 +30,5 @@ s.waitForBoot{
 SerialPort.listDevices;
 ~maxuV= 200;
 ~maxuV= 1000;
-~br= DataFilterNotch('50');
-~openbci.addFilter(~br);
-~bp= DataFilterBandpass('5-50');
-~openbci.addFilter(~bp);
-~openbci.removeFilter(~br);
-~openbci.removeFilter(~bp);
 Ndef(\sines).clear(1);
 ~openbci.stop;

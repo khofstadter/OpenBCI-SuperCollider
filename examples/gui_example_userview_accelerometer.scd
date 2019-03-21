@@ -12,7 +12,7 @@ buffer.start;
 win= Window("gui example userview accelerometer", Rect(10, 100, width, height)).front;
 usr= UserView(win, Rect(0, 0, width, height));
 usr.animate= true;
-usr.frameRate= 60;
+usr.frameRate= 30;
 usr.background= Color.white;
 usr.clearOnRefresh= false;
 usr.drawFunc= {

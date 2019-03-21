@@ -45,7 +45,7 @@ CytonWifi : Cyton {
 								});
 							};
 						);
-						data= this.filter(data);
+						this.updateBuffer(data);
 						dataAction.value(num, data, buffer[aux], byte);
 					}, {
 						buffer.postln;

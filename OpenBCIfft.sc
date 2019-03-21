@@ -1,7 +1,7 @@
-//for collecting OpenBCI data and perform fft
+//for performing fft on OpenBCI buffer
 
 OpenBCIfft {
-	var <board, data, func, table, imag, <fftSize, fftSize2;
+	var <board, table, imag, <fftSize, fftSize2;
 	*new {|board, fftSize= 256|
 		^super.new.initOpenBCIfft(board, fftSize);
 	}
@@ -15,33 +15,15 @@ OpenBCIfft {
 		fftSize2= argSize.div(2);
 		table= Signal.fftCosTable(fftSize);
 		imag= Signal.newClear(fftSize);
-		data= {Signal.newClear(fftSize)}.dup(board.numChannels);
-		func= {|num, d, aux, stop|
-			board.numChannels.do{|i|
-				data[i].pop;
-				data[i].insert(0, d[i]);
-			};
-		};
 	}
-	fft {|channel= 0|
+	fft {|buffer, channel= 0|
+		var length, signal;
 		if(channel>=board.numChannels or:{channel<0}, {
 			"%: channel out of range. clipped to 0-%".format(this.class.name, board.numChannels-1).warn;
 			channel= channel.clip(0, board.numChannels-1);
 		});
-		^fft(data[channel], imag, table).magnitude.copyRange(0, fftSize2)/fftSize2;
-	}
-	start {
-		"%: fft started".format(board.class.name).postln;
-		board.dataAction= board.dataAction.removeFunc(func);  //safety
-		board.dataAction= board.dataAction.addFunc(func);
-		CmdPeriod.add(this);
-	}
-	stop {
-		board.dataAction= board.dataAction.removeFunc(func);
-		"%: fft stopped".format(board.class.name).postln;
-		CmdPeriod.remove(this);
-	}
-	cmdPeriod {
-		this.stop;
+		length= buffer[channel].size;
+		signal= buffer[channel].copyRange(length-fftSize, length-1).as(Signal);
+		^fft(signal, imag, table).magnitude.copyRange(0, fftSize2)/fftSize2;
 	}
 }

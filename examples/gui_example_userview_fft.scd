@@ -5,35 +5,48 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 //var board= CytonTest(initAction: {|b| b.start});
 var width= 640, height= 256;
-var win, usr, f;
+var win, usr;
+var f= OpenBCIfft(board, 512);
 ~channel= 2;  //which channel to read
+~maxuV= 200;
 win= Window("fft gui example userview", Rect(100, 100, width, height)).front;
 usr= UserView(win, Rect(0, 0, width, height));
 usr.animate= true;
-usr.frameRate= 60;
+usr.frameRate= 30;
 usr.background= Color.black;
 usr.clearOnRefresh= false;
 usr.drawFunc= {
+	var buffer= board.buffer.deepCopy;
 	var x= usr.frame%width;
-	var d= f.fft(~channel);
-	//d.postln;  //debug
-	d.drop(1).do{|val, y|
-		Pen.fillColor= Color.grey(val.explin(0.1, 200, 0, 1));  //0.1-200 uV
+	if(~notchFilter.notNil, {
+		buffer= ~notchFilter.filter(buffer, 5000, 5750);
+	});
+	if(~bandpassFilter.notNil, {
+		buffer= ~bandpassFilter.filter(buffer, 5000, 5750);
+	});
+	f.fft(buffer, ~channel).do{|val, y|
+		Pen.fillColor= Color.grey(val.explin(0.1, ~maxuV, 0, 1));  //0.1-200 uV
 		Pen.fillRect(Rect(x, y.linlin(0, f.fftSize*0.5, height, 0), 1, 1));
 	};
 };
-f= OpenBCIfft(board, 512);
-f.start;
 CmdPeriod.doOnce({win.close});
 ~openbci= board;
 )
 
-~openbci.addFilter(DataFilterNotch('50'));
+~notchFilter= DataFilterNotch('50');
+~notchFilter= nil;
+~bandpassFilter= DataFilterBandpass('5-50');
+~bandpassFilter= DataFilterBandpass('7-13');
+~bandpassFilter= nil;
 
 ~openbci.softReset;
 ~openbci.start;
 ~openbci.stop;
 SerialPort.listDevices;
+~channel= 0;
 ~channel= 1;
 ~channel= 2;
+~channel= 3;
+~maxuV= 1000;
+~maxuV= 10;
 ~openbci.setSampleRate(3)
