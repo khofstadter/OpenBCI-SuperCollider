@@ -13,7 +13,7 @@ this is an abstract class - do not instantiate. use link::Classes/OpenBCI#-addFi
 CLASSMETHODS::
 
 method::new
-create a new filter instance. to use it add it to a board with link::Classes/OpenBCI#-addFilter::.
+create a new filter instance.
 
 argument::type
 a link::Classes/Symbol:: for looking up the filter constants.
@@ -29,14 +29,28 @@ DataFilterBandpass.constants[k[0]]
 
 INSTANCEMETHODS::
 
-method::board
-automatically set when a filter is added to a board.
+private::initDataFilter
 
 method::filter
-perform the filter calculations. normally called automatically by classes like for example CytonSerial.
+perform the filter calculations.
 
-argument::rawData
-an link::Classes/Array:: of n-channel data.
+argument::buffer
+a link::Classes/List:: of n-channel data.
+
+argument::start
+start frame. increase this to save cpu.
+
+argument::end
+end frame. should usually be left at the default (5750).
 
 method::type
 a link::Classes/Symbol:: for current filter frequency/frequencies.
+
+method::sr
+get or set sample rate.
+
+method::filt_a
+current filter constants. looked up at instance creation or when changing sample rate.
+
+method::filt_b
+current filter constants. looked up at instance creation or when changing sample rate.

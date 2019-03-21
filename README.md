@@ -53,6 +53,7 @@ if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI
 
 ## changelog
 
+* 1.30 - rewrote filters and OpenBCIfft, added internal board buffer, fixed examples
 * 1.20 - added filter functionality and classes, scaling inside classes, many example fixes
 * 1.13 - ported some openbci_gui widgets, added tests, currentSampleRate, active flags
 * 1.12 - added new sequencer class, buffer class stop bugfix, fixed examples

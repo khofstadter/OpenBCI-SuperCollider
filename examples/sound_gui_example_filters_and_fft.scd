@@ -1,7 +1,7 @@
 //advanced sound+gui example - performing notch, bandpass and fft with scsynth
 
 (
-~openbci= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
+~openbci= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //~openbci= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 //~openbci= CytonTest(initAction: {|b| b.start});
 ~sequencer= OpenBCIseq(~openbci);
@@ -20,7 +20,7 @@ s.latency= 0.05;
 
 s.waitForBoot{
 	var fftArray= 0!numBins;
-	var synth, bus;
+	var bus;
 	var win, usr;
 	SynthDef(\fft, {|bus, loFreq= 1, hiFreq= 50, notchFreq= 50, notchRQ= 0.3, bf= 1, nf= 1, lag= 1|
 		var chain;

@@ -49,7 +49,7 @@ examples::
 code::
 
 SerialPort.listDevices;
-c= CytonSerial("/dev/tty.OpenBCI-DM00DRM0");
+c= CytonSerial("/dev/tty.usbserial-DM00DRM0");
 //c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999));
 c.start;
 f= OpenBCIfft(c);

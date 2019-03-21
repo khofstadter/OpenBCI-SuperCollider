@@ -16,7 +16,7 @@ method::new
 open port
 
 argument::port
-a link::Classes/String:: with the name of the serial port. by default this is code::"/dev/tty.OpenBCI-DM00DRM0"::
+a link::Classes/String:: with the name of the serial port. by default this is code::"/dev/tty.usbserial-DM00DRM0"::
 
 argument::baudrate
 it is not recommended to change this. leave it at the default code::115200:: (see link::Classes/Cyton#-setRadioHostBaudRate::)
@@ -49,7 +49,7 @@ code::
 SerialPort.listDevices;
 
 //just posting data
-c= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", dataAction:{|num, data, aux, stop| [num, data, aux, stop].postln})
+c= CytonSerial("/dev/tty.usbserial-DM00DRM0", dataAction:{|num, data, aux, stop| [num, data, aux, stop].postln})
 c.getVersion  //get firmware version
 c.start
 c.stop
@@ -84,7 +84,7 @@ c.stop
 c.close  //finish and close the serial port
 
 //--
-c= CytonSerial("/dev/tty.OpenBCI-DM00DRM0")
+c= CytonSerial("/dev/tty.usbserial-DM00DRM0")
 c.settings(1, 1)  //channel 1, power down
 c.settings(1, 0)  //channel 1, power up
 c.settings(1, 0, 0)  //channel 1, power up, set gain to 1

@@ -6,13 +6,12 @@
 //TODO (in)activate channels?
 
 (
-var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
+var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 //var board= CytonTest(initAction: {|b, r| b.start});  //synthetic test data
-var notchFilter= DataFilterNotch('50');
-var bandpassFilter= DataFilterBandpass('1-50');
-var fft= OpenBCIfft(board, 256).start;
-var fps= 60;
+var notchFilter, bandpassFilter;
+var fft= OpenBCIfft(board, 256);
+var fps= 30;
 var usr, pop1, pop2, pop3, pop4, btn1, btn2, pw, po;
 var horizontalScale, verticalScale, maxFreq, maxAmp;
 var smoothingFactor, prevData= 0.dup(fft.fftSize.div(2)).dup(board.numChannels);
@@ -108,9 +107,16 @@ usr.drawFunc= {
 	var ub= usr.bounds;
 	var step= ub.width/(maxFreq+1);
 	var data;
+	var buffer= board.buffer.deepCopy;
+	if(notchFilter.notNil, {
+		buffer= notchFilter.filter(buffer, 5750-512, 5750);
+	});
+	if(bandpassFilter.notNil, {
+		buffer= bandpassFilter.filter(buffer, 5750-512, 5750);
+	});
 	channels.do{|c, i|
 		if(c.active, {
-			data= fft.fft(i);
+			data= fft.fft(buffer, i);
 			if(pop4.value>0, {
 				data= smoothingFactor*prevData[i]+((1-smoothingFactor*data));
 				prevData[i]= data;
@@ -178,19 +184,19 @@ pop4= PopUpMenu(win, Rect((pw+2)*3+po, 20, pw, 20))
 btn1= Button(win, Rect((pw+2)*4+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterNotch.keys.collect{|x| [x.asString+"Hz"]}
 ).action_{|v|
-	board.removeFilter(notchFilter);
 	if(v.value>0, {
 		notchFilter= DataFilterNotch(DataFilterNotch.keys[v.value-1]);
-		board.addFilter(notchFilter);
+	}, {
+		notchFilter= nil;
 	});
 }.valueAction_(1);
 btn2= Button(win, Rect((pw+2)*4.5+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterBandpass.keys.collect{|x| [x.asString]}
 ).action_{|v|
-	board.removeFilter(bandpassFilter);
 	if(v.value>0, {
 		bandpassFilter= DataFilterBandpass(DataFilterBandpass.keys[v.value-1]);
-		board.addFilter(bandpassFilter);
+	}, {
+		bandpassFilter= nil;
 	});
 }.valueAction_(1);
 win.view.children.reject{|v| v==usr}.do{|v| v.resize_(3).font_(f2)};

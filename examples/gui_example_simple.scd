@@ -1,7 +1,7 @@
 //simple gui example just displaying data using sliders and numberboxes
 
 (
-var board= CytonSerial("/dev/tty.OpenBCI-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
+var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 //var board= CytonTest(initAction: {|b| b.start});
 var lastValues= -1.dup(board.numChannels);
@@ -16,7 +16,7 @@ win.layout= VLayout(*[
 	HLayout(*numbers)
 ]);
 board.dataAction= {|num, data, aux, stop|
-	if(Main.elapsedTime-lastTime>0.016, {  //downsample to 60fps
+	if(Main.elapsedTime-lastTime>0.033, {  //downsample to 30fps
 		lastTime= Main.elapsedTime;
 		data.do{|x, i|
 			if(x!=lastValues[i], {  //filter out repeats
