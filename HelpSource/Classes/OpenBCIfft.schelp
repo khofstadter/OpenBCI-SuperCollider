@@ -8,7 +8,7 @@ Collects data from any OpenBCI board and calculate FFT for a selected channel. T
 
 Remember that FFT only analyse frequencies up to half of the current sample rate.
 
-CLASSMETHODS::
+classmethods::
 
 method::new
 create a new instance
@@ -19,7 +19,7 @@ an instance of a link::Classes/OpenBCI:: subclass (for example a link::Classes/C
 argument::fftSize
 the FFT window size. Should be a power-of-two.
 
-INSTANCEMETHODS::
+instancemethods::
 
 private::initOpenBCIfft
 

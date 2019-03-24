@@ -14,11 +14,11 @@ this main OpenBCI class implements commands and features that are the same acros
 
 what you should use in your code are the serial or wifi classes - not the abstract ones. here is an overview of the class hierarchy:
 
-CLASSTREE:: OpenBCI
+classtree:: OpenBCI
 
 for filtering see link::Classes/DataFilter:: and its subclasses.
 
-CLASSTREE:: DataFilter
+classtree:: DataFilter
 
 classmethods::
 

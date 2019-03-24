@@ -6,7 +6,7 @@ related:: Classes/DataFilterNotch, Classes/DataFilter, Classes/OpenBCI
 description::
 butterworth band-pass filter for openbci board data.
 
-CLASSMETHODS::
+classmethods::
 
 method::constants
 a dictionary of dictionaries containing filter constants for different sampling rates.

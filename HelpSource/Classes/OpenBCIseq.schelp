@@ -6,7 +6,7 @@ related:: Classes/OpenBCI, Classes/OpenBCIbuf, Classes/OpenBCIfft
 description::
 Collects data from any OpenBCI board and spread out over time. Mainly useful with wifi shield where packages arrives in chunks.
 
-CLASSMETHODS::
+classmethods::
 
 method::new
 create a new instance
@@ -23,7 +23,7 @@ a link::Classes/Boolean:: flag indicating if data should be buffered or not.
 argument::accelActive
 a link::Classes/Boolean:: flag indicating if accelerometer data should be buffered or not.
 
-INSTANCEMETHODS::
+instancemethods::
 
 private::initOpenBCIseq
 

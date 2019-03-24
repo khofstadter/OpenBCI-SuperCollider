@@ -10,7 +10,7 @@ note::
 this is an abstract class - do not instantiate. use link::Classes/OpenBCI#-addFilter:: with the link::Classes/DataFilterBandpass:: or link::Classes/DataFilterNotch:: etc subclasses.
 ::
 
-CLASSMETHODS::
+classmethods::
 
 method::new
 create a new filter instance.
@@ -27,7 +27,7 @@ k= DataFilterBandpass.keys;
 DataFilterBandpass.constants[k[0]]
 ::
 
-INSTANCEMETHODS::
+instancemethods::
 
 private::initDataFilter
 

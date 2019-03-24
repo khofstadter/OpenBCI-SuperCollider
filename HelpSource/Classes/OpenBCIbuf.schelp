@@ -6,7 +6,7 @@ related:: Classes/OpenBCI, Classes/OpenBCIseq, Classes/OpenBCIfft
 description::
 Collects data from any OpenBCI board into buffers.
 
-CLASSMETHODS::
+classmethods::
 
 method::new
 create a new instance
@@ -23,7 +23,7 @@ a link::Classes/Boolean:: flag indicating if data should be buffered or not.
 argument::accelActive
 a link::Classes/Boolean:: flag indicating if accelerometer data should be buffered or not.
 
-INSTANCEMETHODS::
+instancemethods::
 
 private::initOpenBCIbuf
 
