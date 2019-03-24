@@ -3,8 +3,8 @@
 GanglionWifi : Ganglion {
 	var <netAddr, responders;
 
-	*new {|netAddr, reset= true, dataAction, replyAction, initAction|
-		^super.new(dataAction, replyAction, initAction).initGanglionWifi(netAddr, reset);
+	*new {|netAddr, reset= true, dataAction, replyAction, initAction, bufferSize= 1024|
+		^super.new(dataAction, replyAction, initAction, bufferSize).initGanglionWifi(netAddr, reset);
 	}
 	initGanglionWifi {|argNetAddr, argReset|
 		netAddr= argNetAddr ?? {NetAddr("OpenBCI_WifiShieldOSC.local", 13999)};

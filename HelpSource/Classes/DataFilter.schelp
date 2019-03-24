@@ -7,7 +7,7 @@ description::
 for filtering data from openbci boards.
 
 note::
-this is an abstract class - do not instantiate. use link::Classes/OpenBCI#-addFilter:: with the link::Classes/DataFilterBandpass:: or link::Classes/DataFilterNotch:: etc subclasses.
+this is an abstract class - do not instantiate. use the link::Classes/DataFilterBandpass:: or link::Classes/DataFilterNotch:: etc subclasses.
 ::
 
 classmethods::
@@ -34,14 +34,8 @@ private::initDataFilter
 method::filter
 perform the filter calculations.
 
-argument::buffer
-a link::Classes/List:: of n-channel data.
-
-argument::start
-start frame. increase this to save cpu.
-
-argument::end
-end frame. should usually be left at the default (5750).
+argument::data
+a link::Classes/List:: of data.
 
 method::type
 a link::Classes/Symbol:: for current filter frequency/frequencies.

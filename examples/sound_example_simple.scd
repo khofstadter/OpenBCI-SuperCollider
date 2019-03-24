@@ -28,6 +28,7 @@ s.waitForBoot{
 ~openbci.start;
 ~openbci.stop;
 SerialPort.listDevices;
+~maxuV= 50;
 ~maxuV= 200;
 ~maxuV= 1000;
 Ndef(\sines).clear(1);

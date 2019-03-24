@@ -33,6 +33,9 @@ set the link::#-replyAction::. a link::Classes/Function::
 argument::initAction
 set the link::#-initAction::. a link::Classes/Function::
 
+argument::bufferSize
+how many datapoints to store in the internal buffer.
+
 instancemethods::
 
 private:: init, prCommand, prCommandArray, prSyntheticData
@@ -67,7 +70,10 @@ method::numChannels
 an link::Classes/Integer:: that is different for each board.
 
 method::buffer
-internal buffer. use code::deepCopy:: before manipulating the data (filtering).
+an link::Classes/Array:: of n-channel link::Classes/List::s acting as an internal buffer. the buffer is rotated one step each time a new datapoint arrives (each subclass call link::#-updateBuffer::). the buffer is mainly useful for filtering. set its size with link::#-bufferSize::
+
+method::bufferSize
+get or set the size of the internal link::#-buffer::.
 
 method::updateBuffer
 called internally.

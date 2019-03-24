@@ -6,15 +6,15 @@
 //TODO (in)activate channels?
 
 (
+var activeChannels= #[0, 1, 2, 3, 4, 5, 6, 7];
 var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 //var board= CytonTest(initAction: {|b, r| b.start});  //synthetic test data
-var notchFilter, bandpassFilter;
+var notchFilter, bandpassFilter, smoothFilters;
 var fft= OpenBCIfft(board, 256);
 var fps= 30;
 var usr, pop1, pop2, pop3, pop4, btn1, btn2, pw, po;
 var horizontalScale, verticalScale, maxFreq, maxAmp;
-var smoothingFactor, prevData= 0.dup(fft.fftSize.div(2)).dup(board.numChannels);
 var f0= Font("Helvetiva", 16);
 var f1= Font("Helvetiva", 14);
 var f2= Font("Helvetiva", 10);
@@ -31,7 +31,7 @@ var colors= [
 var channels= {|i|
 	(
 		color: colors.wrapAt(i),
-		active: true
+		active: activeChannels.includes(i).postln
 	)
 }.dup(board.numChannels);
 
@@ -53,7 +53,6 @@ win.drawFunc= {
 	Pen.translate(ub.left, ub.bottom);
 	Pen.stringAtPoint(fs, Point(ub.width-fs.bounds(f1).width/2, wb.height-ub.bottom/2), f1);
 	Pen.line(Point(0, 6), Point(ub.width, 6));
-	step= horizontalScale[1].linlin(horizontalScale[0], maxFreq, 0, ub.width-1);
 	horizontalScale.do{|freq, i|
 		var str= freq.asString;
 		var x= freq.linlin(0, maxFreq, 0, ub.width-1);
@@ -104,22 +103,21 @@ usr.animate= true;
 usr.frameRate= fps;
 usr.clearOnRefresh= true;
 usr.drawFunc= {
+	var data;
 	var ub= usr.bounds;
 	var step= ub.width/(maxFreq+1);
-	var data;
-	var buffer= board.buffer.deepCopy;
-	if(notchFilter.notNil, {
-		buffer= notchFilter.filter(buffer, 5750-512, 5750);
-	});
-	if(bandpassFilter.notNil, {
-		buffer= bandpassFilter.filter(buffer, 5750-512, 5750);
-	});
 	channels.do{|c, i|
 		if(c.active, {
-			data= fft.fft(buffer, i);
+			data= board.buffer[i];
+			if(btn1.value>0, {
+				data= notchFilter.filter(data);
+			});
+			if(btn2.value>0, {
+				data= bandpassFilter.filter(data);
+			});
+			data= fft.fft(data);
 			if(pop4.value>0, {
-				data= smoothingFactor*prevData[i]+((1-smoothingFactor*data));
-				prevData[i]= data;
+				data= smoothFilters[i].filter(data);
 			});
 			Pen.strokeColor= c.color;
 			Pen.moveTo(Point(0, ub.height));
@@ -180,7 +178,9 @@ pop3= PopUpMenu(win, Rect((pw+2)*2+po, 20, pw, 20))
 .action_{win.refresh}.value_(0);
 pop4= PopUpMenu(win, Rect((pw+2)*3+po, 20, pw, 20))
 .items_(#["0.0", "0.5", "0.75", "0.9", "0.95", "0.98"])
-.action_{|v| smoothingFactor= v.item.asFloat}.valueAction_(3);
+.action_{|v|
+	smoothFilters= {OpenBCIlag(v.item.asFloat)}.dup(board.numChannels);
+}.valueAction_(3);
 btn1= Button(win, Rect((pw+2)*4+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterNotch.keys.collect{|x| [x.asString+"Hz"]}
 ).action_{|v|

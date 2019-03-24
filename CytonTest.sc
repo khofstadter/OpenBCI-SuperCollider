@@ -3,8 +3,8 @@
 CytonTest : Cyton {
 	var task, >warn= true;
 
-	*new {|dummy1, dummy2, dataAction, replyAction, initAction|
-		^super.new(dataAction, replyAction, initAction).initCytonTest;
+	*new {|dummy1, dummy2, dataAction, replyAction, initAction, bufferSize= 1024|
+		^super.new(dataAction, replyAction, initAction, bufferSize).initCytonTest;
 	}
 	initCytonTest {
 		CmdPeriod.add(this);

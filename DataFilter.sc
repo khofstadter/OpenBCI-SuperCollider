@@ -3,6 +3,7 @@
 DataFilter {
 	var <type, <sr;
 	var <filt_b, <filt_a;
+	var nconst, clear;
 	*keys {^this.constants.keys.asArray.sort}
 	*new {|type|
 		^super.new.initDataFilter(type);
@@ -25,30 +26,26 @@ DataFilter {
 		});
 		filt_b= this.class.constants[type][sr].b;  //TODO how to deal with freq and sr changes?
 		filt_a= this.class.constants[type][sr].a;
+		nconst= filt_b.size;
+		clear= 0.dup(nconst);
 	}
-	filter {|buffer, start= 0, end= 5750|
-		var num= min(buffer[0].size, end);
-		var nback= filt_b.size;
-		var clear= 0.dup(nback);
-		^buffer.do{|buf, chan|
-			var prev_y= clear.copy;
-			var prev_x= clear.copy;
-			var i= start, j, out;
-			while({i<num}, {
-				prev_y= prev_y.rotate(1);
-				prev_x= prev_x.rotate(1);
-				prev_x[0]= buf[i];
-				out= filt_b[0]*prev_x[0];
-				j= 1;
-				while({j<nback}, {
-					out= out+(filt_b[j]*prev_x[j]);
-					out= out-(filt_a[j]*prev_y[j]);
-					j= j+1;
-				});
-				prev_y[0]= out;
-				buf[i]= out;
-				i= i+1;
+	filter {|data|
+		var prev_y= clear.copy;
+		var prev_x= clear.copy;
+		var j, out;
+		^Array.fill(data.size, {|i|
+			prev_y= prev_y.rotate(1);
+			prev_x= prev_x.rotate(1);
+			prev_x[0]= data[i];
+			out= filt_b[0]*prev_x[0];
+			j= 1;
+			while({j<nconst}, {
+				out= out+(filt_b[j]*prev_x[j]);
+				out= out-(filt_a[j]*prev_y[j]);
+				j= j+1;
 			});
-		};
+			prev_y[0]= out;
+			out;
+		});
 	}
 }

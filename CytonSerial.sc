@@ -3,8 +3,8 @@
 CytonSerial : Cyton {
 	var <port, task, >warn= true;
 
-	*new {|port, baudrate= 115200, dataAction, replyAction, initAction|
-		^super.new(dataAction, replyAction, initAction).initCytonSerial(port, baudrate);
+	*new {|port, baudrate= 115200, dataAction, replyAction, initAction, bufferSize= 1024|
+		^super.new(dataAction, replyAction, initAction, bufferSize).initCytonSerial(port, baudrate);
 	}
 	initCytonSerial {|argPort, argBaudrate|
 		port= SerialPort(argPort ? "/dev/tty.OpenBCI-DM00DRM0", argBaudrate, crtscts:true);
