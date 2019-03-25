@@ -1,4 +1,4 @@
-//for performing fft on OpenBCI buffer
+//for performing fft on OpenBCI data
 
 OpenBCIfft {
 	var <board, table, imag, <fftSize, fftSize2;
@@ -16,14 +16,13 @@ OpenBCIfft {
 		table= Signal.fftCosTable(fftSize);
 		imag= Signal.newClear(fftSize);
 	}
-	fft {|buffer, channel= 0|
-		var length, signal;
-		if(channel>=board.numChannels or:{channel<0}, {
-			"%: channel out of range. clipped to 0-%".format(this.class.name, board.numChannels-1).warn;
-			channel= channel.clip(0, board.numChannels-1);
+	fft {|data|
+		var signal;
+		if(data.size<fftSize, {
+			"%: data size must be >= fftSize. zeropadded % values".format(this.class.name, fftSize-data.size).warn;
+			data= 0.dup(fftSize-data.size)++data;
 		});
-		length= buffer[channel].size;
-		signal= buffer[channel].copyRange(length-fftSize, length-1).as(Signal);
+		signal= data.copyRange(data.size-fftSize, data.size-1).as(Signal);
 		^fft(signal, imag, table).magnitude.copyRange(0, fftSize2)/fftSize2;
 	}
 }

@@ -1,4 +1,4 @@
-//simple gui example just displaying data using sliders and numberboxes
+//simple gui example just displaying raw data using sliders and numberboxes
 
 (
 var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board

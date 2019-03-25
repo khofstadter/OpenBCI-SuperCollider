@@ -1,0 +1,60 @@
+class:: OpenBCIlag
+summary:: smooth data
+categories:: External Control
+related:: Classes/OpenBCI, Classes/OpenBCIfft
+
+description::
+Smooth data using simple exponential smoothing. This class require one instance per board channel and is mainly useful in combination with link::Classes/OpenBCIfft::.
+
+classmethods::
+
+method::new
+create a new instance
+
+argument::factor
+a link::Classes/Float:: from 0.0 to 1.0 where 0 is no smoothing.
+
+instancemethods::
+
+private::initOpenBCIlag
+
+method::factor
+a link::Classes/Float::
+
+method::filter
+perform the filtering.
+
+argument::data
+an link::Classes/Array:: of values.
+
+returns::
+an link::Classes/Array:: of smoothed values.
+
+examples::
+
+code::
+SerialPort.listDevices;
+c= CytonSerial("/dev/tty.usbserial-DM00DRM0");
+//c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999));
+c.start;
+f= OpenBCIfft(c);
+l= OpenBCIlag(0.9);
+l.filter(f.fft(c.buffer[0]));  //fft and smooth first channel
+
+//this example show how go through and smooth all channels
+(
+r= Routine.run({
+	var smoothers= {OpenBCIlag(0.9)}.dup(c.numChannels);
+	inf.do{
+		"".postln;
+		c.numChannels.do{|i|
+			var fft= f.fft(c.buffer[i]);
+			smoothers[i].filter(fft).postln;
+		};
+		0.5.wait;
+	};	
+});
+)
+r.stop;
+c.stop;
+::

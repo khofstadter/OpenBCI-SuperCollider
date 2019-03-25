@@ -6,12 +6,13 @@ OpenBCI {
 	var <>dataAction, <>replyAction, <>initAction;  //callback functions
 	var <>accelAction;  //more callback functions
 	var <>data, <>accel;  //latest readings (can be nil)
-	var <buffer;  //history readings
+	var <bufferSize;  //number of readings to keep in history
+	var <buffer;  //history
 	var <numChannels, <currentSampleRate;
-	*new {|dataAction, replyAction, initAction|
-		^super.new.init(dataAction, replyAction, initAction);
+	*new {|dataAction, replyAction, initAction, bufferSize= 1024|
+		^super.new.init(dataAction, replyAction, initAction, bufferSize);
 	}
-	init {|argDataAction, argReplyAction, argInitAction|
+	init {|argDataAction, argReplyAction, argInitAction, argBufferSize|
 
 		//--default actions
 		dataAction= argDataAction;
@@ -20,8 +21,16 @@ OpenBCI {
 
 		numChannels= this.class.numChannels;
 		currentSampleRate= this.class.defaultSampleRate;
-		buffer= {List.fill(5750, {0})}.dup(numChannels);
+
+		bufferSize= argBufferSize;
+		buffer= {List.fill(bufferSize, {0})}.dup(numChannels);
 		("%: starting...").format(this.class.name).postln;
+	}
+	bufferSize_ {|size= 1024|
+		bufferSize= size.asInteger;
+		buffer= buffer.collect{|data|
+			data= data.asArray.extend(bufferSize, 0).asList;
+		};
 	}
 	updateBuffer {|data|
 		buffer.do{|buf, i|

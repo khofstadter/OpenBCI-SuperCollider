@@ -3,8 +3,8 @@
 GanglionSerial : Ganglion {
 	var <port, task;
 
-	*new {|port, baudrate= 115200, dataAction, replyAction, initAction|
-		^super.new(dataAction, replyAction, initAction).initGanglionSerial(port, baudrate);
+	*new {|port, baudrate= 115200, dataAction, replyAction, initAction, bufferSize= 1024|
+		^super.new(dataAction, replyAction, initAction, bufferSize).initGanglionSerial(port, baudrate);
 	}
 	initGanglionSerial {|argPort, argBaudrate|
 		port= SerialPort(argPort ? "/dev/tty.OpenBCI-DM00DRM0", argBaudrate, crtscts:true);

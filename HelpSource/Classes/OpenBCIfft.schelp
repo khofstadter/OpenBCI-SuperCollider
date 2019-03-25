@@ -1,14 +1,14 @@
 class:: OpenBCIfft
 summary:: collect data and perform fft
 categories:: External Control
-related:: Classes/OpenBCI, Classes/OpenBCIbuf, Classes/OpenBCIseq
+related:: Classes/OpenBCI, Classes/OpenBCIlag
 
 description::
-Collects data from any OpenBCI board and calculate FFT for a selected channel. This class has its own internal buffer so no need for a link::Classes/OpenBCIbuf::.
+Collects data from any OpenBCI board and calculate FFT.
 
 Remember that FFT only analyse frequencies up to half of the current sample rate.
 
-CLASSMETHODS::
+classmethods::
 
 method::new
 create a new instance
@@ -19,24 +19,18 @@ an instance of a link::Classes/OpenBCI:: subclass (for example a link::Classes/C
 argument::fftSize
 the FFT window size. Should be a power-of-two.
 
-INSTANCEMETHODS::
+instancemethods::
 
 private::initOpenBCIfft
 
 method::board
 get the board instance
 
-method::start
-start collecting
-
-method::stop
-stop collecting
-
 method::fft
-perform FFT calculation for a specific channel.
+perform FFT calculation.
 
-argument::channel
-an link::Classes/Integer:: representing the board channel you want to calculate. (e.g. 0-7 for Cyton, 0-3 for Ganglion)
+argument::data
+an link::Classes/Array:: of data to be analysed.
 
 returns::
 the FFT data (magnitudes only) as an link::Classes/Array::. The size of the array is half the fftSize + 1.
@@ -53,9 +47,9 @@ c= CytonSerial("/dev/tty.usbserial-DM00DRM0");
 //c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999));
 c.start;
 f= OpenBCIfft(c);
-f.start;
-f.fft(0).plot
-f.fft(1).plot  //second channel
-f.stop;
+f.fft(c.buffer[0]);  //perform fft on channel 0
+f.fft(c.buffer[1]);  //perform fft on channel 1
+l= OpenBCIlag(0.9);
+l.filter(f.fft(c.buffer[2]));  //perform fft on channel 2 and smooth the result
 c.stop;
 ::

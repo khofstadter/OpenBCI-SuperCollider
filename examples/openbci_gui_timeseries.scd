@@ -13,6 +13,7 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 //var board= CytonTest(initAction: {|b| b.start});
 var notchFilter, bandpassFilter;
+var numPointsToDraw;
 var fps= 30;
 var usr, pop1, pop2, btn1, btn2, pw, po;
 var horizontalScale, maxAmp;
@@ -138,38 +139,30 @@ usr.frameRate= fps;
 usr.clearOnRefresh= true;
 usr.drawFunc= {
 	var ub= usr.bounds;
-	var step;
+	var step= numPointsToDraw-1/ub.width;
 	var channelHeight= ub.height-2/channels.size;
-	var numPointsToDraw;
-	var buffer= board.buffer.deepCopy;
-	numPointsToDraw= board.currentSampleRate*horizontalScale[0].abs;  //sr dependant
-	step= numPointsToDraw-1/ub.width;
-	if(notchFilter.notNil, {
-		buffer= notchFilter.filter(buffer, 5750-numPointsToDraw-600, 5750);
-	});
-	if(bandpassFilter.notNil, {
-		buffer= bandpassFilter.filter(buffer, 5750-numPointsToDraw-600, 5750);
-	});
 	Pen.fillColor= Color.new255(255, 255, 255, 200);
 	channels.do{|c, i|
 		var uVrms= 0, uVrmsCnt= 0, uVrmsRect, uVrmsStr;
-		var y, lastIndex;
+		var y, data;
 		if(c.active, {
-			lastIndex= buffer[i].size;
-			y= 1-(buffer[i][0]/maxAmp).clip(-1, 1)*channelHeight*0.5+1;
+			data= board.buffer[i];
+			if(notchFilter.notNil, {
+				data= notchFilter.filter(data);
+			});
+			if(bandpassFilter.notNil, {
+				data= bandpassFilter.filter(data);
+			});
+			y= 1-(data[0]/maxAmp).clip(-1, 1)*channelHeight*0.5+1;
 			Pen.strokeColor= c.color;
 			Pen.moveTo(Point(ub.width, y));
 			ub.width.do{|x|
-				var val;
-				var index= buffer[i].size-1-(x*step).round.asInteger;
-				if(index<lastIndex, {
-					val= buffer[i][index];
-					uVrms= uVrms+pow(val, 2);
-					uVrmsCnt= uVrmsCnt+1;
-					y= 1-(val/maxAmp).clip(-1, 1)*channelHeight*0.5+1;
-					Pen.lineTo(Point(ub.width-x, y));
-					lastIndex= index;
-				});
+				var index= data.size-1-(x*step).round.asInteger;
+				var val= data[index];
+				uVrms= uVrms+pow(val, 2);
+				uVrmsCnt= uVrmsCnt+1;
+				y= 1-(val/maxAmp).clip(-1, 1)*channelHeight*0.5+1;
+				Pen.lineTo(Point(ub.width-x, y));
 			};
 			Pen.stroke;
 
@@ -209,6 +202,8 @@ pop2= PopUpMenu(win, Rect((pw+2)+po, 20, pw, 20))
 		(-10..0),
 		(-20..0)
 	][v.value];
+	numPointsToDraw= board.currentSampleRate*horizontalScale[0].abs.asInteger;  //sr dependant
+	board.bufferSize_((numPointsToDraw*2).max(usr.bounds.width*2));
 	win.refresh;
 }.valueAction_(2);
 btn1= Button(win, Rect((pw+2)*2+po, 20, pw/2, 20)).states_(

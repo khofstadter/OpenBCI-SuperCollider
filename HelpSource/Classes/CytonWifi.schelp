@@ -30,6 +30,9 @@ set the link::Classes/OpenBCI#-replyAction::. note that if none give a default f
 argument::initAction
 set the link::Classes/OpenBCI#-initAction::
 
+argument::bufferSize
+how many datapoints to store in the internal buffer.
+
 instancemethods::
 
 private:: initCytonWifi, prCommand, prCommandArray

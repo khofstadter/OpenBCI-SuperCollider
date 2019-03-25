@@ -6,7 +6,7 @@ related:: Classes/DataFilterBandpass, Classes/DataFilter, Classes/OpenBCI
 description::
 butterworth band-reject filter for openbci board data. removes 50 or 60 Hz powergrid noise. use 50 Hz for europe.
 
-CLASSMETHODS::
+classmethods::
 
 method::constants
 a dictionary of dictionaries containing filter constants for different sampling rates.

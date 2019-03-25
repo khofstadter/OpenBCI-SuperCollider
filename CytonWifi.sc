@@ -3,8 +3,8 @@
 CytonWifi : Cyton {
 	var <netAddr, responders, num, aux= #[26, 27, 28, 29, 30, 31], >warn= true;
 
-	*new {|netAddr, reset= true, dataAction, replyAction, initAction|
-		^super.new(dataAction, replyAction, initAction).initCytonWifi(netAddr, reset);
+	*new {|netAddr, reset= true, dataAction, replyAction, initAction, bufferSize= 1024|
+		^super.new(dataAction, replyAction, initAction, bufferSize).initCytonWifi(netAddr, reset);
 	}
 	initCytonWifi {|argNetAddr, argReset|
 		netAddr= argNetAddr ?? {NetAddr("OpenBCI_WifiShieldOSC.local", 13999)};

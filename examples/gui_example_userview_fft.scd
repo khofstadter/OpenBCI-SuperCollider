@@ -16,15 +16,15 @@ usr.frameRate= 30;
 usr.background= Color.black;
 usr.clearOnRefresh= false;
 usr.drawFunc= {
-	var buffer= board.buffer.deepCopy;
+	var data= board.buffer[~channel];
 	var x= usr.frame%width;
 	if(~notchFilter.notNil, {
-		buffer= ~notchFilter.filter(buffer, 5000, 5750);
+		data= ~notchFilter.filter(data);
 	});
 	if(~bandpassFilter.notNil, {
-		buffer= ~bandpassFilter.filter(buffer, 5000, 5750);
+		data= ~bandpassFilter.filter(data);
 	});
-	f.fft(buffer, ~channel).do{|val, y|
+	f.fft(data).do{|val, y|
 		Pen.fillColor= Color.grey(val.explin(0.1, ~maxuV, 0, 1));  //0.1-200 uV
 		Pen.fillRect(Rect(x, y.linlin(0, f.fftSize*0.5, height, 0), 1, 1));
 	};
@@ -34,8 +34,11 @@ CmdPeriod.doOnce({win.close});
 )
 
 ~notchFilter= DataFilterNotch('50');
+~notchFilter= DataFilterNotch('60');
 ~notchFilter= nil;
+~bandpassFilter= DataFilterBandpass('1-50');
 ~bandpassFilter= DataFilterBandpass('5-50');
+~bandpassFilter= DataFilterBandpass('15-50');
 ~bandpassFilter= DataFilterBandpass('7-13');
 ~bandpassFilter= nil;
 
