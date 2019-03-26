@@ -9,9 +9,10 @@
 //TODO hardware settings?
 
 (
+var activeChannels= #[0, 1, 2, 3, 4, 5, 6, 7];
 var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
-//var board= CytonTest(initAction: {|b| b.start});
+//var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 var notchFilter, bandpassFilter;
 var numPointsToDraw;
 var fps= 30;
@@ -34,7 +35,7 @@ var colors= [
 var channels= {|i|
 	(
 		color: colors.wrapAt(i),
-		active: true,
+		active: activeChannels.includes(i),
 		impedance: false
 	)
 }.dup(board.numChannels);

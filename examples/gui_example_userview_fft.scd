@@ -3,10 +3,10 @@
 (
 var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
-//var board= CytonTest(initAction: {|b| b.start});
+//var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 var width= 640, height= 256;
 var win, usr;
-var f= OpenBCIfft(board, 512);
+var f= DataFFT(board, 512);
 ~channel= 2;  //which channel to read
 ~maxuV= 200;
 win= Window("fft gui example userview", Rect(100, 100, width, height)).front;
@@ -52,4 +52,4 @@ SerialPort.listDevices;
 ~channel= 3;
 ~maxuV= 1000;
 ~maxuV= 10;
-~openbci.setSampleRate(3)
+~openbci.setSampleRate(3)  //only when wifi shield connected

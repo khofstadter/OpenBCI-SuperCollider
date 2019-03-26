@@ -1,17 +1,14 @@
-//for distributing OpenBCI data and accelerometer values over time
+//for collecting OpenBCI data and accelerometer values into buffers
 
-OpenBCIseq {
-	var <board, <data, <accel, <>size, dataFunc, accelFunc;
+DataBuffer {
+	var <board, <>size, dataFunc, accelFunc;
 	var <dataBuffer, <accelBuffer;
-	var dataTask, accelTask;
-	var <>dataAction, <>accelAction;  //callback functions
 	var <dataFull, <accelFull;  //maxed out flags
 	var <>dataActive, <>accelActive;
-	var <>factor= 0.99;
 	*new {|board, maxSize= 1000, dataActive= true, accelActive= true|
-		^super.new.initOpenBCIseq(board, maxSize, dataActive, accelActive);
+		^super.new.initDataBuffer(board, maxSize, dataActive, accelActive);
 	}
-	initOpenBCIseq {|argBoard, argMaxSize, argDataActive, argAccelActive|
+	initDataBuffer {|argBoard, argMaxSize, argDataActive, argAccelActive|
 		board= argBoard;
 		size= argMaxSize;
 		dataActive= argDataActive;
@@ -25,11 +22,11 @@ OpenBCIseq {
 				if(dataBuffer.size>=size, {
 					dataBuffer.pop;
 					if(dataFull.not, {
-						"%: buffer data full. increase size".format(board.class.name).warn;
+						"%: buffer data full. call readData more often or increase size".format(board.class.name).warn;
 						dataFull= true;
 					});
 				});
-				dataBuffer.insert(0, [num, d, aux, stop]);
+				dataBuffer.insert(0, d.copy);
 			});
 		};
 		accelFunc= {|a|
@@ -37,33 +34,23 @@ OpenBCIseq {
 				if(accelBuffer.size>=size, {
 					accelBuffer.pop;
 					if(accelFull.not, {
-						"%: buffer accel full. increase size".format(board.class.name).warn;
+						"%: buffer accel full. call readAccel more often or increase size".format(board.class.name).warn;
 						accelFull= true;
 					});
 				});
 				accelBuffer.insert(0, a);
 			});
 		};
-		dataTask= Routine({
-			inf.do{
-				var d= dataBuffer.pop;
-				if(d.notNil, {
-					data= d[1];
-					dataAction.value(*d);  //num, data, aux, byte
-				});
-				(1/board.currentSampleRate*factor).wait;
-			};
-		});
-		accelTask= Routine({
-			inf.do{
-				var a= accelBuffer.pop;
-				if(a.notNil, {
-					accel= a;
-					accelAction.value(a);  //xyz
-				});
-				(0.04*factor).wait;  //accelerometer always 25Hz
-			};
-		});
+	}
+	readData {
+		var copy= dataBuffer;
+		dataBuffer= List.new;
+		^copy.reverse;
+	}
+	readAccel {
+		var copy= accelBuffer;
+		accelBuffer= List.new;
+		^copy.reverse;
 	}
 	clear {
 		dataBuffer= List.new;
@@ -72,23 +59,17 @@ OpenBCIseq {
 		accelFull= false;
 	}
 	start {
-		"%: sequencing started".format(board.class.name).postln;
+		"%: buffering started".format(board.class.name).postln;
 		board.dataAction= board.dataAction.removeFunc(dataFunc);  //safety
 		board.accelAction= board.accelAction.removeFunc(accelFunc);  //safety
 		board.dataAction= board.dataAction.addFunc(dataFunc);
 		board.accelAction= board.accelAction.addFunc(accelFunc);
-		dataTask.play(SystemClock);
-		accelTask.play(SystemClock);
 		CmdPeriod.add(this);
 	}
 	stop {
-		dataTask.stop;
-		dataTask.reset;
-		accelTask.stop;
-		accelTask.reset;
 		board.dataAction= board.dataAction.removeFunc(dataFunc);
 		board.accelAction= board.accelAction.removeFunc(accelFunc);
-		"%: sequencing stopped".format(board.class.name).postln;
+		"%: buffering stopped".format(board.class.name).postln;
 		CmdPeriod.remove(this);
 	}
 	cmdPeriod {

@@ -1,5 +1,5 @@
 class:: GanglionSerial
-summary:: for communicating with the Ganglion board (4ch)
+summary:: for communicating with a Ganglion board (4ch)
 categories:: External Control
 related:: Classes/OpenBCI, Classes/Ganglion, Classes/CytonSerial
 

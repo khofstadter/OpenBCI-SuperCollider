@@ -1,7 +1,7 @@
-class:: OpenBCIfft
+class:: DataFFT
 summary:: collect data and perform fft
 categories:: External Control
-related:: Classes/OpenBCI, Classes/OpenBCIlag
+related:: Classes/OpenBCI, Classes/DataSmoothing
 
 description::
 Collects data from any OpenBCI board and calculate FFT.
@@ -21,7 +21,7 @@ the FFT window size. Should be a power-of-two.
 
 instancemethods::
 
-private::initOpenBCIfft
+private::initDataFFT
 
 method::board
 get the board instance
@@ -46,10 +46,10 @@ SerialPort.listDevices;
 c= CytonSerial("/dev/tty.usbserial-DM00DRM0");
 //c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999));
 c.start;
-f= OpenBCIfft(c);
+f= DataFFT(c);
 f.fft(c.buffer[0]);  //perform fft on channel 0
 f.fft(c.buffer[1]);  //perform fft on channel 1
-l= OpenBCIlag(0.9);
+l= DataSmoothing(0.9);
 l.filter(f.fft(c.buffer[2]));  //perform fft on channel 2 and smooth the result
 c.stop;
 ::

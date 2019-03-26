@@ -1,7 +1,7 @@
-class:: CytonTest
-summary:: for generating synthetic test data coming from a Cyton board (8ch)
+class:: SyntheticData
+summary:: for generating synthetic test data coming from a board
 categories:: External Control
-related:: Classes/OpenBCI, Classes/Cyton, Classes/GanglionSerial
+related:: Classes/OpenBCI, Classes/OpenBCIboard
 
 description::
 this class acts like a drop-in replacement for link::Classes/CytonSerial:: and link::Classes/CytonWifi::.
@@ -15,17 +15,14 @@ classmethods::
 method::new
 start generating test data
 
-argument::dummy1
-just a placeholder. unused and can be anything.
+argument::numChannels
+use 8 for faking Cyton board, 4 for Ganglion etc.
 
-argument::dummy2
-just a placeholder. unused and can be anything.
+argument::sampleRate
+use 250 for faking Cyton over bluetooth, 200 for Ganglion over bluetooth etc.
 
 argument::dataAction
 set the link::Classes/OpenBCI#-dataAction::
-
-argument::replyAction
-set the link::Classes/OpenBCI#-replyAction::. note that if none give a default function that just posts will be used.
 
 argument::initAction
 set the link::Classes/OpenBCI#-initAction::
@@ -35,24 +32,32 @@ how many datapoints to store in the internal buffer.
 
 instancemethods::
 
-private:: initCytonTest, prTask, prCommand, prCommandArray
+private:: initSyntheticData, prTask
+
+method::softReset
+reset sample rate. Rarely used - just for keeping the class consistent with link::Classes/OpenBCIboard::,
+
+method::start
+start streaming synthetic data.
+
+method::stop
+stop streaming synthetic data.
 
 method::close
 stops main loop.
 
-method::warn
-unused
-
 examples::
 
-this show how to just rename the board class to get test data instead. no dongle or shield needs to be connected.
 code::
 (
 //var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});
-var board= CytonTest("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});
+var board= SyntheticData(initAction: {|b| b.start});
 ~board= board;
 )
 
 ~board.accelAction= {|xyz| xyz.postln};  //start posting synthetic accelerometer data
+
+~board.stop;
+~board.start;
 ~board.close;
 ::

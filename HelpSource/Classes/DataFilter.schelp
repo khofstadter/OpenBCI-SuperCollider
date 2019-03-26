@@ -40,7 +40,7 @@ a link::Classes/List:: of data.
 method::type
 a link::Classes/Symbol:: for current filter frequency/frequencies.
 
-method::sr
+method::sampleRate
 get or set sample rate.
 
 method::filt_a

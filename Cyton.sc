@@ -5,7 +5,7 @@
 //http://docs.openbci.com/Hardware/03-Cyton_Data_Format
 //http://docs.openbci.com/OpenBCI%20Software/04-OpenBCI_Cyton_SDK
 
-Cyton : OpenBCI {
+Cyton : OpenBCIboard {
 	classvar <numChannels= 8;
 	classvar <defaultSampleRate= 250;
 	uVScale {|gain= 24| ^4.5/gain/(2**23-1)*1000000}

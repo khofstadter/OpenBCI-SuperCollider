@@ -5,7 +5,7 @@
 //http://docs.openbci.com/Hardware/08-Ganglion_Data_Format
 //http://docs.openbci.com/OpenBCI%20Software/06-OpenBCI_Ganglion_SDK
 
-Ganglion : OpenBCI {
+Ganglion : OpenBCIboard {
 	classvar <numChannels= 4;
 	classvar <defaultSampleRate= 200;
 	uVScale {^(1.2*1000000)/(8388607*1.5*51)}

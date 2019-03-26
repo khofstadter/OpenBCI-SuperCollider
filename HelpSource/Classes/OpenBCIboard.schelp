@@ -1,0 +1,76 @@
+class:: OpenBCIboard
+summary:: Abstract class for all OpenBCI boards
+categories:: External Control
+related:: Classes/OpenBCI
+
+description::
+superclass for all hardware boards
+
+note::
+this is an abstract class - do not instantiate. use the serial or wifi subclasses.
+::
+
+instancemethods::
+
+private:: prCommand, prCommandArray
+
+method::off
+turn off (mute) one ore more channels
+
+argument::channel
+can be an link::Classes/Integer:: or an link::Classes/Array:: of Integers.
+
+code::
+c.off(1)  //turn off the first channel
+c.off([2, 3, 4])  //turn off channels 2-4
+::
+
+method::on
+turn on (unmute) one ore more channels
+
+argument::channel
+can be an link::Classes/Integer:: or an link::Classes/Array:: of Integers.
+
+code::
+c.on(1)  //turn on the first channel
+c.on([2, 3, 4])  //turn on channels 2-4
+::
+
+method::startLogging
+start writing data to a file on the sd card.
+
+argument::time
+can be code::'5MIN'::, code::'15MIN'::, code::'30MIN'::, code::'1HR'::, code::'2HR'::, code::'4HR'::, code::'12HR'::, code::'24HR':: or code::'14SEC'::
+
+method::stopLogging
+stop writing data and close the file.
+
+method::query
+ask for current register settings.
+
+method::softReset
+send a restart message to the board that will stop streaming and reset most of the settings.
+
+method::start
+start streaming data.
+
+method::stop
+stop streaming data.
+
+method::attachWifi
+tries to attach a wifi shield.
+
+method::removeWifi
+remove an attached wifi shield.
+
+method::getWifiStatus
+get status of the wifi shield
+
+method::softResetWifi
+perform a soft reset of the wifi shield
+
+examples::
+
+see examples folder.
+
+or examples section in link::Classes/CytonSerial::, link::Classes/CytonWifi::, link::Classes/GanglionSerial:: or link::Classes/GanglionWifi:: help files.

@@ -1,5 +1,5 @@
 class:: CytonSerial
-summary:: for communicating with the Cyton board (8ch)
+summary:: for communicating with a Cyton board (8ch)
 categories:: External Control
 related:: Classes/OpenBCI, Classes/Cyton, Classes/GanglionSerial
 
@@ -42,9 +42,6 @@ the link::Classes/SerialPort::.
 
 method::close
 stops main loop and closes the serial port.
-
-method::warn
-a link::Classes/Boolean:: that turn on or off dropped package warning.
 
 examples::
 

@@ -2,16 +2,15 @@
 //MIT License, Copyright (c) 2018 OpenBCI, https://github.com/OpenBCI/OpenBCI_GUI/blob/master/LICENSE
 
 //TODO test with ganglion and daisy
-//TODO smooth here or in OpenBCIfft class?
 //TODO (in)activate channels?
 
 (
 var activeChannels= #[0, 1, 2, 3, 4, 5, 6, 7];
 var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
-//var board= CytonTest(initAction: {|b, r| b.start});  //synthetic test data
+//var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 var notchFilter, bandpassFilter, smoothFilters;
-var fft= OpenBCIfft(board, 256);
+var fft= DataFFT(board, 256);
 var fps= 30;
 var usr, pop1, pop2, pop3, pop4, btn1, btn2, pw, po;
 var horizontalScale, verticalScale, maxFreq, maxAmp;
@@ -31,7 +30,7 @@ var colors= [
 var channels= {|i|
 	(
 		color: colors.wrapAt(i),
-		active: activeChannels.includes(i).postln
+		active: activeChannels.includes(i)
 	)
 }.dup(board.numChannels);
 
@@ -179,7 +178,7 @@ pop3= PopUpMenu(win, Rect((pw+2)*2+po, 20, pw, 20))
 pop4= PopUpMenu(win, Rect((pw+2)*3+po, 20, pw, 20))
 .items_(#["0.0", "0.5", "0.75", "0.9", "0.95", "0.98"])
 .action_{|v|
-	smoothFilters= {OpenBCIlag(v.item.asFloat)}.dup(board.numChannels);
+	smoothFilters= {DataSmoothing(v.item.asFloat)}.dup(board.numChannels);
 }.valueAction_(3);
 btn1= Button(win, Rect((pw+2)*4+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterNotch.keys.collect{|x| [x.asString+"Hz"]}

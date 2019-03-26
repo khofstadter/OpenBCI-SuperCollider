@@ -1,7 +1,7 @@
-class:: OpenBCIbuf
+class:: DataBuffer
 summary:: buffer data and accelerometer values
 categories:: External Control
-related:: Classes/OpenBCI, Classes/OpenBCIseq, Classes/OpenBCIfft
+related:: Classes/OpenBCI, Classes/DataSequencer, Classes/DataFFT
 
 description::
 Collects data from any OpenBCI board into buffers.
@@ -25,7 +25,7 @@ a link::Classes/Boolean:: flag indicating if accelerometer data should be buffer
 
 instancemethods::
 
-private::initOpenBCIbuf
+private::initDataBuffer
 
 method::board
 get the board instance
@@ -79,7 +79,7 @@ code::
 SerialPort.listDevices;
 c= CytonSerial("/dev/tty.usbserial-DM00DRM0");
 //c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999));
-d= OpenBCIbuf(c);
+d= DataBuffer(c);
 c.start;
 d.start;
 r= Routine.run({inf.do{d.readData.postln; 0.1.wait}});

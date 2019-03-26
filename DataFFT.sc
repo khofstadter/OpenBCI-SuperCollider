@@ -1,11 +1,11 @@
 //for performing fft on OpenBCI data
 
-OpenBCIfft {
+DataFFT {
 	var <board, table, imag, <fftSize, fftSize2;
 	*new {|board, fftSize= 256|
-		^super.new.initOpenBCIfft(board, fftSize);
+		^super.new.initDataFFT(board, fftSize);
 	}
-	initOpenBCIfft {|argBoard, argSize|
+	initDataFFT {|argBoard, argSize|
 		board= argBoard;
 		if(argSize.isPowerOfTwo.not, {
 			argSize= argSize.nextPowerOfTwo;

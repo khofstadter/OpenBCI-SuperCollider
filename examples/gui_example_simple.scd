@@ -3,7 +3,7 @@
 (
 var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
-//var board= CytonTest(initAction: {|b| b.start});
+//var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 var lastValues= -1.dup(board.numChannels);
 var lastTime= 0;
 var win, sliders, numbers;

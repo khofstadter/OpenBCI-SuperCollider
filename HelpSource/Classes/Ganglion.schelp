@@ -1,5 +1,5 @@
 class:: Ganglion
-summary:: Abstract class for Ganglion board
+summary:: Abstract class for Ganglion boards
 categories:: External Control
 related:: Classes/OpenBCI, Classes/Cyton, Classes/CytonDaisy
 

@@ -1,10 +1,10 @@
-class:: OpenBCIlag
+class:: DataSmoothing
 summary:: smooth data
 categories:: External Control
-related:: Classes/OpenBCI, Classes/OpenBCIfft
+related:: Classes/OpenBCI, Classes/DataFFT
 
 description::
-Smooth data using simple exponential smoothing. This class require one instance per board channel and is mainly useful in combination with link::Classes/OpenBCIfft::.
+Smooth data using simple exponential smoothing. This class require one instance per board channel and is mainly useful in combination with link::Classes/DataFFT::.
 
 classmethods::
 
@@ -16,7 +16,7 @@ a link::Classes/Float:: from 0.0 to 1.0 where 0 is no smoothing.
 
 instancemethods::
 
-private::initOpenBCIlag
+private::initDataSmoothing
 
 method::factor
 a link::Classes/Float::
@@ -37,14 +37,14 @@ SerialPort.listDevices;
 c= CytonSerial("/dev/tty.usbserial-DM00DRM0");
 //c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999));
 c.start;
-f= OpenBCIfft(c);
-l= OpenBCIlag(0.9);
+f= DataFFT(c);
+l= DataSmoothing(0.9);
 l.filter(f.fft(c.buffer[0]));  //fft and smooth first channel
 
 //this example show how go through and smooth all channels
 (
 r= Routine.run({
-	var smoothers= {OpenBCIlag(0.9)}.dup(c.numChannels);
+	var smoothers= {DataSmoothing(0.9)}.dup(c.numChannels);
 	inf.do{
 		"".postln;
 		c.numChannels.do{|i|

@@ -1,5 +1,5 @@
 class:: CytonDaisyWifi
-summary:: for communicating with the Cyton + Daisy board (16ch)
+summary:: for communicating with a Cyton+Daisy board (16ch)
 categories:: External Control
 related:: Classes/OpenBCI, Classes/CytonDaisy, Classes/CytonWifi
 

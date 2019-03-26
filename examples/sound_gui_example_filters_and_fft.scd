@@ -3,8 +3,8 @@
 (
 ~openbci= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //~openbci= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
-//~openbci= CytonTest(initAction: {|b| b.start});
-~sequencer= OpenBCIseq(~openbci);
+//~openbci= SyntheticData(initAction: {|b| b.start});  //synthetic test data
+~sequencer= DataSequencer(~openbci);
 ~sequencer.start;
 ~openbci.warn= false;
 )
@@ -39,7 +39,6 @@ s.waitForBoot{
 	~synth.free;
 	~synth= Synth(\fft, [\bus, bus]);
 	s.sync;
-	~openbci.setSampleRate(6);  //250Hz
 	~sequencer.dataAction= {|num, data, aux, stop|
 		s.bind{~synth.set(\data, data[~channel])};
 	};
@@ -95,5 +94,7 @@ s.waitForBoot{
 ~synth.set(\lag, 0)
 ~synth.set(\lag, 0.5)
 ~synth.set(\lag, 1)  //the default
+
+~openbci.setSampleRate(6);  //250Hz
 
 SerialPort.listDevices
