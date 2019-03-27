@@ -12,7 +12,8 @@ SyntheticData : OpenBCI {
 	initSyntheticData {|argNumChannels, argSampleRate|
 		currentSampleRate= argSampleRate;
 		numChannels= argNumChannels;
-		buffer= buffer.extend(numChannels, List.fill(bufferSize, {0}));
+		buffer= {List.fill(bufferSize, {0})}.dup(numChannels);  //need to recreate buffer because numChannels is nil
+
 		initAction.value(this, "init synthetic data");
 		CmdPeriod.add(this);
 	}
