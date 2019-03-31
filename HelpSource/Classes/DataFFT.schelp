@@ -38,6 +38,30 @@ the FFT data (magnitudes only) as an link::Classes/Array::. The size of the arra
 method::fftSize
 the FFT window size
 
+method::fftSize2
+half the FFT window size
+
+method::bw
+width of each frequency band in Hz. The first and last bands is half as large as this value.
+
+method::indexToFreq
+convert from fft index to frequency (in Hz).
+
+argument::index
+band index
+
+returns::
+a link::Classes/Float:: that is the middle frequency of the band.
+
+method::freqToIndex
+convert from frequency (in Hz) to fft index.
+
+argument::freq
+frequency
+
+returns::
+an link::Classes/Integer:: that is the index of the band that contains the requested frequency.
+
 examples::
 
 code::

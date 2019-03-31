@@ -26,7 +26,7 @@ usr.drawFunc= {
 	});
 	f.fft(data).do{|val, y|
 		Pen.fillColor= Color.grey(val.explin(0.1, ~maxuV, 0, 1));  //0.1-200 uV
-		Pen.fillRect(Rect(x, y.linlin(0, f.fftSize*0.5, height, 0), 1, 1));
+		Pen.fillRect(Rect(x, y.linlin(0, f.fftSize2, height, 0), 1, 1));
 	};
 };
 CmdPeriod.doOnce({win.close});
