@@ -55,7 +55,7 @@ if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI
 
 ## changelog
 
-* 1.50 - renamed buf, fft, lag, seq, test classes and added OpenBCIboard, added file playback
+* 1.50 - renamed buf, fft, lag, seq, test classes and added OpenBCIboard, bandpower widget
 * 1.40 - rewrote filters and OpenBCIfft again, bufferSize, added OpenBCIlag, fixed examples
 * 1.30 - rewrote filters and OpenBCIfft, added internal board buffer, fixed examples
 * 1.20 - added filter functionality and classes, scaling inside classes, many example fixes

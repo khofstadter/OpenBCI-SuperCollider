@@ -12,9 +12,9 @@ var bands= #[
 	["BETA", 13, 30],
 	["GAMMA", 30, 55]
 ];
-//var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
+var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
-var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
+//var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 var notchFilter, bandpassFilter, smoothFilters;
 var fft= DataFFT(board, 256);
 var fps= 30;
