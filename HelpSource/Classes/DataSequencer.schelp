@@ -1,7 +1,7 @@
-class:: OpenBCIseq
-summary:: distributing data and accelerometer values over time
+class:: DataSequencer
+summary:: distribute data and accelerometer values over time
 categories:: External Control
-related:: Classes/OpenBCI, Classes/OpenBCIbuf, Classes/OpenBCIfft
+related:: Classes/OpenBCI, Classes/DataBuffer, Classes/DataFFT
 
 description::
 Collects data from any OpenBCI board and spread out over time. Mainly useful with wifi shield where packages arrives in chunks.
@@ -25,7 +25,7 @@ a link::Classes/Boolean:: flag indicating if accelerometer data should be buffer
 
 instancemethods::
 
-private::initOpenBCIseq
+private::initDataSequencer
 
 method::board
 get the board instance
@@ -81,7 +81,7 @@ code::
 
 c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 c.setSampleRate(6);
-d= OpenBCIseq(c);
+d= DataSequencer(c);
 d.start;
 //like OpenBCI dataAction function but spread out in time (~ board sample rate)
 d.dataAction= {|num, data, aux, byte| if(num==0, {data.postln})};  //only post every 256th

@@ -3,8 +3,8 @@
 (
 var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
-//var board= CytonTest(initAction: {|b| b.start});
-var f= OpenBCIfft(board, 256);
+//var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
+var f= DataFFT(board, 256);
 var win, msliders;
 win= Window("fft gui example multislider", Rect(100, 100, 640, 640)).front;
 msliders= {

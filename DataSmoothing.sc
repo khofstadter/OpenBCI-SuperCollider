@@ -1,12 +1,12 @@
 //for smoothing OpenBCI data
 
-OpenBCIlag {
+DataSmoothing {
 	var <>factor;
 	var prevData;
 	*new {|factor= 0.9|
-		^super.new.initOpenBCIlag(factor);
+		^super.new.initDataSmoothing(factor);
 	}
-	initOpenBCIlag {|argFactor|
+	initDataSmoothing {|argFactor|
 		factor= argFactor;
 	}
 	filter {|data|

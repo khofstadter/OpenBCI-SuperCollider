@@ -1,7 +1,7 @@
 //--supercollider openbci cyton biosensing board (8-channels) communication via osc (wifi shield)
 
 CytonWifi : Cyton {
-	var <netAddr, responders, num, aux= #[26, 27, 28, 29, 30, 31], >warn= true;
+	var <netAddr, responders, num, aux= #[26, 27, 28, 29, 30, 31];
 
 	*new {|netAddr, reset= true, dataAction, replyAction, initAction, bufferSize= 1024|
 		^super.new(dataAction, replyAction, initAction, bufferSize).initCytonWifi(netAddr, reset);

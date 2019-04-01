@@ -1,5 +1,5 @@
 class:: CytonDaisy
-summary:: Abstract class for Cyton+Daisy board
+summary:: Abstract class for Cyton+Daisy boards
 categories:: External Control
 related:: Classes/OpenBCI, Classes/Cyton, Classes/Ganglion
 

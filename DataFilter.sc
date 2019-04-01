@@ -1,7 +1,7 @@
 //--abstract class for filtering OpenBCI data
 
 DataFilter {
-	var <type, <sr;
+	var <type, <sampleRate;
 	var <filt_b, <filt_a;
 	var nconst, clear;
 	*keys {^this.constants.keys.asArray.sort}
@@ -14,18 +14,18 @@ DataFilter {
 			"type % not supported. only: %".format(type, this.class.constants.keys.asArray).warn;
 			type= this.class.constants.keys.asArray[0];
 		});
-		this.sr_(250);  //set a default
+		this.sampleRate_(250);  //set a default
 	}
-	sr_ {|sampleRate= 250|
+	sampleRate_ {|rate= 250|
 		var rates= this.class.constants[type].keys;
-		if(rates.includes(sampleRate).not, {
-			"samplerate % not supported. only: %".format(sampleRate, rates.asArray.sort).warn;
-			sr= 250;
+		if(rates.includes(rate).not, {
+			"samplerate % not supported. only: %".format(rate, rates.asArray.sort).warn;
+			sampleRate= 250;
 		}, {
-			sr= sampleRate;
+			sampleRate= rate;
 		});
-		filt_b= this.class.constants[type][sr].b;  //TODO how to deal with freq and sr changes?
-		filt_a= this.class.constants[type][sr].a;
+		filt_b= this.class.constants[type][sampleRate].b;  //TODO how to deal with freq and sr changes?
+		filt_a= this.class.constants[type][sampleRate].a;
 		nconst= filt_b.size;
 		clear= 0.dup(nconst);
 	}

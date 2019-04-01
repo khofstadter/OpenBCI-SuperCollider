@@ -4,8 +4,8 @@
 (
 var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
-//var board= CytonTest(initAction: {|b| b.start});
-var buffer= OpenBCIbuf(board, 100, false, true);
+//var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
+var buffer= DataBuffer(board, 100, false, true);
 var width= 640, height= 320;
 var win, usr, x= 0;
 buffer.start;

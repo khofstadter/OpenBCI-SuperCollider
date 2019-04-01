@@ -1,7 +1,7 @@
 class:: OpenBCI
-summary:: Abstract class for OpenBCI boards
+summary:: Abstract class for OpenBCI communication
 categories:: External Control
-related:: Classes/OpenBCIfft, Classes/OpenBCIbuf, Classes/OpenBCIseq
+related:: Classes/OpenBCIboard, Classes/DataFFT
 
 description::
 for more information about the biosensing hardware see http://openbci.com
@@ -10,15 +10,18 @@ note::
 this is an abstract class - do not instantiate. use the serial or wifi subclasses.
 ::
 
-this main OpenBCI class implements commands and features that are the same across all boards. commands specific to link::Classes/Cyton::, link::Classes/CytonDaisy:: and link::Classes/Ganglion:: are in their own classes, while communication and parsing of commands and data depend on how the board is connected to the computer (via bluetooth serial or via wifi osc). the classes that deal with this are: link::Classes/CytonSerial::, link::Classes/CytonWifi::, link::Classes/CytonDaisySerial::, link::Classes/CytonDaisyWifi::, link::Classes/GanglionSerial::, link::Classes/GanglionWifi::.
+This main OpenBCI class implements commands and features that are the same across all board, synthetic test and file playback classes. Commands specific to link::Classes/Cyton::, link::Classes/CytonDaisy:: and link::Classes/Ganglion:: are in their own classes, while communication and parsing of commands and data depend on emphasis::how:: the board is connected to the computer (via bluetooth serial or via wifi osc). The classes that deal with this are: link::Classes/CytonSerial::, link::Classes/CytonWifi::, link::Classes/CytonDaisySerial::, link::Classes/CytonDaisyWifi::, link::Classes/GanglionSerial::, link::Classes/GanglionWifi::. In client code you should use these serial or wifi classes - not the abstract superclasses.
 
-what you should use in your code are the serial or wifi classes - not the abstract ones. here is an overview of the class hierarchy:
+Here is an overview of the class hierarchy:
 
 classtree:: OpenBCI
 
-for filtering see link::Classes/DataFilter:: and its subclasses.
+for filtering see link::Classes/DataFilter:: and its subclasses,
 
 classtree:: DataFilter
+
+and for other functionality there are helper classes like...
+link::Classes/DataBuffer::, link::Classes/DataFFT::, link::Classes/DataSequencer::, link::Classes/DataSmoothing::
 
 classmethods::
 
@@ -38,10 +41,13 @@ how many datapoints to store in the internal buffer.
 
 instancemethods::
 
-private:: init, prCommand, prCommandArray, prSyntheticData
+private:: initOpenBCI
 
 method::currentSampleRate
 the current board sample rate in Hertz.
+
+method::warn
+a link::Classes/Boolean:: that turn on or off dropped package warning. The default is on (true). Set it to false if using a wifi shield and the network connection is shaky.
 
 method::dataAction
 a link::Classes/Function:: that is evaluated as new packages with brain wave data arrives. no data is transmitted until you call the code::start:: method.
@@ -55,7 +61,7 @@ method::replyAction
 a link::Classes/Function:: that is evaluated and passed in a link::Classes/String:: that contains any reply message the board sends back (up until each EOT code::$$$::). by default this will be a function that just posts to the post window, but you can write a custom parser for the replies by setting your own function here.
 
 method::initAction
-a link::Classes/Function:: that is evaluated at startup and after each call to link::#-softReset::. initAction is often used to start the streaming. values passed in are the board instance and a link::Classes/NetAddr:: giving the network ip and port of the board.
+a link::Classes/Function:: that is evaluated at startup and after each call to link::Classes/OpenBCIboard#-softReset::. initAction is often used to start the streaming. values passed in are the board instance and a link::Classes/NetAddr:: giving the network ip and port of the board.
 
 method::accelAction
 a link::Classes/Function:: that is evaluated at when new accelerometer arrives. the argument passed in is an link::Classes/Array:: with three integers (x, y, z) in the range -4.096 to 4.096 g.
@@ -81,60 +87,14 @@ called internally.
 argument::data
 an link::Classes/Array:: with n-channels of new data. this will be appended to the end of the internal buffer.
 
-method::off
-turn off (mute) one ore more channels
-
-argument::channel
-can be an link::Classes/Integer:: or an link::Classes/Array:: of Integers.
-
-code::
-c.off(1)  //turn off the first channel
-c.off([2, 3, 4])  //turn off channels 2-4
-::
-
-method::on
-turn on (unmute) one ore more channels
-
-argument::channel
-can be an link::Classes/Integer:: or an link::Classes/Array:: of Integers.
-
-code::
-c.on(1)  //turn on the first channel
-c.on([2, 3, 4])  //turn on channels 2-4
-::
-
-method::startLogging
-start writing data to a file on the sd card.
-
-argument::time
-can be code::'5MIN'::, code::'15MIN'::, code::'30MIN'::, code::'1HR'::, code::'2HR'::, code::'4HR'::, code::'12HR'::, code::'24HR':: or code::'14SEC'::
-
-method::stopLogging
-stop writing data and close the file.
-
-method::query
-ask for current register settings.
-
-method::softReset
-send a restart message to the board that will stop streaming and reset most of the settings.
-
 method::start
-start streaming data.
+start streaming or start synthetic or file playback.
 
 method::stop
-stop streaming data.
+stop streaming or stop synthetic or file playback.
 
-method::attachWifi
-tries to attach a wifi shield.
-
-method::removeWifi
-remove an attached wifi shield.
-
-method::getWifiStatus
-get status of the wifi shield
-
-method::softResetWifi
-perform a soft reset of the wifi shield
+method::softReset
+set samplerate to default and reset any hardware
 
 examples::
 
