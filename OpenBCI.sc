@@ -24,10 +24,10 @@ OpenBCI {
 		currentSampleRate= this.class.defaultSampleRate;
 
 		bufferSize= argBufferSize;
-		buffer= {List.fill(bufferSize, {0})}.dup(numChannels);
+		buffer= {List.fill(bufferSize, {0})}.dup(this.class.numChannels);
 		("%: starting...").format(this.class.name).postln;
 	}
-	numChannels {^numChannels}
+	numChannels {^this.class.numChannels}
 	bufferSize_ {|size= 1024|
 		bufferSize= size.asInteger;
 		buffer= buffer.collect{|data|
