@@ -1,6 +1,7 @@
 //--supercollider openbci generate dummy synthetic test data
 
 SyntheticData : OpenBCI {
+	classvar <numChannels= 8;
 	classvar <defaultSampleRate= 250;
 	var task;
 	uVScale {|gain= 24| ^4.5/gain/(2**23-1)*1000000}
