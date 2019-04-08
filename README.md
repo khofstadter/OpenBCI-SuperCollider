@@ -55,6 +55,7 @@ if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI
 
 ## changelog
 
+* 1.52 - focus widget
 * 1.51 - bugfix for numChannels that made most examples stop working
 * 1.50 - renamed buf, fft, lag, seq, test classes and added OpenBCIboard, bandpower widget
 * 1.40 - rewrote filters and OpenBCIfft again, bufferSize, added OpenBCIlag, fixed examples
