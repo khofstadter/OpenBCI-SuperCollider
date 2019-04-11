@@ -55,6 +55,7 @@ if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI
 
 ## changelog
 
+* 1.53 - file playback class
 * 1.52 - focus widget
 * 1.51 - bugfix for numChannels that made most examples stop working
 * 1.50 - renamed buf, fft, lag, seq, test classes and added OpenBCIboard, bandpower widget
@@ -74,7 +75,7 @@ if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI
 * are getRadioChannel, setRadioChannel, setRadioHostChannel, getRadioPollTime, setRadioPollTime, setRadioHostBaudRate, getRadioSystemStatus, attachWifi, removeWifi supposed to work with wifishield?
 * document all methods in Cyton, CytonDaisy and Ganglion classes
 * add a 10sec timeout on initAction
-* being able to play back and record files in OpenBCI_GUI SavedData format
+* being able to record files in OpenBCI_GUI SavedData format
 * implement and test the different aux commands
 * finish and test Ganlion classes - both serial and wifi
 * finish and test Daisy classes - both serial and wifi
