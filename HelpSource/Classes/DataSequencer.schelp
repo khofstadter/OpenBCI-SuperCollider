@@ -84,11 +84,11 @@ c.setSampleRate(6);
 d= DataSequencer(c);
 d.start;
 //like OpenBCI dataAction function but spread out in time (~ board sample rate)
-d.dataAction= {|num, data, aux, byte| if(num==0, {data.postln})};  //only post every 256th
+d.dataAction= {|num, data, accel| if(num==0, {data.postln})};  //only post every 256th
 d.dataAction= nil;
 
 //measure delta time. the following should post 1/sr (~0.004 default for cyton)
-t= 0; d.dataAction= {|num, data, aux, byte| var n= Main.elapsedTime; if(num==0, {(n-t).postln}); t= n};
+t= 0; d.dataAction= {|num, data, accel| var n= Main.elapsedTime; if(num==0, {(n-t).postln}); t= n};
 d.dataAction= nil;
 
 //like OpenBCI accelAction function but spread out in time (~ 25Hz)

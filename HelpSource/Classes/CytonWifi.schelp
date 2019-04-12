@@ -67,17 +67,17 @@ examples::
 
 code::
 //start and post every 256th data package (num is the package counter 0-255)
-c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), dataAction:{|num, data, aux, byte| if(num==0, {data.postln})}, initAction:{|b| b.start});
+c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), dataAction:{|num, data, accel| if(num==0, {data.postln})}, initAction:{|b| b.start});
 
 c.port= 14000  //change port
 c.port= 57120  //by default sclang port is used
 
 c.latency= 4000  //tune latency in microseconds. 100-15000 are usable values
 
-c.dataAction= {|num, data, aux, byte| data.postln}  //post everything (note: might crash)
+c.dataAction= {|num, data, accel| data.postln}  //post everything (note: might crash)
 c.dataAction= nil;
 
-c.dataAction= {|num, data, aux, stop| data.postln}  //sample data in uV
+c.dataAction= {|num, data, accel| data.postln}  //sample data in uV
 c.dataAction= nil;
 
 c.accelAction= {|accel| accel.postln}  //post xyz accelerometer data
@@ -89,7 +89,7 @@ c.board
 c.all
 
 c.getSampleRate
-c.dataAction= {|num, data, aux, byte| if(num==0, {data.postln})}  //again only post every 256th package
+c.dataAction= {|num, data, accel| if(num==0, {data.postln})}  //again only post every 256th package
 c.setSampleRate(6)
 c.setSampleRate(5)
 c.setSampleRate(4)
@@ -115,7 +115,7 @@ c.close
 
 //--more tests
 c= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999));
-c.dataAction= {|num, data, aux, stop| data.postln}
+c.dataAction= {|num, data, accel| data.postln}
 
 c.start
 c.off(1)  //turn off the first channel

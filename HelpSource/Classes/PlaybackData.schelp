@@ -1,0 +1,70 @@
+class:: PlaybackData
+summary:: for playing back data from a file
+categories:: External Control
+related:: Classes/OpenBCI, Classes/OpenBCIboard
+
+description::
+this class acts like a drop-in replacement for link::Classes/CytonSerial:: and link::Classes/CytonWifi::.
+
+It will play back files recorded with OpenBCI_GUI. These are normally called something like code::OpenBCI-RAW-2019-04-10_19-04-26.txt:: and contain OpenBCI Raw EEG Data.
+
+note::
+does not survive link::Classes/CmdPeriod::.
+::
+
+classmethods::
+
+method::new
+read and parse a text file.
+
+argument::path
+a link::Classes/String:: pointing to a text file.
+
+argument::dataAction
+set the link::Classes/OpenBCI#-dataAction::
+
+argument::initAction
+set the link::Classes/OpenBCI#-initAction::
+
+argument::bufferSize
+how many datapoints to store in the internal buffer.
+
+instancemethods::
+
+private:: initPlaybackData, prTask
+
+method::softReset
+reset sample rate. Rarely used - just for keeping the class consistent with link::Classes/OpenBCIboard::,
+
+method::start
+start playing back data from the file.
+
+method::stop
+stop playback.
+
+method::close
+stops main loop.
+
+method::currentTime
+report current time in file during playback. e.g. code::19:04:53.201::
+
+returns::
+a link::Classes/String::
+
+examples::
+
+code::
+(
+//var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});
+var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});
+~board= board;
+)
+
+~board.currentTime;  //time in file
+
+~board.accelAction= {|xyz| xyz.postln};  //start posting recorded accelerometer data
+
+~board.stop;
+~board.start;
+~board.close;
+::

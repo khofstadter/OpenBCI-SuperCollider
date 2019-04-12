@@ -49,7 +49,7 @@ code::
 SerialPort.listDevices;
 
 //just posting data
-c= CytonSerial("/dev/tty.usbserial-DM00DRM0", dataAction:{|num, data, aux, stop| [num, data, aux, stop].postln})
+c= CytonSerial("/dev/tty.usbserial-DM00DRM0", dataAction:{|num, data, accel| [num, data, accel].postln})
 c.getVersion  //get firmware version
 c.start
 c.stop
@@ -78,7 +78,7 @@ c.start  //should only post accelerometer now (notice the lower sample rate)
 c.accelAction= {|accel| accel.postln}  //-4 to 4 g
 c.stop
 
-c.dataAction= {|num, data, aux, stop| [num, data, aux, stop].postln}  //sample data in uV
+c.dataAction= {|num, data, accel| [num, data, accel].postln}  //sample data in uV
 c.start
 c.stop
 c.close  //finish and close the serial port

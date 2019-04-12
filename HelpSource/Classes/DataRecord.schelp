@@ -1,0 +1,53 @@
+class:: DataRecord
+summary:: logging OpenBCI data to a textfile
+categories:: External Control
+related:: Classes/OpenBCI, Classes/PlaybackData
+
+description::
+this will record raw openbci data to a text file.
+
+classmethods::
+
+method::new
+create a new recorder.
+
+argument::board
+a link::Classes/OpenBCI:: board. For example a link::Classes/SyntheticData:: or a link::Classes/CytonWifi::.
+
+argument::path
+a link::Classes/String:: pointing to a directory where the file should be created. If not set this will be: code::ScIDE.currentPath.dirname+/+"savedData"::
+
+instancemethods::
+
+private::initDataRecord, prWriteHeader
+
+method::board
+current board.
+
+method::path
+path to file including timestamped filename.
+
+method::start
+start recording data to file.
+
+method::stop
+stop recording.
+
+examples::
+
+code::
+(
+//var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});
+var board= SyntheticData(initAction: {|b| b.start});
+var recorder= DataRecord(board).start;
+~rec= recorder;
+~board= board;
+)
+
+~rec.path;
+
+~rec.stop;
+~board.stop;
+
+~rec.path.openOS;  //open file we just recorded in text editor
+::

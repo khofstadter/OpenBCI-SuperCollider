@@ -8,6 +8,8 @@
 var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 //var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
+//var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
+//var recorder= DataRecord(board).start;  //uncomment to record
 var buffer= DataBuffer(board, 100, false, true).start;
 var fps= 30;
 var usr, pop1, pop2, pw, po;

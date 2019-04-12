@@ -20,7 +20,7 @@ DataSequencer {
 		accelBuffer= List.new;
 		dataFull= false;
 		accelFull= false;
-		dataFunc= {|num, d, aux, stop|
+		dataFunc= {|num, d, a|
 			if(dataActive, {
 				if(dataBuffer.size>=size, {
 					dataBuffer.pop;
@@ -29,7 +29,7 @@ DataSequencer {
 						dataFull= true;
 					});
 				});
-				dataBuffer.insert(0, [num, d, aux, stop]);
+				dataBuffer.insert(0, [num, d, a]);
 			});
 		};
 		accelFunc= {|a|
@@ -49,7 +49,7 @@ DataSequencer {
 				var d= dataBuffer.pop;
 				if(d.notNil, {
 					data= d[1];
-					dataAction.value(*d);  //num, data, aux, byte
+					dataAction.value(*d);  //num, data, accel
 				});
 				(1/board.currentSampleRate*factor).wait;
 			};
