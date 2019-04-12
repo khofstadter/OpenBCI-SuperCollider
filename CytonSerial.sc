@@ -55,6 +55,7 @@ CytonSerial : Cyton {
 							(buffer.size-3).do{|i| reply= reply++buffer[i].asAscii};
 							if(reply.contains("OpenBCI V3 8-16 channel"), {
 								initAction.value(this, reply);
+								accel= #[0.0, 0.0, 0.0];
 							});
 							replyAction.value(reply);
 							buffer= List(32);
@@ -88,7 +89,7 @@ CytonSerial : Cyton {
 							};
 						);
 						this.updateBuffer(data);
-						dataAction.value(num, data, buffer[aux], byte);
+						dataAction.value(num, data, accel);
 					}, {
 						buffer.postln;
 						("% read error").format(this.class.name).postln;

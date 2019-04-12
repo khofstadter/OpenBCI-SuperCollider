@@ -56,6 +56,7 @@ GanglionSerial : Ganglion {
 							(buffer.size-3).do{|i| reply= reply++buffer[i].asAscii};
 							if(reply.contains("OpenBCI Ganglion"), {
 								initAction.value(reply);
+								accel= #[0.0, 0.0, 0.0];
 							});
 							replyAction.value(reply);
 							buffer= List(20);

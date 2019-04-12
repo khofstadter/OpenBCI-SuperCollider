@@ -17,7 +17,7 @@ DataBuffer {
 		accelBuffer= List.new;
 		dataFull= false;
 		accelFull= false;
-		dataFunc= {|num, d, aux, stop|
+		dataFunc= {|num, d, a|
 			if(dataActive, {
 				if(dataBuffer.size>=size, {
 					dataBuffer.pop;

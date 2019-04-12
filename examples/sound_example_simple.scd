@@ -5,6 +5,7 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 //var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
+//var recorder= DataRecord(board).start;  //uncomment to record
 var sequencer= DataSequencer(board, 1000, true, false);
 ~maxuV= 1000;
 sequencer.start;
@@ -16,7 +17,7 @@ s.waitForBoot{
 		Timer.kr(t_trig).poll;  //post time between updates in seconds
 		LeakDC.ar(Splay.ar(SinOsc.ar(f, 0, 1/board.numChannels)));
 	}).play(fadeTime: 3);
-	sequencer.dataAction= {|num, data, aux, stop|  //try to exchange with board.dataAction and compare timing
+	sequencer.dataAction= {|num, data, accel|  //try to exchange with board.dataAction and compare timing
 		Ndef(\sines).set(\freq, (data/~maxuV).linexp(0-~maxuV, ~maxuV, 100, 10000), \t_trig, 1);
 	};
 };

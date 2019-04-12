@@ -14,6 +14,7 @@ CytonWifi : Cyton {
 			OSCFunc({|msg, time, addr, port|
 				"% shield ready (%)".format(this.class.name, addr.ip).postln;
 				initAction.value(this, addr);
+				accel= #[0.0, 0.0, 0.0];
 			}, \ready, netAddr),
 			OSCFunc({|msg| replyAction.value(msg[1..].join(Char.space))}, \reply, netAddr),
 			OSCFunc({|msg| msg[1].postln}, \version, netAddr),
@@ -46,7 +47,7 @@ CytonWifi : Cyton {
 							};
 						);
 						this.updateBuffer(data);
-						dataAction.value(num, data, buffer[aux], byte);
+						dataAction.value(num, data, accel);
 					}, {
 						buffer.postln;
 						("% read error").format(this.class.name).postln;

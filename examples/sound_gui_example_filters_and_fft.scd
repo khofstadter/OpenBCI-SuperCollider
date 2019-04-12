@@ -5,6 +5,7 @@
 //~openbci= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 //~openbci= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //~openbci= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
+//DataRecord(~openbci).start;  //uncomment to record
 ~sequencer= DataSequencer(~openbci);
 ~sequencer.start;
 ~openbci.warn= false;
@@ -40,7 +41,7 @@ s.waitForBoot{
 	~synth.free;
 	~synth= Synth(\fft, [\bus, bus]);
 	s.sync;
-	~sequencer.dataAction= {|num, data, aux, stop|
+	~sequencer.dataAction= {|num, data, accel|
 		s.bind{~synth.set(\data, data[~channel])};
 	};
 	Routine.run({

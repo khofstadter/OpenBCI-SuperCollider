@@ -75,10 +75,12 @@ SyntheticData : OpenBCI {
 				accelAction.value(accel);
 				atheta= atheta+deltaTime;
 				lastTime= Main.elapsedTime;
+			}, {
+				accel= #[0.0, 0.0, 0.0];
 			});
 
 			this.updateBuffer(data);
-			dataAction.value(num.asInteger%256, data, aux, 0);  //TODO should set aux and byte too for accelerometer
+			dataAction.value(num.asInteger%256, data, accel);
 
 			(1/currentSampleRate).wait;
 		};

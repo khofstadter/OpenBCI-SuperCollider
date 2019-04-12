@@ -5,6 +5,7 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 //var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
+//var recorder= DataRecord(board).start;  //uncomment to record
 var lastValues= -1.dup(board.numChannels);
 var lastTime= 0;
 var win, sliders, numbers;
@@ -16,7 +17,7 @@ win.layout= VLayout(*[
 	HLayout(*sliders),
 	HLayout(*numbers)
 ]);
-board.dataAction= {|num, data, aux, stop|
+board.dataAction= {|num, data, accel|
 	if(Main.elapsedTime-lastTime>0.033, {  //downsample to 30fps
 		lastTime= Main.elapsedTime;
 		data.do{|x, i|

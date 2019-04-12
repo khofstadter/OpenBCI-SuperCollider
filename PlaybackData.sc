@@ -50,7 +50,6 @@ PlaybackData : OpenBCI {
 
 	//--private
 	prTask {
-		var aux= [0, 0, 0];  //TODO
 		(fileData.size-6).do{|i|
 			var line= fileData[i+6];
 			var num= line[0].asInteger;
@@ -63,7 +62,7 @@ PlaybackData : OpenBCI {
 				accelAction.value(accel);
 			});
 			this.updateBuffer(data);
-			dataAction.value(num, data, aux, 0);  //TODO should set aux and byte too for accelerometer
+			dataAction.value(num, data, accel);
 
 			if(i+7<fileData.size, {
 				(fileData[i+7].last.asFloat-time*0.001).wait;
