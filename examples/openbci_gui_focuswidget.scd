@@ -1,7 +1,6 @@
 //port of OpenBCI_GUI focus widget, remake in supercollider by f.olofsson 2019
 //MIT License, Copyright (c) 2018 OpenBCI, https://github.com/OpenBCI/OpenBCI_GUI/blob/master/LICENSE
 
-//TODO key up, space
 //TODO test with ganglion and daisy
 
 (
@@ -18,7 +17,7 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 var notchFilter, bandpassFilter, smoothFilters;
 var fft= DataFFT(board, 256);
 var fps= 30;
-var usr, pop1, pop2, pop3, btn1, btn2, pw, po;
+var usr, pop1, pop2, btn1, btn2, pw, po;
 var backgroundColor, unfocusedColor, focusedColor;
 var f0= Font("Helvetiva", 16);
 var f1= Font("Helvetiva", 12);
@@ -83,7 +82,7 @@ usr.drawFunc= {
 				data= bandpassFilter.filter(data);
 			});
 			data= fft.fft(data);
-			if(pop3.value>0, {
+			if(pop2.value>0, {
 				data= smoothFilters[i].filter(data);
 			});
 			bands.do{|b, j|
@@ -190,11 +189,10 @@ usr.resize= 5;
 
 //--menus
 pw= win.bounds.width*0.125;
-po= win.bounds.width-((pw+2)*4.5);
+po= win.bounds.width-((pw+2)*3.5);
 StaticText(win, Rect(po, 1, pw, 20)).align_(\center).string_("Theme");
-StaticText(win, Rect((pw+2)+po, 1, pw, 20)).align_(\center).string_("KeyPress");
-StaticText(win, Rect((pw+2)*2+po, 1, pw, 20)).align_(\center).string_("Smooth");
-StaticText(win, Rect((pw+2)*3+po, 1, pw, 20)).align_(\center).string_("Filters");
+StaticText(win, Rect((pw+2)+po, 1, pw, 20)).align_(\center).string_("Smooth");
+StaticText(win, Rect((pw+2)*2+po, 1, pw, 20)).align_(\center).string_("Filters");
 pop1= PopUpMenu(win, Rect(po, 20, pw, 20))
 .items_(#["Green", "Orange", "Cyan"])
 .action_{|v|
@@ -203,16 +201,11 @@ pop1= PopUpMenu(win, Rect(po, 20, pw, 20))
 	focusedColor= colors[v.value*3+3];
 }.valueAction_(0);
 pop2= PopUpMenu(win, Rect((pw+2)+po, 20, pw, 20))
-.items_(#["OFF", "UP", "SPACE"])
-.action_{|v|
-
-}.valueAction_(0);
-pop3= PopUpMenu(win, Rect((pw+2)*2+po, 20, pw, 20))
 .items_(#["0.0", "0.5", "0.75", "0.9", "0.95", "0.98"])
 .action_{|v|
 	smoothFilters= {DataSmoothing(v.item.asFloat)}.dup(board.numChannels);
 }.valueAction_(5);
-btn1= Button(win, Rect((pw+2)*3+po, 20, pw/2, 20)).states_(
+btn1= Button(win, Rect((pw+2)*2+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterNotch.keys.collect{|x| [x.asString+"Hz"]}
 ).action_{|v|
 	if(v.value>0, {
@@ -221,7 +214,7 @@ btn1= Button(win, Rect((pw+2)*3+po, 20, pw/2, 20)).states_(
 		notchFilter= nil;
 	});
 }.valueAction_(1);
-btn2= Button(win, Rect((pw+2)*3.5+po, 20, pw/2, 20)).states_(
+btn2= Button(win, Rect((pw+2)*2.5+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterBandpass.keys.collect{|x| [x.asString]}
 ).action_{|v|
 	if(v.value>0, {
