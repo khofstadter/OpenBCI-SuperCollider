@@ -3,14 +3,13 @@
 CytonWifi : Cyton {
 	var <netAddr, responders, num, aux= #[26, 27, 28, 29, 30, 31];
 
-	*new {|netAddr, reset= true, dataAction, replyAction, initAction, bufferSize= 1024|
-		^super.new(dataAction, replyAction, initAction, bufferSize).initCytonWifi(netAddr, reset);
+	*new {|netAddr, dataAction, replyAction, initAction, bufferSize= 1024|
+		^super.new(dataAction, replyAction, initAction, bufferSize).initCytonWifi(netAddr);
 	}
-	initCytonWifi {|argNetAddr, argReset|
+	initCytonWifi {|argNetAddr|
 		netAddr= argNetAddr ?? {NetAddr("OpenBCI_WifiShieldOSC.local", 13999)};
 		CmdPeriod.add(this);
-		if(argReset, {this.softReset});
-		responders= List[
+		responders= [
 			OSCFunc({|msg, time, addr, port|
 				"% shield ready (%)".format(this.class.name, addr.ip).postln;
 				initAction.value(this, addr);
@@ -79,7 +78,7 @@ CytonWifi : Cyton {
 		"%: stopping and removing osc responders".format(this.class.name).postln;
 		this.stop;
 		responders.do{|x| x.free};
-		responders= List.new;
+		responders= nil;
 		CmdPeriod.remove(this);
 	}
 	cmdPeriod {

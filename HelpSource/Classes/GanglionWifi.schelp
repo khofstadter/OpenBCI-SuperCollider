@@ -18,9 +18,6 @@ open communication
 argument::netAddr
 a link::Classes/NetAddr:: with the ip and port of the wifi shield. by default this is code::NetAddr("OpenBCI_WifiShieldOSC.local", 13999)::
 
-argument::reset
-perform a soft reset at startup or not.
-
 argument::dataAction
 set the link::Classes/OpenBCI#-dataAction::
 
