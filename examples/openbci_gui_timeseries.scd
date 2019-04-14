@@ -2,7 +2,7 @@
 //MIT License, Copyright (c) 2018 OpenBCI, https://github.com/OpenBCI/OpenBCI_GUI/blob/master/LICENSE
 
 //TODO railed warnings
-//TODO test with wifi shield
+//TODO test with wifi shield - work out samplerate
 //TODO test with ganglion and daisy
 //TODO (in)activate channels + off button
 //TODO impedance per channel + ohm symbol

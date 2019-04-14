@@ -3,13 +3,12 @@
 GanglionWifi : Ganglion {
 	var <netAddr, responders;
 
-	*new {|netAddr, reset= true, dataAction, replyAction, initAction, bufferSize= 1024|
-		^super.new(dataAction, replyAction, initAction, bufferSize).initGanglionWifi(netAddr, reset);
+	*new {|netAddr, dataAction, replyAction, initAction, bufferSize= 1024|
+		^super.new(dataAction, replyAction, initAction, bufferSize).initGanglionWifi(netAddr);
 	}
-	initGanglionWifi {|argNetAddr, argReset|
+	initGanglionWifi {|argNetAddr|
 		netAddr= argNetAddr ?? {NetAddr("OpenBCI_WifiShieldOSC.local", 13999)};
 		CmdPeriod.add(this);
-		if(argReset, {this.softReset});
 		responders= List[
 			OSCFunc({|msg, time, addr, port|
 				"% shield ready (%)".format(this.class.name, addr.ip).postln;

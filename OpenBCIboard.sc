@@ -7,7 +7,7 @@ OpenBCIboard : OpenBCI {
 	//--commands
 	off {|channel= 1|  //Turn Channels OFF
 		channel.asArray.do{|c|
-			if(c>=1 and:{c<=numChannels}, {
+			if(c>=1 and:{c<=this.numChannels}, {
 				switch(c,
 					1, {this.prCommand($1)},
 					2, {this.prCommand($2)},
@@ -27,13 +27,13 @@ OpenBCIboard : OpenBCI {
 					16, {this.prCommand($i)}
 				);
 			}, {
-				"channel % not in the range 1-%".format(c, numChannels).warn;
+				"channel % not in the range 1-%".format(c, this.numChannels).warn;
 			});
 		};
 	}
 	on {|channel= 1|  //Turn Channels ON
 		channel.asArray.do{|c|
-			if(c>=1 and:{c<=numChannels}, {
+			if(c>=1 and:{c<=this.numChannels}, {
 				switch(c,
 					1, {this.prCommand($!)},
 					2, {this.prCommand($@)},
@@ -53,7 +53,7 @@ OpenBCIboard : OpenBCI {
 					16, {this.prCommand($I)}
 				);
 			}, {
-				"channel % not in the range 1-%".format(c, numChannels).warn;
+				"channel % not in the range 1-%".format(c, this.numChannels).warn;
 			});
 		};
 	}

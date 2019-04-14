@@ -55,6 +55,7 @@ if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI
 
 ## changelog
 
+* 1.61 - bugfix, remove wifi reset argument, simplify focus widget example
 * 1.60 - file recording class, changed dataAction arguments
 * 1.53 - file playback class
 * 1.52 - focus widget
@@ -81,3 +82,4 @@ if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI
 * finish and test Daisy classes - both serial and wifi
 * deal with muted channels in test and fft classes
 * DataFFT - add different fft window types
+* converter class for SD log file data
