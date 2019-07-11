@@ -1,15 +1,15 @@
 a [Quark](http://supercollider-quarks.github.io/quarks/) for [SuperCollider](http://supercollider.github.io)
 
 # OpenBCI
-SuperCollider classes for communicating with [Open Brain Computer Interface](http://openbci.com).
+SuperCollider classes for communicating with [Open Source Brain-Computer Interfaces](http://openbci.com).
 
 The following boards are supported...
 
-* Cyton (8 channels) [overview](https://shop.openbci.com/collections/frontpage/products/cyton-biosensing-board-8-channel?variant=38958638542), [docs](http://docs.openbci.com/Hardware/02-Cyton), [sdk](http://docs.openbci.com/OpenBCI%20Software/04-OpenBCI_Cyton_SDK)
+* [Cyton](https://shop.openbci.com/collections/frontpage/products/cyton-biosensing-board-8-channel?variant=38958638542) (8 channels) [docs](http://docs.openbci.com/Hardware/02-Cyton), [sdk](http://docs.openbci.com/OpenBCI%20Software/04-OpenBCI_Cyton_SDK)
 
-* Cyton + Daisy (16 channels) **untested** [overview](https://shop.openbci.com/collections/frontpage/products/cyton-daisy-biosensing-boards-16-channel?variant=38959256526)
+* [Cyton + Daisy](https://shop.openbci.com/collections/frontpage/products/cyton-daisy-biosensing-boards-16-channel?variant=38959256526) (16 channels) **untested**
 
-* Ganglion (4 channels) [overview](https://shop.openbci.com/collections/frontpage/products/pre-order-ganglion-board?variant=13461804483), [docs](http://docs.openbci.com/Hardware/07-Ganglion), [sdk](http://docs.openbci.com/OpenBCI%20Software/06-OpenBCI_Ganglion_SDK)
+* [Ganglion](https://shop.openbci.com/collections/frontpage/products/pre-order-ganglion-board?variant=13461804483) (4 channels) [docs](http://docs.openbci.com/Hardware/07-Ganglion), [sdk](http://docs.openbci.com/OpenBCI%20Software/06-OpenBCI_Ganglion_SDK)
 
 ```supercollider
 //install
@@ -19,17 +19,22 @@ Quarks.install("OpenBCI-SuperCollider")
 OpenBCI.openHelpFile
 ```
 
-for more info see http://openbci.com
+For more info see http://openbci.com
 
 ## overview
 
 * Cyton, CytonDaisy, Ganglion - use these SuperCollider classes if you connect to your board via bluetooth serial (the dongle). Maximum sample rate is 250Hz (Cyton) and 200Hz (Ganglion).
 
-* CytonWifi, CytonDaisyWifi, GanglionWifi - these SuperCollider classes require the WiFi Shield and a special firmware ( [arduino sketch](https://github.com/redFrik/OpenBCI_WIFI/blob/OpenSoundControl/examples/WifiShieldOSC/WifiShieldOSC.ino) ) for sending OSC. Maximum sample rate for these classes is 16000Hz.
+* CytonWifi, CytonDaisyWifi, GanglionWifi - these SuperCollider classes require the [WiFi Shield](https://shop.openbci.com/collections/frontpage/products/wifi-shield?variant=44534009550) (also [DIY](https://www.fredrikolofsson.com/f0blog/?q=node/664)) and a special firmware ( [Arduino sketch](https://github.com/redFrik/OpenBCI_WIFI/blob/OpenSoundControl/examples/WifiShieldOSC/WifiShieldOSC.ino) ) for sending OSC. Maximum sample rate for these classes is 16000Hz.
+
+* PlaybackData - is a class tha can play back recorded data from file (e.g. the files recorded onto the onboard SD-card).
 
 * SyntheticData - with this class you generate synthetic test data. No hardware board needed.
 
-* DataFilterNotch, DataFilterBandpass, DataSmoothing, DataFFT etc - these are classes for analysing and modifying data.
+* DataFilterNotch, DataFilterBandpass, DataSmoothing, DataFFT, DataRecord etc - these are classes for analysing and modifying data.
+
+![screenshot-openbci](screenshot-openbci.png?raw=true "OpenBCI-screenshot")
+_(screenshot showing gui widgets ported from OpenBCI_GUI.app)_
 
 ## troubleshooting
 
@@ -55,6 +60,7 @@ if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI
 
 ## changelog
 
+* 1.62 - readme updates with screenshot
 * 1.61 - bugfix, remove wifi reset argument, simplify focus widget example
 * 1.60 - file recording class, changed dataAction arguments
 * 1.53 - file playback class
