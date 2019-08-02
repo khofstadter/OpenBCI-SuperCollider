@@ -1,7 +1,6 @@
 //port of OpenBCI_GUI time series widget, remake in supercollider by f.olofsson 2019
 //MIT License, Copyright (c) 2018 OpenBCI, https://github.com/OpenBCI/OpenBCI_GUI/blob/master/LICENSE
 
-//TODO railed warnings
 //TODO test with wifi shield - work out samplerate
 //TODO test with ganglion and daisy
 //TODO hardware settings?
@@ -13,6 +12,8 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
+var threshRailed= 2.pow(23)-1000*board.uVScale(24);
+var threshNearRailed= 2.pow(23)*0.9*board.uVScale(24);
 var notchFilter, bandpassFilter;
 var numPointsToDraw;
 var fps= 30;
@@ -158,6 +159,7 @@ usr.drawFunc= {
 	channels.do{|c, i|
 		var impedanceVal, impedanceRect, impedanceStr;
 		var uVrms= 0, uVrmsCnt= 0, uVrmsRect, uVrmsStr;
+		var railed= false, nearRailed= false;
 		var y, data;
 		if(c.active, {
 			data= board.buffer[i];
@@ -173,6 +175,13 @@ usr.drawFunc= {
 			ub.width.do{|x|
 				var index= data.size-1-(x*step).round.asInteger;
 				var val= data[index];
+				if(val.abs>=threshRailed, {
+					railed= true;
+				}, {
+					if(val.abs>=threshNearRailed, {
+						nearRailed= true;
+					});
+				});
 				uVrms= uVrms+pow(val, 2);
 				uVrmsCnt= uVrmsCnt+1;
 				y= 1-(val/maxAmp).clip(-1, 1)*channelHeight*0.5+1;
@@ -181,8 +190,12 @@ usr.drawFunc= {
 			Pen.stroke;
 
 			if(c.impedance, {
-				impedanceVal= impedance.value(std.value(data.keep(0-board.currentSampleRate)));
-				impedanceStr= (impedanceVal/1000).round(0.01).asString+"kOhm ";
+				if(railed, {
+					impedanceStr= "RAILED";
+				}, {
+					impedanceVal= impedance.value(std.value(data.keep(0-board.currentSampleRate)));
+					impedanceStr= (impedanceVal/1000).round(0.01).asString+"kOhm ";
+				});
 				impedanceRect= impedanceStr.bounds(f2);
 				impedanceRect= impedanceRect.moveTo(2, channelHeight-impedanceRect.height-1);
 				Pen.fillRect(impedanceRect);
@@ -190,8 +203,15 @@ usr.drawFunc= {
 			});
 
 			if(uVrmsCnt>0, {
-				uVrms= (uVrms/uVrmsCnt).sqrt;
-				uVrmsStr= uVrms.round(0.1).asString+"uVrms";
+				if(railed, {
+					uVrmsStr= "RAILED";
+				}, {
+					uVrms= (uVrms/uVrmsCnt).sqrt;
+					uVrmsStr= uVrms.round(0.1).asString+"uVrms";
+					if(nearRailed, {
+						uVrmsStr= "NEAR RAILED - "++uVrmsStr;
+					});
+				});
 				uVrmsRect= uVrmsStr.bounds(f2);
 				uVrmsRect= uVrmsRect.moveTo(ub.width-uVrmsRect.width-2, channelHeight-uVrmsRect.height-1);
 				Pen.fillRect(uVrmsRect);
