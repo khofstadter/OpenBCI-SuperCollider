@@ -60,6 +60,7 @@ if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI
 
 ## changelog
 
+* 1.63 - impedance tests and examples, autoscale accelerometer
 * 1.62 - readme updates with screenshot
 * 1.61 - bugfix, remove wifi reset argument, simplify focus widget example
 * 1.60 - file recording class, changed dataAction arguments
@@ -89,3 +90,4 @@ if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI
 * deal with muted channels in test and fft classes
 * DataFFT - add different fft window types
 * converter class for SD log file data
+* ganglion impedance

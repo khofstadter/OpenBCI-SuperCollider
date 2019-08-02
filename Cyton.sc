@@ -52,7 +52,7 @@ Cyton : OpenBCIboard {
 	getDefaultChannelSettings {  //get a report
 		this.prCommand($D);
 	}
-	impedance {|channel= 1, pchan= 0, nchan= 0|
+	impedance {|channel= 1, pchan= 0, nchan= 1|
 		if(channel>=1 and:{channel<=numChannels}, {
 			this.prCommand($z);
 			this.prCommand(channel.asDigit);

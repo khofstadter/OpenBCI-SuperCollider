@@ -47,7 +47,7 @@ var std= {|arr|  //standard deviation
 };
 var impedance= {|uV|
 	var impedance= sqrt(2)*uV*1e-6/6e-9;
-	impedance= (impedance-2200)/1000;  //NOTE: cyton board only 2K2 resistor
+	impedance= impedance-2200;  //NOTE: cyton board only 2K2 resistor
 };
 
 //--window
@@ -156,7 +156,7 @@ usr.drawFunc= {
 	var channelHeight= ub.height-2/channels.size;
 	Pen.fillColor= Color.new255(255, 255, 255, 200);
 	channels.do{|c, i|
-		var impedanceRect, impedanceStr;
+		var impedanceVal, impedanceRect, impedanceStr;
 		var uVrms= 0, uVrmsCnt= 0, uVrmsRect, uVrmsStr;
 		var y, data;
 		if(c.active, {
@@ -181,7 +181,8 @@ usr.drawFunc= {
 			Pen.stroke;
 
 			if(c.impedance, {
-				impedanceStr= impedance.value(std.value(data.keep(0-board.currentSampleRate))).round(0.01).asString+"kOhm ";
+				impedanceVal= impedance.value(std.value(data.keep(0-board.currentSampleRate)));
+				impedanceStr= (impedanceVal/1000).round(0.01).asString+"kOhm ";
 				impedanceRect= impedanceStr.bounds(f2);
 				impedanceRect= impedanceRect.moveTo(2, channelHeight-impedanceRect.height-1);
 				Pen.fillRect(impedanceRect);
