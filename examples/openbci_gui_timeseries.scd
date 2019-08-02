@@ -4,8 +4,6 @@
 //TODO railed warnings
 //TODO test with wifi shield - work out samplerate
 //TODO test with ganglion and daisy
-//TODO (in)activate channels + off button
-//TODO impedance per channel + ohm symbol
 //TODO hardware settings?
 
 (
@@ -41,6 +39,16 @@ var channels= {|i|
 		impedance: false
 	)
 }.dup(board.numChannels);
+var std= {|arr|  //standard deviation
+	var val= 0;
+	var average= arr.mean;
+	arr.do{|a| val= val+pow(a-average, 2)};
+	sqrt(val= val/arr.size);
+};
+var impedance= {|uV|
+	var impedance= sqrt(2)*uV*1e-6/6e-9;
+	impedance= (impedance-2200)/1000;  //NOTE: cyton board only 2K2 resistor
+};
 
 //--window
 var win= Window("time series widget", Rect(10, 100, 512, 576));
@@ -121,10 +129,12 @@ win.view.mouseMoveAction= {|v, x, y|
 	channels.do{|c, i|
 		if(c.circle.containsPoint(Point(x, y)), {
 			c.active= c.active.not;
+			if(c.active, {board.on(i+1)}, {board.off(i+1)});
 			win.refresh;
 		}, {
 			if(c.omega.containsPoint(Point(x, y)), {
 				c.impedance= c.impedance.not;
+				board.impedance(i+1, 0, c.impedance.binaryValue);
 				win.refresh;
 			});
 		});
@@ -146,6 +156,7 @@ usr.drawFunc= {
 	var channelHeight= ub.height-2/channels.size;
 	Pen.fillColor= Color.new255(255, 255, 255, 200);
 	channels.do{|c, i|
+		var impedanceRect, impedanceStr;
 		var uVrms= 0, uVrmsCnt= 0, uVrmsRect, uVrmsStr;
 		var y, data;
 		if(c.active, {
@@ -168,6 +179,14 @@ usr.drawFunc= {
 				Pen.lineTo(Point(ub.width-x, y));
 			};
 			Pen.stroke;
+
+			if(c.impedance, {
+				impedanceStr= impedance.value(std.value(data.keep(0-board.currentSampleRate))).round(0.01).asString+"kOhm ";
+				impedanceRect= impedanceStr.bounds(f2);
+				impedanceRect= impedanceRect.moveTo(2, channelHeight-impedanceRect.height-1);
+				Pen.fillRect(impedanceRect);
+				Pen.stringLeftJustIn(impedanceStr, impedanceRect, f2, Color.black);
+			});
 
 			if(uVrmsCnt>0, {
 				uVrms= (uVrms/uVrmsCnt).sqrt;
