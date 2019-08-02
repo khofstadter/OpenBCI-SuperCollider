@@ -1,10 +1,10 @@
 (
 	\name: 				"OpenBCI",
 	\summary:			"communicating with OpenBCI",
-	\version:			"1.62",
+	\version:			"1.63",
 	\schelp:			"OpenBCI",
 	\author: 			"Fredrik Olofsson & Krisztian Hofstadter",
 	\country: 			"Germany & UK",
 	\since: 			"2018",
-	\ext_dependancy:	"OpenBCI hardware"
+	\ext_dependency:	"OpenBCI hardware"
 )
