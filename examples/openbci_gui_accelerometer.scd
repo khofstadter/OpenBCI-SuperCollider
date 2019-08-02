@@ -2,7 +2,7 @@
 //MIT License, Copyright (c) 2018 OpenBCI, https://github.com/OpenBCI/OpenBCI_GUI/blob/master/LICENSE
 
 //TODO test with ganglion and daisy
-//TODO auto and sync menu selections
+//TODO sync menu selections
 
 (
 var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
@@ -65,7 +65,8 @@ win.drawFunc= {
 		var str;
 		var x= i*step;
 		if((v.frac>0).not, {v= v.asInteger});
-		str= v.asString;
+		str= v.round(0.1).asString;
+		if(str.endsWith(".0"), {str= str.drop(-2)});
 		Pen.stringAtPoint(str, Point(x-(str.bounds(f2).width/2), -25), f2);
 		Pen.line(Point(x, -6), Point(x, -10));
 	};
@@ -83,6 +84,7 @@ usr.clearOnRefresh= false;
 usr.drawFunc= {
 	var ab, rad, step;
 	var numPointsToDraw;
+	var changed;
 
 	if(buffer.accelBuffer.size>0, {  //skip frame if no new data arrived (25hz vs fps)
 
@@ -136,6 +138,23 @@ usr.drawFunc= {
 			var x= i*step;
 			Pen.line(Point(x, 0), Point(x, ab.height));
 		};
+		if(pop1.value==0, {
+			changed= false;
+			3.do{|i|
+				if(data[0][i]>verticalScale[verticalScale.size-1], {
+					verticalScale[verticalScale.size-1]= data[0][i];
+					changed= true;
+				}, {
+					if(data[0][i]<verticalScale[0], {
+						verticalScale[0]= data[0][i];
+						changed= true;
+					});
+				});
+			};
+			if(changed, {
+				win.refresh;
+			});
+		});
 		step= ab.height/(verticalScale.size-1);
 		verticalScale.do{|v, i|
 			var y= i*step;
@@ -180,13 +199,13 @@ pop1= PopUpMenu(win, Rect(po, 20, pw, 20))
 .items_(#["Auto", "1 g", "2 g", "4 g"])
 .action_{|v|
 	verticalScale= [
-		(-2, -1 .. 2),  //TODO
+		(-2, -1 .. 2)/10,  //will adapt automatically
 		(-1, -0.6 .. 1),
 		(-2, -1 .. 2),
 		(-4, -2 .. 4)
 	][v.value];
 	win.refresh;
-}.valueAction_(2);
+}.valueAction_(0);
 pop2= PopUpMenu(win, Rect((pw+2)+po, 20, pw, 20))
 .items_(#["Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"])
 .action_{|v|
