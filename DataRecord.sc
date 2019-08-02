@@ -12,7 +12,7 @@ DataRecord {
 	initDataRecord {|argBoard, argPath|
 		var timeStamp= Date.getDate.format("%Y-%m-%d_%H-%M-%S");
 		board= argBoard;
-		path= argPath ?? {ScIDE.currentPath.dirname+/+"savedData"};
+		path= argPath ?? {this.class.filenameSymbol.asString.dirname+/+"savedData"};
 		File.mkdir(path);
 		path= path+/+"OpenBCI-RAW-"++timeStamp++"_sc.txt";
 		file= File(path, "w");
