@@ -1,6 +1,11 @@
 //port of OpenBCI_GUI fft plot widget, remake in supercollider by f.olofsson 2019
 //MIT License, Copyright (c) 2018 OpenBCI, https://github.com/OpenBCI/OpenBCI_GUI/blob/master/LICENSE
 
+//adapted to calculate theta and gamma and store in global variables
+//draw 0 - pause all drawing to save cpu
+//draw 1 - only draw thresholds and average values
+//draw 2 - draw everyhing including fft data
+
 //TODO test with ganglion and daisy
 //TODO (in)activate channels?
 
@@ -8,9 +13,8 @@
 var activeChannels= #[0, 1, 2, 3, 4, 5, 6, 7];
 var thetaBand= [0, 4, 8];  //channel, min, max (in Hz)
 var gammaBand= [0, 35, 50];  //channel, min, max (in Hz)
-var loThetaEnergy= 1, hiThetaEnergy= 20;  //adjust min and max for theta
-var loGammaEnergy= 1, hiGammaEnergy= 20;  //adjust min and max for gamma
-//var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-07-16_16-25-34_sc.txt", initAction: {|b| b.start});
+var loThetaEnergy= 1, hiThetaEnergy= 20;  //vertical thresholds - adjust min and max for theta
+var loGammaEnergy= 1, hiGammaEnergy= 20;  //vertical thresholds - adjust min and max for gamma
 var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 //var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
@@ -18,8 +22,11 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var recorder= DataRecord(board).start;  //uncomment to record
 var notchFilter, bandpassFilter, smoothFilters;
 var fft= DataFFT(board, 256);
-var fps= 30;
-var usr, pop1, pop2, pop3, pop4, btn1, btn2, pw, po;
+var fps= 25;
+var allData= Array.newClear(board.numChannels);  //an array of arrays with fft data
+var drawData= true;
+var energyThetaAvg= 0, energyGammaAvg= 0;  //the current calulated averages
+var btn, usr, pop1, pop2, pop3, pop4, btn1, btn2, pw, po;
 var horizontalScale, verticalScale, maxFreq, maxAmp;
 var f0= Font("Helvetiva", 16);
 var f1= Font("Helvetiva", 14);
@@ -109,118 +116,91 @@ usr.animate= true;
 usr.frameRate= fps;
 usr.clearOnRefresh= true;
 usr.drawFunc= {
-	var data;
 	var ub= usr.bounds;
 	var step= ub.width/(maxFreq+1);
-	var thetaArr= Array.new, gammaArr= Array.new;
-	var thetaRange= [
-		(fft.fftSize*(thetaBand[1]/board.currentSampleRate)).round.asInteger,
-		(fft.fftSize*(thetaBand[2]/board.currentSampleRate)).round.asInteger
-	];
-	var gammaRange= [
-		(fft.fftSize*(gammaBand[1]/board.currentSampleRate)).round.asInteger,
-		(fft.fftSize*(gammaBand[2]/board.currentSampleRate)).round.asInteger
-	];
-	var factor= fft.fftSize/board.currentSampleRate*0.01;
-	var energyThetaAvg, energyGammaAvg;
-	var energyX, energyX2, energyY, energyY2, energyYtheta, energyYgamma;
-	channels.do{|c, i|
-		if(c.active, {
-			data= board.buffer[i];
-			if(btn1.value>0, {
-				data= notchFilter.filter(data);
-			});
-			if(btn2.value>0, {
-				data= bandpassFilter.filter(data);
-			});
-			data= fft.fft(data);
-			if(pop4.value>0, {
-				data= smoothFilters[i].filter(data);
-			});
-			Pen.strokeColor= c.color;
-			Pen.moveTo(Point(0, ub.height));
-			data.do{|y, x|
-				if(x<=(maxFreq+1) and:{x>0}, {
-					if(pop3.value==0, {
-						y= y.explin(0.1, maxAmp, ub.height, 0);
-					}, {
-						y= y.linlin(0, maxAmp, ub.height, 0);
+	allData.do{|data, i|
+		var energyX, energyX2, energyY, energyY2, energyYtheta, energyYgamma;
+		if(channels[i].active, {
+			if(drawData, {
+				Pen.width= 1;
+				Pen.strokeColor= channels[i].color;
+				Pen.moveTo(Point(0, ub.height));
+				data.do{|y, x|
+					if(x<=(maxFreq+1) and:{x>0}, {
+						if(pop3.value==0, {
+							y= y.explin(0.1, maxAmp, ub.height, 0);
+						}, {
+							y= y.linlin(0, maxAmp, ub.height, 0);
+						});
+						Pen.lineTo(Point(x*step, y));
 					});
-					Pen.lineTo(Point(x*step, y));
-				});
-			};
+				};
+				Pen.stroke;
+			});
+
+			//--optional draw marker lines for min+max
+			Pen.width= 1;
+			Pen.strokeColor= Color.red(1, 0.5);
+			energyX= thetaBand[1]*step;
+			energyX2= thetaBand[2]*step;
+			if(pop3.value==0, {
+				energyY= loThetaEnergy.explin(0.1, maxAmp, ub.height, 0);
+				energyY2= hiThetaEnergy.explin(0.1, maxAmp, ub.height, 0);
+				energyYtheta= energyThetaAvg.explin(0.1, maxAmp, ub.height, 0);
+			}, {
+				energyY= loThetaEnergy.linlin(0, maxAmp, ub.height, 0);
+				energyY2= hiThetaEnergy.linlin(0, maxAmp, ub.height, 0);
+				energyYtheta= energyThetaAvg.linlin(0, maxAmp, ub.height, 0);
+			});
+			Pen.moveTo(Point(energyX+4, energyY));
+			Pen.lineTo(Point(energyX2-4, energyY));
+			Pen.moveTo(Point(energyX+4, energyY2));
+			Pen.lineTo(Point(energyX2-4, energyY2));
+			Pen.stroke;
+			Pen.width= 3;
+			Pen.moveTo(Point(energyX, energyYtheta));
+			Pen.lineTo(Point(energyX2, energyYtheta));
 			Pen.stroke;
 
-
-			//--collect amplitudes for frequency range for active channels
-			if(thetaBand[0]==i, {
-				thetaArr= thetaArr++data.copyRange(*thetaRange);
+			Pen.width= 1;
+			Pen.strokeColor= Color.green(1, 0.5);
+			energyX= gammaBand[1]*step;
+			energyX2= gammaBand[2]*step;
+			if(pop3.value==0, {
+				energyY= loGammaEnergy.explin(0.1, maxAmp, ub.height, 0);
+				energyY2= hiGammaEnergy.explin(0.1, maxAmp, ub.height, 0);
+				energyYgamma= energyGammaAvg.explin(0.1, maxAmp, ub.height, 0);
+			}, {
+				energyY= loGammaEnergy.linlin(0, maxAmp, ub.height, 0);
+				energyY2= hiGammaEnergy.linlin(0, maxAmp, ub.height, 0);
+				energyYgamma= energyGammaAvg.linlin(0, maxAmp, ub.height, 0);
 			});
-			if(gammaBand[0]==i, {
-				gammaArr= gammaArr++data.copyRange(*gammaRange);
-			});
-
-			//--calculate average energy and update control bus
-	energyThetaAvg= thetaArr.squared.sum*factor;
-	energyGammaAvg= gammaArr.squared.sum*factor;
-	~energyTheta= energyThetaAvg.linlin(loThetaEnergy, hiThetaEnergy, 0, 1);
-	~energyGamma= energyGammaAvg.linlin(loGammaEnergy, hiGammaEnergy, 0, 1);
-	//Ndef(\energyTheta).source= ~energyTheta;
-	//Ndef(\energyGamma).source= ~energyGamma;
-
-	//--optional draw marker lines for min+max
-	Pen.width= 3;
-	Pen.strokeColor= Color.red(1, 0.5);
-	energyX= thetaBand[1]*step;
-	energyX2= thetaBand[2]*step;
-	if(pop3.value==0, {
-		energyY= loThetaEnergy.explin(0.1, maxAmp, ub.height, 0);
-		energyY2= hiThetaEnergy.explin(0.1, maxAmp, ub.height, 0);
-		energyYtheta= energyThetaAvg.explin(0.1, maxAmp, ub.height, 0);
-	}, {
-		energyY= loThetaEnergy.linlin(0, maxAmp, ub.height, 0);
-		energyY2= hiThetaEnergy.linlin(0, maxAmp, ub.height, 0);
-		energyYtheta= energyThetaAvg.linlin(0, maxAmp, ub.height, 0);
-	});
-	Pen.moveTo(Point(energyX, energyY));
-	Pen.lineTo(Point(energyX2, energyY));
-	Pen.moveTo(Point(energyX, energyY2));
-	Pen.lineTo(Point(energyX2, energyY2));
-	Pen.stroke;
-	Pen.width= 1;
-	Pen.moveTo(Point(energyX, energyYtheta));
-	Pen.lineTo(Point(energyX2, energyYtheta));
-	Pen.stroke;
-
-	Pen.width= 3;
-	Pen.strokeColor= Color.green(1, 0.5);
-	energyX= gammaBand[1]*step;
-	energyX2= gammaBand[2]*step;
-	if(pop3.value==0, {
-		energyY= loGammaEnergy.explin(0.1, maxAmp, ub.height, 0);
-		energyY2= hiGammaEnergy.explin(0.1, maxAmp, ub.height, 0);
-		energyYgamma= energyGammaAvg.explin(0.1, maxAmp, ub.height, 0);
-	}, {
-		energyY= loGammaEnergy.linlin(0, maxAmp, ub.height, 0);
-		energyY2= hiGammaEnergy.linlin(0, maxAmp, ub.height, 0);
-		energyYgamma= energyGammaAvg.linlin(0, maxAmp, ub.height, 0);
-	});
-	Pen.moveTo(Point(energyX, energyY));
-	Pen.lineTo(Point(energyX2, energyY));
-	Pen.moveTo(Point(energyX, energyY2));
-	Pen.lineTo(Point(energyX2, energyY2));
-	Pen.stroke;
-	Pen.width= 1;
-	Pen.moveTo(Point(energyX, energyYgamma));
-	Pen.lineTo(Point(energyX2, energyYgamma));
-	Pen.stroke;
-
+			Pen.moveTo(Point(energyX+4, energyY));
+			Pen.lineTo(Point(energyX2-4, energyY));
+			Pen.moveTo(Point(energyX+4, energyY2));
+			Pen.lineTo(Point(energyX2-4, energyY2));
+			Pen.stroke;
+			Pen.width= 3;
+			Pen.moveTo(Point(energyX, energyYgamma));
+			Pen.lineTo(Point(energyX2, energyYgamma));
+			Pen.stroke;
 		});
 	};
 };
 usr.resize= 5;
+usr.canFocus= false;
 
 //--menus
+btn= Button(win, Rect(90, 10, 50, 30))
+.states_([["draw 0", Color.black], ["draw 1", Color.white, Color.blue], ["draw 2", Color.white, Color.blue]])
+.action_({|view|
+	if(view.value==0, {
+		usr.animate= false;
+	}, {
+		usr.animate= true;
+		drawData= view.value>1;
+	});
+}).value_(2);
 pw= win.bounds.width*0.125;
 po= win.bounds.width-((pw+2)*5.5);
 StaticText(win, Rect(po, 1, pw, 20)).align_(\center).string_("Max Freq");
@@ -262,7 +242,11 @@ pop3= PopUpMenu(win, Rect((pw+2)*2+po, 20, pw, 20))
 pop4= PopUpMenu(win, Rect((pw+2)*3+po, 20, pw, 20))
 .items_(#["0.0", "0.5", "0.75", "0.9", "0.95", "0.98"])
 .action_{|v|
-	smoothFilters= {DataSmoothing(v.item.asFloat)}.dup(board.numChannels);
+	if(v.value>0, {
+		smoothFilters= {DataSmoothing(v.item.asFloat)}.dup(board.numChannels);
+	}, {
+		smoothFilters= nil;
+	});
 }.valueAction_(3);
 btn1= Button(win, Rect((pw+2)*4+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterNotch.keys.collect{|x| [x.asString+"Hz"]}
@@ -284,6 +268,58 @@ btn2= Button(win, Rect((pw+2)*4.5+po, 20, pw/2, 20)).states_(
 }.valueAction_(1);
 win.view.children.reject{|v| v==usr}.do{|v| v.resize_(3).font_(f2)};
 
+//--update data
+Routine.run({
+	inf.do{
+		var factor= fft.fftSize/board.currentSampleRate*0.01;
+		var thetaArr= Array.new, gammaArr= Array.new;
+		var thetaRange= [
+			(fft.fftSize*(thetaBand[1]/board.currentSampleRate)).round.asInteger,
+			(fft.fftSize*(thetaBand[2]/board.currentSampleRate)).round.asInteger
+		];
+		var gammaRange= [
+			(fft.fftSize*(gammaBand[1]/board.currentSampleRate)).round.asInteger,
+			(fft.fftSize*(gammaBand[2]/board.currentSampleRate)).round.asInteger
+		];
+
+		channels.do{|c, i|
+			var data;
+			if(c.active, {
+				data= board.buffer[i];
+				if(notchFilter.notNil, {
+					data= notchFilter.filter(data);
+				});
+				if(bandpassFilter.notNil, {
+					data= bandpassFilter.filter(data);
+				});
+				data= fft.fft(data);
+				if(smoothFilters.notNil, {
+					data= smoothFilters[i].filter(data);
+				});
+				allData[i]= data;
+
+				//--collect amplitudes for frequency range for selected channels
+				if(thetaBand[0]==i, {
+					thetaArr= thetaArr++data.copyRange(*thetaRange);
+				});
+				if(gammaBand[0]==i, {
+					gammaArr= gammaArr++data.copyRange(*gammaRange);
+				});
+			});
+		};
+
+		//--calculate average energy and store in global variables
+		energyThetaAvg= thetaArr.squared.sum*factor;
+		energyGammaAvg= gammaArr.squared.sum*factor;
+		~energyTheta= energyThetaAvg.linlin(loThetaEnergy, hiThetaEnergy, 0, 1);
+		~energyGamma= energyGammaAvg.linlin(loGammaEnergy, hiGammaEnergy, 0, 1);
+		//Ndef(\energyTheta).source= ~energyTheta;
+		//Ndef(\energyGamma).source= ~energyGamma;
+		(1/fps).wait;
+	};
+});
+
+~allData= allData;
 ~openbci= board;
 )
 
@@ -295,3 +331,5 @@ SerialPort.listDevices;
 //post current energy values
 r= Routine.run({inf.do{[~energyTheta, ~energyGamma].postln; 0.25.wait}});
 r.stop;
+
+~allData;  //current fft data
