@@ -222,6 +222,7 @@ usr.drawFunc= {
 	};
 };
 usr.resize= 5;
+usr.canFocus= false;
 
 //--menus
 pw= win.bounds.width*0.144;
