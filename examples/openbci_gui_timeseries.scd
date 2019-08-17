@@ -173,13 +173,11 @@ usr.drawFunc= {
 			Pen.strokeColor= c.color;
 			Pen.moveTo(Point(ub.width, y));
 			ub.width.do{|x|
-				var index= data.size-1-(x*step).round.asInteger;
-				var val= data[index];
-				if(val.abs>=threshRailed, {
-					railed= true;
-				}, {
-					if(val.abs>=threshNearRailed, {
-						nearRailed= true;
+				var val= data[data.size-1-(x*step).round.asInteger];
+				if(val.abs>=threshNearRailed, {
+					nearRailed= true;
+					if(val.abs>=threshRailed, {
+						railed= true;
 					});
 				});
 				uVrms= uVrms+pow(val, 2);

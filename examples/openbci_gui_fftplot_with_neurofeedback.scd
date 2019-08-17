@@ -116,21 +116,22 @@ usr.animate= true;
 usr.frameRate= fps;
 usr.clearOnRefresh= true;
 usr.drawFunc= {
-	var ub= usr.bounds;
-	var step= ub.width/(maxFreq+1);
+	var uh= usr.bounds.height;
+	var step= usr.bounds.width/(maxFreq+1);
+	var drawLog= pop3.value==0;
 	allData.do{|data, i|
 		var energyX, energyX2, energyY, energyY2, energyYtheta, energyYgamma;
 		if(channels[i].active, {
 			if(drawData, {
 				Pen.width= 1;
 				Pen.strokeColor= channels[i].color;
-				Pen.moveTo(Point(0, ub.height));
+				Pen.moveTo(Point(0, uh));
 				data.do{|y, x|
 					if(x<=(maxFreq+1) and:{x>0}, {
-						if(pop3.value==0, {
-							y= y.explin(0.1, maxAmp, ub.height, 0);
+						if(drawLog, {
+							y= y.explin(0.1, maxAmp, uh, 0);
 						}, {
-							y= y.linlin(0, maxAmp, ub.height, 0);
+							y= y.linlin(0, maxAmp, uh, 0);
 						});
 						Pen.lineTo(Point(x*step, y));
 					});
@@ -143,14 +144,14 @@ usr.drawFunc= {
 			Pen.strokeColor= Color.red(1, 0.5);
 			energyX= thetaBand[1]*step;
 			energyX2= thetaBand[2]*step;
-			if(pop3.value==0, {
-				energyY= loThetaEnergy.explin(0.1, maxAmp, ub.height, 0);
-				energyY2= hiThetaEnergy.explin(0.1, maxAmp, ub.height, 0);
-				energyYtheta= energyThetaAvg.explin(0.1, maxAmp, ub.height, 0);
+			if(drawLog, {
+				energyY= loThetaEnergy.explin(0.1, maxAmp, uh, 0);
+				energyY2= hiThetaEnergy.explin(0.1, maxAmp, uh, 0);
+				energyYtheta= energyThetaAvg.explin(0.1, maxAmp, uh, 0);
 			}, {
-				energyY= loThetaEnergy.linlin(0, maxAmp, ub.height, 0);
-				energyY2= hiThetaEnergy.linlin(0, maxAmp, ub.height, 0);
-				energyYtheta= energyThetaAvg.linlin(0, maxAmp, ub.height, 0);
+				energyY= loThetaEnergy.linlin(0, maxAmp, uh, 0);
+				energyY2= hiThetaEnergy.linlin(0, maxAmp, uh, 0);
+				energyYtheta= energyThetaAvg.linlin(0, maxAmp, uh, 0);
 			});
 			Pen.moveTo(Point(energyX+4, energyY));
 			Pen.lineTo(Point(energyX2-4, energyY));
@@ -166,14 +167,14 @@ usr.drawFunc= {
 			Pen.strokeColor= Color.green(1, 0.5);
 			energyX= gammaBand[1]*step;
 			energyX2= gammaBand[2]*step;
-			if(pop3.value==0, {
-				energyY= loGammaEnergy.explin(0.1, maxAmp, ub.height, 0);
-				energyY2= hiGammaEnergy.explin(0.1, maxAmp, ub.height, 0);
-				energyYgamma= energyGammaAvg.explin(0.1, maxAmp, ub.height, 0);
+			if(drawLog, {
+				energyY= loGammaEnergy.explin(0.1, maxAmp, uh, 0);
+				energyY2= hiGammaEnergy.explin(0.1, maxAmp, uh, 0);
+				energyYgamma= energyGammaAvg.explin(0.1, maxAmp, uh, 0);
 			}, {
-				energyY= loGammaEnergy.linlin(0, maxAmp, ub.height, 0);
-				energyY2= hiGammaEnergy.linlin(0, maxAmp, ub.height, 0);
-				energyYgamma= energyGammaAvg.linlin(0, maxAmp, ub.height, 0);
+				energyY= loGammaEnergy.linlin(0, maxAmp, uh, 0);
+				energyY2= hiGammaEnergy.linlin(0, maxAmp, uh, 0);
+				energyYgamma= energyGammaAvg.linlin(0, maxAmp, uh, 0);
 			});
 			Pen.moveTo(Point(energyX+4, energyY));
 			Pen.lineTo(Point(energyX2-4, energyY));
@@ -200,7 +201,7 @@ btn= Button(win, Rect(90, 10, 50, 30))
 		usr.animate= true;
 		drawData= view.value>1;
 	});
-}).value_(2);
+}).valueAction_(1);
 pw= win.bounds.width*0.125;
 po= win.bounds.width-((pw+2)*5.5);
 StaticText(win, Rect(po, 1, pw, 20)).align_(\center).string_("Max Freq");
@@ -268,7 +269,7 @@ btn2= Button(win, Rect((pw+2)*4.5+po, 20, pw/2, 20)).states_(
 }.valueAction_(1);
 win.view.children.reject{|v| v==usr}.do{|v| v.resize_(3).font_(f2)};
 
-//--update data
+//--update data in an independent routine
 Routine.run({
 	inf.do{
 		var factor= fft.fftSize/board.currentSampleRate*0.01;
@@ -317,9 +318,8 @@ Routine.run({
 		//Ndef(\energyGamma).source= ~energyGamma;
 		(1/fps).wait;
 	};
-});
+}, clock:AppClock);
 
-~allData= allData;
 ~openbci= board;
 )
 
@@ -331,5 +331,3 @@ SerialPort.listDevices;
 //post current energy values
 r= Routine.run({inf.do{[~energyTheta, ~energyGamma].postln; 0.25.wait}});
 r.stop;
-
-~allData;  //current fft data
