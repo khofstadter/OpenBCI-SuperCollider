@@ -152,9 +152,9 @@ usr.animate= true;
 usr.frameRate= fps;
 usr.clearOnRefresh= true;
 usr.drawFunc= {
-	var ub= usr.bounds;
-	var step= numPointsToDraw-1/ub.width;
-	var channelHeight= ub.height-2/channels.size;
+	var uw= usr.bounds.width;
+	var step= numPointsToDraw-1/uw;
+	var channelHeight= usr.bounds.height-2/channels.size;
 	Pen.fillColor= Color.new255(255, 255, 255, 200);
 	channels.do{|c, i|
 		var impedanceVal, impedanceRect, impedanceStr;
@@ -171,21 +171,19 @@ usr.drawFunc= {
 			});
 			y= 1-(data[0]/maxAmp).clip(-1, 1)*channelHeight*0.5+1;
 			Pen.strokeColor= c.color;
-			Pen.moveTo(Point(ub.width, y));
-			ub.width.do{|x|
-				var index= data.size-1-(x*step).round.asInteger;
-				var val= data[index];
-				if(val.abs>=threshRailed, {
-					railed= true;
-				}, {
-					if(val.abs>=threshNearRailed, {
-						nearRailed= true;
+			Pen.moveTo(Point(uw, y));
+			uw.do{|x|
+				var val= data[data.size-1-(x*step).round.asInteger];
+				if(val.abs>=threshNearRailed, {
+					nearRailed= true;
+					if(val.abs>=threshRailed, {
+						railed= true;
 					});
 				});
 				uVrms= uVrms+pow(val, 2);
 				uVrmsCnt= uVrmsCnt+1;
 				y= 1-(val/maxAmp).clip(-1, 1)*channelHeight*0.5+1;
-				Pen.lineTo(Point(ub.width-x, y));
+				Pen.lineTo(Point(uw-x, y));
 			};
 			Pen.stroke;
 
@@ -213,7 +211,7 @@ usr.drawFunc= {
 					});
 				});
 				uVrmsRect= uVrmsStr.bounds(f2);
-				uVrmsRect= uVrmsRect.moveTo(ub.width-uVrmsRect.width-2, channelHeight-uVrmsRect.height-1);
+				uVrmsRect= uVrmsRect.moveTo(uw-uVrmsRect.width-2, channelHeight-uVrmsRect.height-1);
 				Pen.fillRect(uVrmsRect);
 				Pen.stringRightJustIn(uVrmsStr, uVrmsRect, f2, Color.black);
 			});

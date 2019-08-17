@@ -105,8 +105,9 @@ usr.frameRate= fps;
 usr.clearOnRefresh= true;
 usr.drawFunc= {
 	var data;
-	var ub= usr.bounds;
-	var step= ub.width/(maxFreq+1);
+	var uh= usr.bounds.height;
+	var step= usr.bounds.width/(maxFreq+1);
+	var drawLog= pop3.value==0;
 	channels.do{|c, i|
 		if(c.active, {
 			data= board.buffer[i];
@@ -121,13 +122,13 @@ usr.drawFunc= {
 				data= smoothFilters[i].filter(data);
 			});
 			Pen.strokeColor= c.color;
-			Pen.moveTo(Point(0, ub.height));
+			Pen.moveTo(Point(0, uh));
 			data.do{|y, x|
 				if(x<=(maxFreq+1) and:{x>0}, {
-					if(pop3.value==0, {
-						y= y.explin(0.1, maxAmp, ub.height, 0);
+					if(drawLog, {
+						y= y.explin(0.1, maxAmp, uh, 0);
 					}, {
-						y= y.linlin(0, maxAmp, ub.height, 0);
+						y= y.linlin(0, maxAmp, uh, 0);
 					});
 					Pen.lineTo(Point(x*step, y));
 				});

@@ -23,10 +23,11 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 var notchFilter, bandpassFilter, smoothFilters;
 var fft= DataFFT(board, 256);
 var fps= 25;
+var downSample= 65;  //only draw this many samples
 var allData= Array.newClear(board.numChannels);  //an array of arrays with fft data
-var drawData= true;
+var drawModes= #[\Paused, \NoData, \DownSampl, \Complete];
 var energyThetaAvg= 0, energyGammaAvg= 0;  //the current calulated averages
-var btn, usr, pop1, pop2, pop3, pop4, btn1, btn2, pw, po;
+var usr, btn0, pop1, pop2, pop3, pop4, btn1, btn2, pw, po;
 var horizontalScale, verticalScale, maxFreq, maxAmp;
 var f0= Font("Helvetiva", 16);
 var f1= Font("Helvetiva", 14);
@@ -52,7 +53,7 @@ var channels= {|i|
 var win= Window("fft plot widget", Rect(10, 100, 512, 338));
 var fs= "Frequency (Hz)";
 var as= "Amplitude (uV)";
-win.view.minSize= Size(436, 145);
+win.view.minSize= Size(502, 145);
 win.background= Color.white;
 win.drawFunc= {
 	var wb= win.bounds;
@@ -116,41 +117,47 @@ usr.animate= true;
 usr.frameRate= fps;
 usr.clearOnRefresh= true;
 usr.drawFunc= {
-	var ub= usr.bounds;
-	var step= ub.width/(maxFreq+1);
+	var uh= usr.bounds.height;
+	var step= usr.bounds.width/(maxFreq+1);
+	var xstep= if(drawMode==2, {step*fft.fftSize2/downSample}, {step});
+	var drawLog= pop3.value==0;
+	var drawMode= btn0.value;
 	allData.do{|data, i|
 		var energyX, energyX2, energyY, energyY2, energyYtheta, energyYgamma;
 		if(channels[i].active, {
-			if(drawData, {
-				Pen.width= 1;
+			Pen.width= 1;
+			if(drawMode>=2, {
+				if(drawMode==2, {
+					data= data.resamp0(downSample);  //use resamp1 for interpolation
+				});
 				Pen.strokeColor= channels[i].color;
-				Pen.moveTo(Point(0, ub.height));
+				Pen.moveTo(Point(0, uh));
 				data.do{|y, x|
 					if(x<=(maxFreq+1) and:{x>0}, {
-						if(pop3.value==0, {
-							y= y.explin(0.1, maxAmp, ub.height, 0);
+						if(drawLog, {
+							y= y.explin(0.1, maxAmp, uh, 0);
 						}, {
-							y= y.linlin(0, maxAmp, ub.height, 0);
+							y= y.linlin(0, maxAmp, uh, 0);
 						});
-						Pen.lineTo(Point(x*step, y));
+						Pen.lineTo(Point(x*xstep, y));
 					});
 				};
+
 				Pen.stroke;
 			});
 
 			//--optional draw marker lines for min+max
-			Pen.width= 1;
 			Pen.strokeColor= Color.red(1, 0.5);
 			energyX= thetaBand[1]*step;
 			energyX2= thetaBand[2]*step;
-			if(pop3.value==0, {
-				energyY= loThetaEnergy.explin(0.1, maxAmp, ub.height, 0);
-				energyY2= hiThetaEnergy.explin(0.1, maxAmp, ub.height, 0);
-				energyYtheta= energyThetaAvg.explin(0.1, maxAmp, ub.height, 0);
+			if(drawLog, {
+				energyY= loThetaEnergy.explin(0.1, maxAmp, uh, 0);
+				energyY2= hiThetaEnergy.explin(0.1, maxAmp, uh, 0);
+				energyYtheta= energyThetaAvg.explin(0.1, maxAmp, uh, 0);
 			}, {
-				energyY= loThetaEnergy.linlin(0, maxAmp, ub.height, 0);
-				energyY2= hiThetaEnergy.linlin(0, maxAmp, ub.height, 0);
-				energyYtheta= energyThetaAvg.linlin(0, maxAmp, ub.height, 0);
+				energyY= loThetaEnergy.linlin(0, maxAmp, uh, 0);
+				energyY2= hiThetaEnergy.linlin(0, maxAmp, uh, 0);
+				energyYtheta= energyThetaAvg.linlin(0, maxAmp, uh, 0);
 			});
 			Pen.moveTo(Point(energyX+4, energyY));
 			Pen.lineTo(Point(energyX2-4, energyY));
@@ -166,14 +173,14 @@ usr.drawFunc= {
 			Pen.strokeColor= Color.green(1, 0.5);
 			energyX= gammaBand[1]*step;
 			energyX2= gammaBand[2]*step;
-			if(pop3.value==0, {
-				energyY= loGammaEnergy.explin(0.1, maxAmp, ub.height, 0);
-				energyY2= hiGammaEnergy.explin(0.1, maxAmp, ub.height, 0);
-				energyYgamma= energyGammaAvg.explin(0.1, maxAmp, ub.height, 0);
+			if(drawLog, {
+				energyY= loGammaEnergy.explin(0.1, maxAmp, uh, 0);
+				energyY2= hiGammaEnergy.explin(0.1, maxAmp, uh, 0);
+				energyYgamma= energyGammaAvg.explin(0.1, maxAmp, uh, 0);
 			}, {
-				energyY= loGammaEnergy.linlin(0, maxAmp, ub.height, 0);
-				energyY2= hiGammaEnergy.linlin(0, maxAmp, ub.height, 0);
-				energyYgamma= energyGammaAvg.linlin(0, maxAmp, ub.height, 0);
+				energyY= loGammaEnergy.linlin(0, maxAmp, uh, 0);
+				energyY2= hiGammaEnergy.linlin(0, maxAmp, uh, 0);
+				energyYgamma= energyGammaAvg.linlin(0, maxAmp, uh, 0);
 			});
 			Pen.moveTo(Point(energyX+4, energyY));
 			Pen.lineTo(Point(energyX2-4, energyY));
@@ -191,24 +198,23 @@ usr.resize= 5;
 usr.canFocus= false;
 
 //--menus
-btn= Button(win, Rect(90, 10, 50, 30))
-.states_([["draw 0", Color.black], ["draw 1", Color.white, Color.blue], ["draw 2", Color.white, Color.blue]])
+pw= win.bounds.width*0.125;
+po= win.bounds.width-((pw+2)*6.5);
+btn0= Button(win, Rect(po, 20, pw, 20))
+.states_(drawModes.collect{|symbol| [symbol.asString]})
 .action_({|view|
 	if(view.value==0, {
 		usr.animate= false;
 	}, {
 		usr.animate= true;
-		drawData= view.value>1;
 	});
-}).value_(2);
-pw= win.bounds.width*0.125;
-po= win.bounds.width-((pw+2)*5.5);
-StaticText(win, Rect(po, 1, pw, 20)).align_(\center).string_("Max Freq");
-StaticText(win, Rect((pw+2)+po, 1, pw, 20)).align_(\center).string_("Max uV");
-StaticText(win, Rect((pw+2)*2+po, 1, pw, 20)).align_(\center).string_("Log/Lin");
-StaticText(win, Rect((pw+2)*3+po, 1, pw, 20)).align_(\center).string_("Smooth");
-StaticText(win, Rect((pw+2)*4+po, 1, pw, 20)).align_(\center).string_("Filters");
-pop1= PopUpMenu(win, Rect(po, 20, pw, 20))
+}).valueAction_(1);
+StaticText(win, Rect((pw+2)+po, 1, pw, 20)).align_(\center).string_("Max Freq");
+StaticText(win, Rect((pw+2)*2+po, 1, pw, 20)).align_(\center).string_("Max uV");
+StaticText(win, Rect((pw+2)*3+po, 1, pw, 20)).align_(\center).string_("Log/Lin");
+StaticText(win, Rect((pw+2)*4+po, 1, pw, 20)).align_(\center).string_("Smooth");
+StaticText(win, Rect((pw+2)*5+po, 1, pw, 20)).align_(\center).string_("Filters");
+pop1= PopUpMenu(win, Rect((pw+2)+po, 20, pw, 20))
 .items_(#["20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz", "500 Hz", "800 Hz"])
 .action_{|v|
 	maxFreq= v.item.asInteger;
@@ -224,7 +230,7 @@ pop1= PopUpMenu(win, Rect(po, 20, pw, 20))
 	][v.value];
 	win.refresh;
 }.valueAction_(2);
-pop2= PopUpMenu(win, Rect((pw+2)+po, 20, pw, 20))
+pop2= PopUpMenu(win, Rect((pw+2)*2+po, 20, pw, 20))
 .items_(#["10 uV", "50 uV", "100 uV", "1000 uV"])
 .action_{|v|
 	maxAmp= v.item.asInteger;
@@ -236,10 +242,10 @@ pop2= PopUpMenu(win, Rect((pw+2)+po, 20, pw, 20))
 	][v.value];
 	win.refresh;
 }.valueAction_(2);
-pop3= PopUpMenu(win, Rect((pw+2)*2+po, 20, pw, 20))
+pop3= PopUpMenu(win, Rect((pw+2)*3+po, 20, pw, 20))
 .items_(#["Log", "Linear"])
 .action_{win.refresh}.value_(0);
-pop4= PopUpMenu(win, Rect((pw+2)*3+po, 20, pw, 20))
+pop4= PopUpMenu(win, Rect((pw+2)*4+po, 20, pw, 20))
 .items_(#["0.0", "0.5", "0.75", "0.9", "0.95", "0.98"])
 .action_{|v|
 	if(v.value>0, {
@@ -248,7 +254,7 @@ pop4= PopUpMenu(win, Rect((pw+2)*3+po, 20, pw, 20))
 		smoothFilters= nil;
 	});
 }.valueAction_(3);
-btn1= Button(win, Rect((pw+2)*4+po, 20, pw/2, 20)).states_(
+btn1= Button(win, Rect((pw+2)*5+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterNotch.keys.collect{|x| [x.asString+"Hz"]}
 ).action_{|v|
 	if(v.value>0, {
@@ -257,7 +263,7 @@ btn1= Button(win, Rect((pw+2)*4+po, 20, pw/2, 20)).states_(
 		notchFilter= nil;
 	});
 }.valueAction_(1);
-btn2= Button(win, Rect((pw+2)*4.5+po, 20, pw/2, 20)).states_(
+btn2= Button(win, Rect((pw+2)*5.5+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterBandpass.keys.collect{|x| [x.asString]}
 ).action_{|v|
 	if(v.value>0, {
@@ -268,7 +274,7 @@ btn2= Button(win, Rect((pw+2)*4.5+po, 20, pw/2, 20)).states_(
 }.valueAction_(1);
 win.view.children.reject{|v| v==usr}.do{|v| v.resize_(3).font_(f2)};
 
-//--update data
+//--update data in an independent routine
 Routine.run({
 	inf.do{
 		var factor= fft.fftSize/board.currentSampleRate*0.01;
@@ -317,9 +323,8 @@ Routine.run({
 		//Ndef(\energyGamma).source= ~energyGamma;
 		(1/fps).wait;
 	};
-});
+}, clock:AppClock);
 
-~allData= allData;
 ~openbci= board;
 )
 
@@ -331,5 +336,3 @@ SerialPort.listDevices;
 //post current energy values
 r= Routine.run({inf.do{[~energyTheta, ~energyGamma].postln; 0.25.wait}});
 r.stop;
-
-~allData;  //current fft data
