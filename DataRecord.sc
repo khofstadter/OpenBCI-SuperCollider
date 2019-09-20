@@ -6,6 +6,7 @@
 DataRecord {
 	var <board, <path, file;
 	var dataFunc, separator;
+	var >extra;
 	*new {|board, path|
 		^super.new.initDataRecord(board, path);
 	}
@@ -18,6 +19,7 @@ DataRecord {
 		file= File(path, "w");
 		this.prWriteHeader;
 		separator= ", ";
+		extra= [];
 		dataFunc= {|num, data, accel|
 			var time= Date.getDate;
 			file.write(num.asString);
@@ -28,6 +30,10 @@ DataRecord {
 			};
 			accel.do{|a|
 				file.write(a.round(0.001).asString);
+				file.write(separator);
+			};
+			extra.do{|e|
+				file.write(e.asString);
 				file.write(separator);
 			};
 			file.write(time.format("%H:%M:"++(time.rawSeconds%60).round(0.001)));
