@@ -36,6 +36,7 @@ stop recording.
 examples::
 
 code::
+//start recording
 (
 //var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});
 var board= SyntheticData(initAction: {|b| b.start});
@@ -46,8 +47,28 @@ var recorder= DataRecord(board).start;
 
 ~rec.path;
 
+//stop recording
 ~rec.stop;
 ~board.stop;
 
 ~rec.path.openOS;  //open file we just recorded in text editor
+
+
+//an example showing adding four extra columns of data
+//WARNING - this might break the playback and or other functions that expect a certain data format
+(
+//var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});
+var board= SyntheticData(initAction: {|b| b.start});
+var recorder= DataRecord(board);
+recorder.extra= [\more, 0.4, \data, 0.5];
+~rec= recorder.start;
+~board= board;
+)
+
+~rec.extra= [\more, 1.0.rand, \data, 1.0.rand];  //evaluate this a few times
+
+~rec.stop;
+~board.stop;
+~rec.path.openOS;  //open file we just recorded in text editor
+//there should be more data with a few changes here and there
 ::
