@@ -60,6 +60,7 @@ if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI
 
 ## changelog
 
+* 1.70 - neurofeedback-2ch and -8ch added
 * 1.63 - impedance tests and examples, autoscale accelerometer
 * 1.62 - readme updates with screenshot
 * 1.61 - bugfix, remove wifi reset argument, simplify focus widget example

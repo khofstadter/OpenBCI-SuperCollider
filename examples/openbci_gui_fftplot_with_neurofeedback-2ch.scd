@@ -315,8 +315,8 @@ Routine.run({
 		};
 
 		//--calculate average energy and store in global variables
-		energyThetaAvg= thetaArr.squared.sum*factor;
-		energyGammaAvg= gammaArr.squared.sum*factor;
+		energyThetaAvg= thetaArr.squared.sum*factor; //adapted from OpenBCI code,
+		energyGammaAvg= gammaArr.squared.sum*factor; //but nf might be better with median
 		~energyTheta= energyThetaAvg.linlin(loThetaEnergy, hiThetaEnergy, 0, 1);
 		~energyGamma= energyGammaAvg.linlin(loGammaEnergy, hiGammaEnergy, 0, 1);
 		//Ndef(\energyTheta).source= ~energyTheta;
