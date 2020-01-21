@@ -10,6 +10,15 @@ note::
 does not survive link::Classes/CmdPeriod::.
 ::
 
+the synthetic data generated put gaussian noise on all channels and then modify the first four channels in the following manner...
+
+definitionList::
+## first channel || the is noise scaled up x10
+## second channel || a 10 Hz sine tone at 10 uVrms is added to the noise
+## third channel || a 50 Hz sine tone at 50 uVrms is added to the noise
+## fourth channel || a 60 Hz sine tone at 50 uVrms is added to the noise
+::
+
 classmethods::
 
 method::new
