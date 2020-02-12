@@ -32,7 +32,8 @@ var colors= [
 var channels= {|i|
 	(
 		color: colors.wrapAt(i),
-		active: activeChannels.includes(i)
+		active: activeChannels.includes(i),
+		uVrms: 0.0
 	)
 }.dup(board.numChannels);
 
@@ -117,6 +118,7 @@ usr.drawFunc= {
 			if(btn2.value>0, {
 				data= bandpassFilter.filter(data);
 			});
+			c.uVrms= pow(data, 2).mean.sqrt;
 			data= fft.fft(data);
 			if(pop4.value>0, {
 				data= smoothFilters[i].filter(data);
@@ -204,6 +206,7 @@ btn2= Button(win, Rect((pw+2)*4.5+po, 20, pw/2, 20)).states_(
 }.valueAction_(1);
 win.view.children.reject{|v| v==usr}.do{|v| v.resize_(3).font_(f2)};
 
+~channels= channels;
 ~openbci= board;
 )
 
@@ -211,3 +214,6 @@ win.view.children.reject{|v| v==usr}.do{|v| v.resize_(3).font_(f2)};
 ~openbci.start;
 ~openbci.stop;
 SerialPort.listDevices;
+
+//check the micro volt root mean square for first channel
+~channels[0].uVrms;
