@@ -1,12 +1,17 @@
 //port of OpenBCI_GUI fft plot widget, remake in supercollider by f.olofsson 2019
 //MIT License, Copyright (c) 2018 OpenBCI, https://github.com/OpenBCI/OpenBCI_GUI/blob/master/LICENSE
 
-//adapted by k.hofstadter to calculate same bandwith on all channels (theta below)
+//adapted by khofstadter to calculate same bandwith on all channels (theta below), phase coherence and example added for saving raw text file for plotting
+
 //draw 0 - pause all drawing to save cpu
 //draw 1 - only draw thresholds and average values
 //draw 2 - draw everyhing including fft data
 
-//TODO shall we add the correlation calculation here?
+//TODO plot coherence between coherence arrays as well
+//TODO too many r=Routines at bottom
+//TODO refresh plotter example at end instead of redraw
+//TODO refine correlation code, extendable, select locations on the top of the code
+//TODO why coherence goes to 0?
 //TODO ch1-8 copy&paste drawings to write more eleganlyt with a do loop.  then also more flexible if someone else want to adapt it to 4ch or other setup.
 //TODO test with ganglion and daisy
 //TODO (in)activate channels?
@@ -14,8 +19,9 @@
 (
 var activeChannels= #[0,1,2,3,4,5,6,7];
 var band= Array.fill(8, { arg i; [i,4,8] }); //theta on all channels;
-var loBandEnergy= 0.3, hiBandEnergy= 10;  //vertical thresholds
+var loBandEnergy= 0.3, hiBandEnergy= 2;  //vertical thresholds
 var bandEnergyAvg= 0 ! 8; //the current calulated averages
+var phaseCalcArr= Signal.newClear(512) ! 4; //change size to 512 for longer window
 //var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
@@ -48,6 +54,26 @@ var channels= {|i|
 		active: activeChannels.includes(i)
 	)
 }.dup(board.numChannels);
+
+//phase calculation code
+//https://scsynth.org/t/how-to-calculate-phase-synchrony/1430/24
+var phaseCalcFunc = { |x, y|
+	var xMean = x.mean,
+	yMean = y.mean,
+	momentSum = 0, xDev = 0, yDev = 0;
+
+	x.size.do { |i|
+		var xDiff = (x[i] - xMean),
+		yDiff = (y[i] - yMean);
+		momentSum = momentSum + (xDiff * yDiff);
+		xDev = xDev + xDiff.squared;
+		yDev = yDev + yDiff.squared;
+	};
+	xDev = (xDev / (x.size - 1)).sqrt;
+	yDev = (yDev / (x.size - 1)).sqrt;  // if y has extra items, they're ignored
+
+	momentSum / ((x.size - 1) * xDev * yDev)
+};
 
 //--window
 var win= Window("fft plot widget", Rect(1500, 1500, 512, 338));
@@ -534,16 +560,36 @@ Routine.run({
 		~bandEnergyAvg[5]= bandEnergyAvg[5]; //ch6
 		~bandEnergyAvg[6]= bandEnergyAvg[6]; //ch7
 		~bandEnergyAvg[7]= bandEnergyAvg[7]; //ch8
+
+		phaseCalcArr[0]= phaseCalcArr[0].rotate(-1);
+		phaseCalcArr[1]= phaseCalcArr[1].rotate(-1);
+		phaseCalcArr[2]= phaseCalcArr[2].rotate(-1);
+		//phaseCalcArr[3]= phaseCalcArr[3].rotate(-1);
+		phaseCalcArr[0][phaseCalcArr[0].size-1]= ~bandEnergyAvg[2]; //ch3
+		phaseCalcArr[1][phaseCalcArr[1].size-1]= ~bandEnergyAvg[3]; //ch4
+		phaseCalcArr[2][phaseCalcArr[2].size-1]= ~bandEnergyAvg[6]; //ch7
+		//phaseCalcArr[3][phaseCalcArr[3].size-1]= ~bandEnergyAvg[7]; //ch8
+
+		//two phase coherence calculations:
+		~phaseCalcFuncVal[0]= (phaseCalcFunc.(phaseCalcArr[0], phaseCalcArr[1])).round(0.01);
+		~phaseCalcFuncVal[1]= (phaseCalcFunc.(phaseCalcArr[0], phaseCalcArr[2])).round(0.01);
+
+		~phaseCalcArr[0]= phaseCalcArr[0];
+		~phaseCalcArr[1]= phaseCalcArr[1];
+		~phaseCalcArr[2]= phaseCalcArr[2];
+		//~phaseCalcArr[3]= phaseCalcArr[3];
+
 		(1/fps).wait;
 	};
 }, clock:AppClock);
 
 ~bandEnergyAvg= 0 ! 8;
+~phaseCalcArr= 0 ! 4;
 ~openbci= board;
 ~loBandEnergy= loBandEnergy;
 ~hiBandEnergy= hiBandEnergy;
+~phaseCalcFuncVal= 0 ! 2;
 )
-
 
 ~openbci.softReset;
 ~openbci.start;
@@ -551,10 +597,34 @@ Routine.run({
 SerialPort.listDevices;
 
 ~loBandEnergy = 0;
-~hiBandEnergy = 10;
+~hiBandEnergy = 1.5;
 
 //post current energy values
 r= Routine.run({inf.do{[~bandEnergyAvg.postln]; 0.25.wait}});
 r.stop;
 
+//plot ~phaseCalcFuncVal
+(
+var data = [~phaseCalcArr[0],~phaseCalcArr[1],~phaseCalcFuncVal[0]!512,~phaseCalcArr[2],~phaseCalcFuncVal[1]!512];
+var plotter = Plotter("plotter",Rect(5,5,630,405));
+plotter.plotMode = \plines;
+plotter.value_(data);
+~phaseCalcFuncVal;
+);
 
+//post current energy values
+r= Routine.run({inf.do{[~phaseCalcFuncVal.postln]; 0.25.wait}});
+r.stop;
+
+
+(
+//record raw EEG and extra data into a text file
+~recorder= DataRecord(~openbci);
+~rec= ~recorder.start;
+
+//update DataRecord extra
+r= Routine.run({inf.do{
+	~rec.extra= [~bandEnergyAvg[0],~bandEnergyAvg[1],~bandEnergyAvg[2],~bandEnergyAvg[3],~bandEnergyAvg[4],~bandEnergyAvg[5],~bandEnergyAvg[6],~bandEnergyAvg[7],~hiBandEnergy,~phaseCalcFuncVal[0],~phaseCalcFuncVal[1]];
+	0.25.wait}});
+//r.stop;
+)

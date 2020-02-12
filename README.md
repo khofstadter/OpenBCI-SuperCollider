@@ -61,6 +61,7 @@ if hickups and freezes see here... https://docs.openbci.com/docs/10Troubleshooti
 ## changelog
 
 * 1.75 - added three scsynth examples and fixed some outdated links
+* 1.71 - phase coherence added to -8ch nf, nf_plotter.scd added (with audio player and 'PlayFile' folder)
 * 1.70 - neurofeedback-2ch and -8ch added
 * 1.63 - impedance tests and examples, autoscale accelerometer
 * 1.62 - readme updates with screenshot

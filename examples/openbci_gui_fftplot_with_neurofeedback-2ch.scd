@@ -6,19 +6,20 @@
 //draw 1 - only draw thresholds and average values
 //draw 2 - draw everyhing including fft data
 
+//TODO remove high amp ch1 in a SyntheticData subcalss;
 //TODO test with ganglion and daisy
 //TODO (in)activate channels?
 
 (
-var activeChannels= #[0, 1, 2, 3, 4, 5, 6, 7];
+var activeChannels= #[0,1,2,3,4,5,6,7];
 var thetaBand= [0, 4, 8];  //channel, min, max (in Hz)
-var gammaBand= [0, 35, 50];  //channel, min, max (in Hz)
-var loThetaEnergy= 1, hiThetaEnergy= 20;  //vertical thresholds - adjust min and max for theta
-var loGammaEnergy= 1, hiGammaEnergy= 20;  //vertical thresholds - adjust min and max for gamma
-var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
+var gammaBand= [1, 35, 45];  //channel, min, max (in Hz)
+var loThetaEnergy= 0, hiThetaEnergy= 10;  //vertical thresholds - adjust min and max for theta
+var loGammaEnergy= 0, hiGammaEnergy= 10;  //vertical thresholds - adjust min and max for gamma
+//var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
-//var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
-//var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
+var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
+//var board= PlaybackData("/Users/khofstadter/Dropbox/PhD/raw_eeg_data/shamanic_soundscape/mama/OpenBCI-RAW-2019-10-01_10-31-39_sc.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
 var notchFilter, bandpassFilter, smoothFilters;
 var fft= DataFFT(board, 256);
@@ -50,7 +51,7 @@ var channels= {|i|
 }.dup(board.numChannels);
 
 //--window
-var win= Window("fft plot widget", Rect(10, 100, 512, 338));
+var win= Window("fft plot widget", Rect(1000, 1000, 512, 338));//changed by kh to be top right;
 var fs= "Frequency (Hz)";
 var as= "Amplitude (uV)";
 win.view.minSize= Size(502, 145);
@@ -128,7 +129,10 @@ usr.drawFunc= {
 			Pen.width= 1;
 			if(drawMode>=2, {
 				if(drawMode==2, {
-					data= data.resamp0(downSample);  //use resamp1 for interpolation
+					// data= data.resamp0(downSample);  //use resamp1 for interpolation
+					data= data.clump(3).collect{|x| x.maxItem};
+					xstep= step*3;
+
 				});
 				Pen.strokeColor= channels[i].color;
 				Pen.moveTo(Point(0, uh));
@@ -151,12 +155,12 @@ usr.drawFunc= {
 			energyX= thetaBand[1]*step;
 			energyX2= thetaBand[2]*step;
 			if(drawLog, {
-				energyY= loThetaEnergy.explin(0.1, maxAmp, uh, 0);
-				energyY2= hiThetaEnergy.explin(0.1, maxAmp, uh, 0);
+				energyY= ~loThetaEnergy.explin(0.1, maxAmp, uh, 0);
+				energyY2= ~hiThetaEnergy.explin(0.1, maxAmp, uh, 0);
 				energyYtheta= energyThetaAvg.explin(0.1, maxAmp, uh, 0);
 			}, {
-				energyY= loThetaEnergy.linlin(0, maxAmp, uh, 0);
-				energyY2= hiThetaEnergy.linlin(0, maxAmp, uh, 0);
+				energyY= ~loThetaEnergy.linlin(0, maxAmp, uh, 0);
+				energyY2= ~hiThetaEnergy.linlin(0, maxAmp, uh, 0);
 				energyYtheta= energyThetaAvg.linlin(0, maxAmp, uh, 0);
 			});
 			Pen.moveTo(Point(energyX+4, energyY));
@@ -174,12 +178,12 @@ usr.drawFunc= {
 			energyX= gammaBand[1]*step;
 			energyX2= gammaBand[2]*step;
 			if(drawLog, {
-				energyY= loGammaEnergy.explin(0.1, maxAmp, uh, 0);
-				energyY2= hiGammaEnergy.explin(0.1, maxAmp, uh, 0);
+				energyY= ~loGammaEnergy.explin(0.1, maxAmp, uh, 0);
+				energyY2= ~hiGammaEnergy.explin(0.1, maxAmp, uh, 0);
 				energyYgamma= energyGammaAvg.explin(0.1, maxAmp, uh, 0);
 			}, {
-				energyY= loGammaEnergy.linlin(0, maxAmp, uh, 0);
-				energyY2= hiGammaEnergy.linlin(0, maxAmp, uh, 0);
+				energyY= ~loGammaEnergy.linlin(0, maxAmp, uh, 0);
+				energyY2= ~hiGammaEnergy.linlin(0, maxAmp, uh, 0);
 				energyYgamma= energyGammaAvg.linlin(0, maxAmp, uh, 0);
 			});
 			Pen.moveTo(Point(energyX+4, energyY));
@@ -315,10 +319,15 @@ Routine.run({
 		};
 
 		//--calculate average energy and store in global variables
-		energyThetaAvg= thetaArr.squared.sum*factor; //adapted from OpenBCI code,
-		energyGammaAvg= gammaArr.squared.sum*factor; //but nf might be better with median
-		~energyTheta= energyThetaAvg.linlin(loThetaEnergy, hiThetaEnergy, 0, 1);
-		~energyGamma= energyGammaAvg.linlin(loGammaEnergy, hiGammaEnergy, 0, 1);
+		//amended by khofsadter:
+		//energyThetaAvg= thetaArr.squared.sum*factor;
+		energyThetaAvg = thetaArr.median.round(0.1);
+		//energyGammaAvg= gammaArr.squared.sum*factor;
+		energyGammaAvg = gammaArr.median.round(0.1);
+		//~energyTheta= energyThetaAvg.linlin(loThetaEnergy, hiThetaEnergy, 0, 1);
+		~energyTheta = energyThetaAvg;
+		//~energyGamma= energyGammaAvg.linlin(loGammaEnergy, hiGammaEnergy, 0, 1);
+		~energyGamma = energyGammaAvg;
 		//Ndef(\energyTheta).source= ~energyTheta;
 		//Ndef(\energyGamma).source= ~energyGamma;
 		(1/fps).wait;
@@ -326,13 +335,52 @@ Routine.run({
 }, clock:AppClock);
 
 ~openbci= board;
+
+//to control externally:
+~loThetaEnergy= loThetaEnergy;
+~hiThetaEnergy= hiThetaEnergy;
+~loGammaEnergy= loGammaEnergy;
+~hiGammaEnergy= hiGammaEnergy;
 )
 
+//device methods:
 ~openbci.softReset;
 ~openbci.start;
 ~openbci.stop;
 SerialPort.listDevices;
 
-//post current energy values
-r= Routine.run({inf.do{[~energyTheta, ~energyGamma].postln; 0.25.wait}});
+// adjust thresholds:
+~loThetaEnergy = 0;
+~hiThetaEnergy = 2;
+~loGammaEnergy = 0;
+~hiGammaEnergy = 1;
+
+
+//an example on how to record the raw EEG with extra data in txt file
+(
+var recorder= DataRecord(~openbci);
+recorder.extra= [~energyTheta,~energyGamma];
+~rec= recorder.start;
+)
+
+//post current energy values and update .extra;
+r= Routine.run({inf.do{
+	~rec.extra= [~energyTheta,~energyGamma];
+	0.1.wait}});
+
+
 r.stop;
+
+~rec.path;
+
+~rec.stop;
+~board.stop;
+
+~rec.path.openOS;  //open file we just recorded in text editor
+
+
+
+
+
+
+
