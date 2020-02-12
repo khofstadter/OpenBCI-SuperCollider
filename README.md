@@ -1,15 +1,15 @@
-a [Quark](http://supercollider-quarks.github.io/quarks/) for [SuperCollider](http://supercollider.github.io)
+a [Quark](https://supercollider-quarks.github.io/quarks/) for [SuperCollider](https://supercollider.github.io)
 
 # OpenBCI
-SuperCollider classes for communicating with [Open Source Brain-Computer Interfaces](http://openbci.com).
+SuperCollider classes for communicating with [Open Source Brain-Computer Interfaces](https://openbci.com).
 
 The following boards are supported...
 
-* [Cyton](https://shop.openbci.com/collections/frontpage/products/cyton-biosensing-board-8-channel?variant=38958638542) (8 channels) [docs](http://docs.openbci.com/Hardware/02-Cyton), [sdk](http://docs.openbci.com/OpenBCI%20Software/04-OpenBCI_Cyton_SDK)
+* [Cyton](https://docs.openbci.com/docs/02Cyton/CytonLanding) (8 channels) [sdk](https://docs.openbci.com/docs/02Cyton/CytonSDK)
 
-* [Cyton + Daisy](https://shop.openbci.com/collections/frontpage/products/cyton-daisy-biosensing-boards-16-channel?variant=38959256526) (16 channels) **untested**
+* [Cyton + Daisy](https://docs.openbci.com/docs/02Cyton/CytonSpecs#openbci-daisy-module) (16 channels) **untested**
 
-* [Ganglion](https://shop.openbci.com/collections/frontpage/products/pre-order-ganglion-board?variant=13461804483) (4 channels) [docs](http://docs.openbci.com/Hardware/07-Ganglion), [sdk](http://docs.openbci.com/OpenBCI%20Software/06-OpenBCI_Ganglion_SDK)
+* [Ganglion](https://docs.openbci.com/docs/03Ganglion/GanglionLanding) (4 channels), [sdk](https://docs.openbci.com/docs/03Ganglion/GanglionSDK)
 
 ```supercollider
 //install
@@ -19,13 +19,13 @@ Quarks.install("OpenBCI-SuperCollider")
 OpenBCI.openHelpFile
 ```
 
-For more info see http://openbci.com
+For more info see https://openbci.com
 
 ## overview
 
 * Cyton, CytonDaisy, Ganglion - use these SuperCollider classes if you connect to your board via bluetooth serial (the dongle). Maximum sample rate is 250Hz (Cyton) and 200Hz (Ganglion).
 
-* CytonWifi, CytonDaisyWifi, GanglionWifi - these SuperCollider classes require the [WiFi Shield](https://shop.openbci.com/collections/frontpage/products/wifi-shield?variant=44534009550) (also [DIY](https://www.fredrikolofsson.com/f0blog/?q=node/664)) and a special firmware ( [Arduino sketch](https://github.com/redFrik/OpenBCI_WIFI/blob/OpenSoundControl/examples/WifiShieldOSC/WifiShieldOSC.ino) ) for sending OSC. Maximum sample rate for these classes is 16000Hz.
+* CytonWifi, CytonDaisyWifi, GanglionWifi - these SuperCollider classes require the [WiFi Shield](https://docs.openbci.com/docs/05ThirdParty/03-WiFiShield/WiFiLanding) (also [DIY](https://www.fredrikolofsson.com/f0blog/?q=node/664)) and a special firmware ( [Arduino sketch](https://github.com/redFrik/OpenBCI_WIFI/blob/OpenSoundControl/examples/WifiShieldOSC/WifiShieldOSC.ino) ) for sending OSC. Maximum sample rate for these classes is 16000Hz.
 
 * PlaybackData - is a class tha can play back recorded data from file (e.g. the files recorded onto the onboard SD-card).
 
@@ -56,10 +56,11 @@ kextstat | grep FTDI
 it should now report `com.apple.driver.AppleUSBFTDI (5.0.0)` and the data should come streaming in at a smooth rate and without hickups. test this with for example the file `gui_example_userview_accelerometer.scd`.
 
 **mac os 10.11.x** and earlier with cyton + dongle...
-if hickups and freezes see here... http://docs.openbci.com/Tutorials/10-Mac_FTDI_Driver_Fix
+if hickups and freezes see here... https://docs.openbci.com/docs/10Troubleshooting/FTDI_Fix_Mac
 
 ## changelog
 
+* 1.75 - added three scsynth examples and fixed some outdated links
 * 1.70 - neurofeedback-2ch and -8ch added
 * 1.63 - impedance tests and examples, autoscale accelerometer
 * 1.62 - readme updates with screenshot

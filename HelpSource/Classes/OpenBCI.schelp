@@ -4,7 +4,7 @@ categories:: External Control
 related:: Classes/OpenBCIboard, Classes/DataFFT
 
 description::
-for more information about the biosensing hardware see http://openbci.com
+for more information about the biosensing hardware see https://openbci.com
 
 note::
 this is an abstract class - do not instantiate. use the serial or wifi subclasses.

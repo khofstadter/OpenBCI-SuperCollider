@@ -2,8 +2,8 @@
 
 //related: GanglionSerial GanglionWifi Cyton
 
-//http://docs.openbci.com/Hardware/08-Ganglion_Data_Format
-//http://docs.openbci.com/OpenBCI%20Software/06-OpenBCI_Ganglion_SDK
+//https://docs.openbci.com/docs/03Ganglion/GanglionDataFormat
+//https://docs.openbci.com/docs/03Ganglion/GanglionSDK
 
 Ganglion : OpenBCIboard {
 	classvar <numChannels= 4;
