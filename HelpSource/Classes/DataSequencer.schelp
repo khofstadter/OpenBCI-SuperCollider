@@ -5,6 +5,9 @@ related:: Classes/OpenBCI, Classes/DataBuffer, Classes/DataFFT
 
 description::
 Collects data from any OpenBCI board and spread out over time. Mainly useful with wifi shield where packages arrives in chunks.
+Can also act like a buffer and increase timing accuracy when sending OpenBCI data from sclang to scserver.
+
+Internally it has two link::Classes/Routine::s, one for data and one for accelerometer, and they both run on the link::Classes/SystemClock::. The samplerate for the data routine is the board's sample rate, and the accelerometer routine run at 25Hz. These samplerates can be tuned to run slightly slower with the link::#-factor:: method (default 0.99).
 
 classmethods::
 
@@ -19,9 +22,11 @@ the number of slots in both data and accelerometer buffers. If the data is not r
 
 argument::dataActive
 a link::Classes/Boolean:: flag indicating if data should be buffered or not.
+If only using the accelerometer set this flag to false to save some CPU and memory.
 
 argument::accelActive
 a link::Classes/Boolean:: flag indicating if accelerometer data should be buffered or not.
+If not using the accelerometer set this flag to false to save some CPU and memory.
 
 instancemethods::
 
@@ -43,7 +48,7 @@ method::accelAction
 set the link::Classes/OpenBCI#-accelAction::
 
 method::data
-last brain wave data readings as an link::Classes/Array::. 
+last brain wave data readings as an link::Classes/Array::.
 
 method::accel
 last accelerometer readings as an link::Classes/Array::.
