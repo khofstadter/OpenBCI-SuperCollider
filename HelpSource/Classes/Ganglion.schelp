@@ -4,7 +4,7 @@ categories:: External Control
 related:: Classes/OpenBCI, Classes/Cyton, Classes/CytonDaisy
 
 description::
-see http://docs.openbci.com/OpenBCI%20Software/06-OpenBCI_Ganglion_SDK for more information about the commands.
+see https://docs.openbci.com/docs/03Ganglion/GanglionSDK for more information about the commands.
 
 note::
 this is an abstract class - do not instantiate. use the link::Classes/GanglionSerial:: or link::Classes/GanglionWifi:: subclasses.
