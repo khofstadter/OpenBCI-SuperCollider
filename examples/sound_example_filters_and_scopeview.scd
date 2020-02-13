@@ -12,11 +12,20 @@
 s.latency= 0.05;
 s.waitForBoot{
 	var bus, buffers;
-	var width= 511, height= 800;
+	var fftSize= 8192*2*2;
+	var binSize= s.sampleRate/fftSize;
+	var width= 511, height= 800, scpsHeight= height-20;
 	var win= Window("openbci", Rect(2, 100, width, height)).front;
 	var scps= {|i|
-		ScopeView(win, Rect(0, height/~openbci.numChannels*i, width, height/~openbci.numChannels-1));
+		ScopeView(win, Rect(0, scpsHeight/~openbci.numChannels*i, width, scpsHeight/~openbci.numChannels-1));
 	}.dup(~openbci.numChannels);
+	StaticText(win, Rect(0, scpsHeight, 50, 20)).string_(""++binSize.round(0.1));
+	Array.geom(12, 1, 1.1).normalize.linlin(0, 1, 0.07, 0.9).do{|x|
+		StaticText(win, Rect.aboutPoint(Point(width*x, scpsHeight+10), 50, 20)).align_(\center)
+		.string_(""++(x.linexp(0, 1, binSize, s.sampleRate/2).round(0.1)));
+	};
+	StaticText(win, Rect(width-50, scpsHeight, 50, 20)).align_(\right).string_("Hz");
+
 	//based on system_freqScope1_shm in FreqScopeView but this one can be customisable
 	SynthDef(\bciscope_log, {|in= 0, fftBufSize= 8192, scopebufnum, rate= 4, dbFactor= 0.02, scale= 1, smear= 4|
 		var phase= 1-(rate*fftBufSize.reciprocal);
@@ -25,8 +34,9 @@ s.waitForBoot{
 		mul= 0.00285;
 		halfSamples= BufSamples.ir(fftbufnum)*0.5;
 		signal= In.ar(in, 1)*scale;
+		//signal= SinOsc.ar(12);  //debug test signal
 		chain= FFT(fftbufnum, signal, hop: 0.75, wintype: 1);
-		chain= PV_MagSmear(chain, smear);
+		//chain= PV_MagSmear(chain, smear);  //smooth adjacent bins
 		//chain= PV_BrickWall(PV_BrickWall(chain, 0.0025), -0.99);  //example brickwall
 		phasor= halfSamples.pow(LFSaw.ar(rate/BufDur.ir(fftbufnum), phase, 0.5, 0.5))*2;
 		phasor= phasor.round(2);
@@ -36,7 +46,7 @@ s.waitForBoot{
 			fftBufSize/rate
 		);
 	}, #[\kr, \ir, \ir, \ir, \kr, \kr, \kr]).add;
-	SynthDef(\bci, {|bus, loFreq= 1, hiFreq= 50, notchFreq= 50, notchRQ= 0.3, bf= 1, nf= 1, lag= 0, amp= 0.005|
+	SynthDef(\bci, {|bus, loFreq= 1, hiFreq= 50, notchFreq= 50, notchRQ= 0.3, bf= 1, nf= 1, lag= 0, amp= 0.001|
 		var sig= K2A.ar(\data.kr(0!~openbci.numChannels, lag))*amp;
 		sig= sig*\on.kr(1!~openbci.numChannels, 0.1);
 		sig= Select.ar(bf, [sig, LPF.ar(HPF.ar(sig, loFreq), hiFreq)]);  //bandpass filter
@@ -69,7 +79,7 @@ s.waitForBoot{
 	};
 	~scopeSynths.do{|x| x.free};
 	~scopeSynths= {|i|
-		Synth(\bciscope_log, [\in, bus.index+i, \fftBufSize, 8192, \scopebufnum, buffers[i].bufnum]);
+		Synth(\bciscope_log, [\in, bus.index+i, \fftBufSize, fftSize, \scopebufnum, buffers[i].bufnum]);
 	}.dup(~openbci.numChannels);
 	~mixer.free;
 	~mixer= Synth(\stereoMixer, [\bus, bus, \vol, -inf]);
@@ -90,10 +100,11 @@ s.waitForBoot{
 ~synth.set(\on, #[1, 1, 0, 0, 0, 0, 0, 0]);  //mute some channels
 ~synth.set(\on, #[1, 1, 1, 1, 1, 1, 1, 1]);  //unmute all (default)
 
-~scopeSynths.do{|x| x.set(\smear, 12)}  //bins to average on each side
-~scopeSynths.do{|x| x.set(\smear, 2)}
-~scopeSynths.do{|x| x.set(\smear, 1)}
-~scopeSynths.do{|x| x.set(\smear, 4)}  //(default)
+//activate magsmear in synthdef for this to work
+// ~scopeSynths.do{|x| x.set(\smear, 12)}  //bins to average on each side
+// ~scopeSynths.do{|x| x.set(\smear, 2)}
+// ~scopeSynths.do{|x| x.set(\smear, 1)}
+// ~scopeSynths.do{|x| x.set(\smear, 4)}  //(default)
 
 ~scopeSynths.do{|x| x.set(\scale, 1)}  //set amplitude independent of audio output
 ~scopeSynths.do{|x| x.set(\scale, 1)}  //(default)
@@ -118,8 +129,8 @@ s.waitForBoot{
 ~synth.set(\lag, 1)
 ~synth.set(\lag, 0)  //off (default)
 
-~synth.set(\amp, 0.05);  //amplify raw data signal
-~synth.set(\amp, 0.005);  //(default)
+~synth.set(\amp, 0.005);  //amplify raw data signal
+~synth.set(\amp, 0.0001);  //(default)
 
 ~openbci.setSampleRate(6);  //250Hz (default)
 
