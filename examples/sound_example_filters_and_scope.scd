@@ -1,4 +1,5 @@
 //sound+scope example - performing notch and bandpass filtering with scsynth and play out in stereo
+//note: this is more like a template showing how to get and use the bci data in scsynth
 
 (
 ~openbci= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
@@ -11,12 +12,14 @@
 
 s.latency= 0.05;
 s.waitForBoot{
-	var bus;
-	SynthDef(\bci, {|bus, loFreq= 1, hiFreq= 50, notchFreq= 50, notchRQ= 0.3, bf= 1, nf= 1, lag= 0, amp= 0.01|
-		var sig= K2A.ar(\data.kr(0!~openbci.numChannels, lag))*amp;
+	var signalBus;
+	var bufSize= 4096;
+	SynthDef(\bci, {|bus, loFreq= 1, hiFreq= 50, notchFreq= 50, notchRQ= 0.3, bf= 1, nf= 1, amp= 0.01|
+		var sig= K2A.ar(\data.kr(0!~openbci.numChannels))*amp;
 		sig= sig*\on.kr(1!~openbci.numChannels, 0.1);
 		sig= Select.ar(bf, [sig, LPF.ar(HPF.ar(sig, loFreq), hiFreq)]);  //bandpass filter
 		sig= Select.ar(nf, [sig, BRF.ar(sig, notchFreq, notchRQ)]);  //notch filter for 50/60 Hz
+		//sig= SinOsc.ar((7..0)+26.8, 0, 0.25);  //debug test
 		Out.ar(bus, sig);
 	}).add;
 	SynthDef(\stereoMixer, {|out= 0, bus, vol= 0|
@@ -25,18 +28,18 @@ s.waitForBoot{
 		sig= Splay.ar(sig);
 		Out.ar(out, sig*vol.dbamp.lag);
 	}).add;
-	bus= Bus.audio(s, ~openbci.numChannels);
+	signalBus= Bus.audio(s, ~openbci.numChannels);
 	s.sync;
-	~scope= s.scope(~openbci.numChannels, bus.index, 4096, 0.25);
+	~scope= s.scope(~openbci.numChannels, signalBus.index, bufSize, 0.25);
 	~scope.size= 400;
 	CmdPeriod.doOnce({
-		bus.free; bus= nil;
+		signalBus.free; signalBus= nil;
 		~scope.window.close;
 	});
 	~mixer.free;
-	~mixer= Synth(\stereoMixer, [\bus, bus, \vol, -inf]);
+	~mixer= Synth(\stereoMixer, [\bus, signalBus, \vol, -inf]);
 	~synth.free;
-	~synth= Synth(\bci, [\bus, bus]);
+	~synth= Synth(\bci, [\bus, signalBus]);
 	s.sync;
 	~sequencer.dataAction= {|num, data, accel|
 		s.bind{~synth.set(\data, data)};
@@ -60,16 +63,11 @@ s.waitForBoot{
 
 ~synth.set(\bf, 0);  //bandpass filter off
 ~synth.set(\bf, 1);  //bandpass filter on (default)
-~synth.set(\loFreq, 3);
-~synth.set(\hiFreq, 33);
 ~synth.set(\loFreq, 10);
+~synth.set(\hiFreq, 33);
+~synth.set(\loFreq, 20);
 ~synth.set(\hiFreq, 100);
 ~synth.set(\loFreq, 1, \hiFreq, 50);  //(default)
-
-~synth.set(\lag, 0.01)  //signal smoothing (lowpass)
-~synth.set(\lag, 0.1)
-~synth.set(\lag, 1)
-~synth.set(\lag, 0)  //off (default)
 
 ~synth.set(\amp, 0.02);  //amplify raw data signal
 ~synth.set(\amp, 0.01);  //(default)
