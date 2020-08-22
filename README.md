@@ -1,5 +1,7 @@
 a [Quark](https://supercollider-quarks.github.io/quarks/) for [SuperCollider](https://supercollider.github.io)
 
+main author: [redFrik](https://github.com/redFrik)
+
 # OpenBCI
 SuperCollider classes for communicating with [Open Source Brain-Computer Interfaces](https://openbci.com).
 
