@@ -5,9 +5,12 @@
 //header first column, last column, other columns
 
 PlaybackData : OpenBCI {
-	classvar <numChannels;
-	classvar <defaultSampleRate;
+	classvar <numChannels= 8;
+	classvar <defaultSampleRate= 250;
 	var task, fileData, ctime= "";
+	uVScale {|gain= 24| ^4.5/gain/(2**23-1)*1000000}
+	accScale {^0.002/(2**4)}
+
 	*new {|path, dataAction, initAction, bufferSize= 1024|
 		^super.new(dataAction, nil, initAction, bufferSize).initPlaybackData(path);
 	}
