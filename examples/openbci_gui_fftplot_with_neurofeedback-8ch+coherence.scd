@@ -544,14 +544,14 @@ Routine.run({
 			});
 		};
 
-		bandEnergyAvg[0]= bandArr[0].median.round(0.1);
-		bandEnergyAvg[1]= bandArr[1].median.round(0.1);
-		bandEnergyAvg[2]= bandArr[2].median.round(0.1);
-		bandEnergyAvg[3]= bandArr[3].median.round(0.1);
-		bandEnergyAvg[4]= bandArr[4].median.round(0.1);
-		bandEnergyAvg[5]= bandArr[5].median.round(0.1);
-		bandEnergyAvg[6]= bandArr[6].median.round(0.1);
-		bandEnergyAvg[7]= bandArr[7].median.round(0.1);
+		bandEnergyAvg[0]= bandArr[0].median.round(0.001);
+		bandEnergyAvg[1]= bandArr[1].median.round(0.001);
+		bandEnergyAvg[2]= bandArr[2].median.round(0.001);
+		bandEnergyAvg[3]= bandArr[3].median.round(0.001);
+		bandEnergyAvg[4]= bandArr[4].median.round(0.001);
+		bandEnergyAvg[5]= bandArr[5].median.round(0.001);
+		bandEnergyAvg[6]= bandArr[6].median.round(0.001);
+		bandEnergyAvg[7]= bandArr[7].median.round(0.001);
 		~bandEnergyAvg[0]= bandEnergyAvg[0]; //ch1
 		~bandEnergyAvg[1]= bandEnergyAvg[1]; //ch2
 		~bandEnergyAvg[2]= bandEnergyAvg[2]; //ch3

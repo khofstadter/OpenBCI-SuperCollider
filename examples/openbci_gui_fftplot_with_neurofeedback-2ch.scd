@@ -321,9 +321,9 @@ Routine.run({
 		//--calculate average energy and store in global variables
 		//amended by khofsadter:
 		//energyThetaAvg= thetaArr.squared.sum*factor;
-		energyThetaAvg = thetaArr.median.round(0.1);
+		energyThetaAvg = thetaArr.median.round(0.001);
 		//energyGammaAvg= gammaArr.squared.sum*factor;
-		energyGammaAvg = gammaArr.median.round(0.1);
+		energyGammaAvg = gammaArr.median.round(0.001);
 		//~energyTheta= energyThetaAvg.linlin(loThetaEnergy, hiThetaEnergy, 0, 1);
 		~energyTheta = energyThetaAvg;
 		//~energyGamma= energyGammaAvg.linlin(loGammaEnergy, hiGammaEnergy, 0, 1);
