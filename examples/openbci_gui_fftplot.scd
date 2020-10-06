@@ -118,7 +118,9 @@ usr.drawFunc= {
 			if(btn2.value>0, {
 				data= bandpassFilter.filter(data);
 			});
-			c.uVrms= pow(data, 2).mean.sqrt;
+			c.uVrms= 0;
+			data.size.div(2).do{|i| c.uVrms= c.uVrms+pow(data[data.size-1-i], 2)};
+			c.uVrms= (c.uVrms/data.size.div(2)).sqrt;
 			data= fft.fft(data);
 			if(pop4.value>0, {
 				data= smoothFilters[i].filter(data);
