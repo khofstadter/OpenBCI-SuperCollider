@@ -25,7 +25,7 @@ For more info see https://openbci.com
 
 * Cyton, CytonDaisy, Ganglion - use these SuperCollider classes if you connect to your board via bluetooth serial (the dongle). Maximum sample rate is 250Hz (Cyton) and 200Hz (Ganglion).
 
-* CytonWifi, CytonDaisyWifi, GanglionWifi - these SuperCollider classes require the [WiFi Shield](https://docs.openbci.com/docs/05ThirdParty/03-WiFiShield/WiFiLanding) (also [DIY](https://www.fredrikolofsson.com/f0blog/?q=node/664)) and a special firmware ( [Arduino sketch](https://github.com/redFrik/OpenBCI_WIFI/blob/OpenSoundControl/examples/WifiShieldOSC/WifiShieldOSC.ino) ) for sending OSC. Maximum sample rate for these classes is 16000Hz.
+* CytonWifi, CytonDaisyWifi, GanglionWifi - these SuperCollider classes require the [WiFi Shield](https://docs.openbci.com/docs/05ThirdParty/03-WiFiShield/WiFiLanding) (also [DIY](https://fredrikolofsson.com/f0blog/openbci-wifi-shield-diy/)) and a special firmware ( [Arduino sketch](https://github.com/redFrik/OpenBCI_WIFI/blob/OpenSoundControl/examples/WifiShieldOSC/WifiShieldOSC.ino) ) for sending OSC. Maximum sample rate for these classes is 16000Hz.
 
 * PlaybackData - is a class tha can play back recorded data from file (e.g. the files recorded onto the onboard SD-card).
 
