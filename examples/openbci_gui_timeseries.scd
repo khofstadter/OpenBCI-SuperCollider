@@ -7,9 +7,9 @@
 
 (
 var activeChannels= #[0, 1, 2, 3, 4, 5, 6, 7];
-var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
+//var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
-//var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
+var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
 var threshRailed= 2.pow(23)-1000*board.uVScale(24);
@@ -134,9 +134,11 @@ win.view.mouseMoveAction= {|v, x, y|
 			win.refresh;
 		}, {
 			if(c.omega.containsPoint(Point(x, y)), {
-				c.impedance= c.impedance.not;
-				board.impedance(i+1, 0, c.impedance.binaryValue);
-				win.refresh;
+				if(board.respondsTo(\impedance), {
+					c.impedance= c.impedance.not;
+					board.impedance(i+1, 0, c.impedance.binaryValue);
+					win.refresh;
+				});
 			});
 		});
 	};
