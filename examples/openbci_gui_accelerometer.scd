@@ -13,6 +13,7 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 var buffer= DataBuffer(board, 100, false, true).start;
 var fps= 30;
 var usr, pop1, pop2, pw, po;
+var img, imgFunc;
 var verticalScale, horizontalScale;
 var f0= Font("Helvetiva", 16);
 var f1= Font("Helvetiva", 14);
@@ -74,122 +75,120 @@ win.drawFunc= {
 	Pen.pop;
 };
 win.front;
+win.onClose= {img.free; board.stop};
 CmdPeriod.doOnce({win.close});
 
 //--plot
 usr= UserView(win, Rect(*#[0.1, 0.15, 0.88, 0.7]*win.bounds.extent.asArray));
-usr.animate= true;
-usr.frameRate= fps;
-usr.clearOnRefresh= false;
+img= Image(usr.bounds.width.asInteger, usr.bounds.height.asInteger-148).interpolation_(\fast);
 usr.drawFunc= {
 	var ab, rad, step;
-	var numPointsToDraw;
-	var changed;
 
-	if(buffer.accelBuffer.size>0, {  //skip frame if no new data arrived (25hz vs fps)
+	ab= Rect(0, 148, usr.bounds.width, usr.bounds.height-148);  //plot area
+	rad= 55;  //circleRadius
 
-		ab= Rect(0, 148, usr.bounds.width, usr.bounds.height-148);  //plot area
-		rad= 55;  //circleRadius
+	Pen.stringAtPoint("X = % g".format((data[0][0]).round(1e-3)), Point(0, 10), f3, colors[0]);
+	Pen.stringAtPoint("Y = % g".format((data[0][1]).round(1e-3)), Point(0, 45), f3, colors[1]);
+	Pen.stringAtPoint("Z = % g".format((data[0][2]).round(1e-3)), Point(0, 80), f3, colors[2]);
 
-		numPointsToDraw= 25*horizontalScale[0].abs;  //25hz dependant
-		buffer.readAccel.do{|xyz| data.addFirst(xyz)};
-		while({data.size>numPointsToDraw}, {data.pop});
+	Pen.push;
+	Pen.translate(ab.width-(rad*2.5), 20);
+	Pen.fillColor= Color.new255(245, 245, 245, 220);
+	Pen.strokeColor= Color.new255(210, 210, 210);
+	Pen.stringAtPoint("x", Point(rad*2.1, rad-("x".bounds(f1).height*0.67)), f1, Color.black);
+	Pen.stringAtPoint("y", Point(rad*1.75, 0), f1, Color.black);
+	Pen.stringAtPoint("z", Point(rad-("z".bounds(f1).width/2), -20), f1, Color.black);
+	Pen.fillOval(Rect(0, 0, rad*2, rad*2));
+	Pen.line(Point(0, rad), Point(rad*2, rad));
+	Pen.line(sin(pi/4).asPoint*[rad, 0-rad]+rad, sin(pi/4).asPoint*[0-rad, rad]+rad);
+	Pen.line(Point(rad, 0), Point(rad, rad*2));
+	Pen.strokeOval(Rect(0, 0, rad*2, rad*2));
+	Pen.translate(rad, rad);
+	Pen.width= 3;
+	Pen.strokeColor= colors[0];
+	Pen.moveTo(Point(0, 0));
+	Pen.lineTo(Point(data[0][0]/4.096*rad, 0));
+	Pen.stroke;
+	Pen.strokeColor= colors[1];
+	Pen.moveTo(Point(0, 0));
+	Pen.lineTo(cos(pi/4).asPoint*[rad, 0-rad]*data[0][1]/4.096);
+	Pen.stroke;
+	Pen.strokeColor= colors[2];
+	Pen.moveTo(Point(0, 0));
+	Pen.lineTo(Point(0, 0-data[0][2]/4.096*rad));
+	Pen.stroke;
+	Pen.pop;
 
-		Pen.fillColor= Color.white;
-		Pen.fillRect(Rect(0, 0, ab.width, ab.top));
-
-		Pen.stringAtPoint("X = % g".format((data[0][0]).round(1e-3)), Point(0, 10), f3, colors[0]);
-		Pen.stringAtPoint("Y = % g".format((data[0][1]).round(1e-3)), Point(0, 45), f3, colors[1]);
-		Pen.stringAtPoint("Z = % g".format((data[0][2]).round(1e-3)), Point(0, 80), f3, colors[2]);
-
-		Pen.push;
-		Pen.translate(ab.width-(rad*2.5), 20);
-		Pen.fillColor= Color.new255(245, 245, 245, 220);
-		Pen.strokeColor= Color.new255(210, 210, 210);
-		Pen.stringAtPoint("x", Point(rad*2.1, rad-("x".bounds(f1).height*0.67)), f1, Color.black);
-		Pen.stringAtPoint("y", Point(rad*1.75, 0), f1, Color.black);
-		Pen.stringAtPoint("z", Point(rad-("z".bounds(f1).width/2), -20), f1, Color.black);
-		Pen.fillOval(Rect(0, 0, rad*2, rad*2));
-		Pen.line(Point(0, rad), Point(rad*2, rad));
-		Pen.line(sin(pi/4).asPoint*[rad, 0-rad]+rad, sin(pi/4).asPoint*[0-rad, rad]+rad);
-		Pen.line(Point(rad, 0), Point(rad, rad*2));
-		Pen.strokeOval(Rect(0, 0, rad*2, rad*2));
-		Pen.translate(rad, rad);
-		Pen.width= 3;
-		Pen.strokeColor= colors[0];
-		Pen.moveTo(Point(0, 0));
-		Pen.lineTo(Point(data[0][0]/4.096*rad, 0));
-		Pen.stroke;
-		Pen.strokeColor= colors[1];
-		Pen.moveTo(Point(0, 0));
-		Pen.lineTo(cos(pi/4).asPoint*[rad, 0-rad]*data[0][1]/4.096);
-		Pen.stroke;
-		Pen.strokeColor= colors[2];
-		Pen.moveTo(Point(0, 0));
-		Pen.lineTo(Point(0, 0-data[0][2]/4.096*rad));
-		Pen.stroke;
-		Pen.pop;
-
-		Pen.push;
-		Pen.translate(ab.left, ab.top);
-		Pen.strokeColor= Color.black;
-		step= ab.width/(horizontalScale.size-1);
-		horizontalScale.do{|h, i|
-			var x= i*step;
-			Pen.line(Point(x, 0), Point(x, ab.height));
-		};
-		if(pop1.value==0, {
-			changed= false;
-			3.do{|i|
-				if(data[0][i]>verticalScale[verticalScale.size-1], {
-					verticalScale[verticalScale.size-1]= data[0][i];
-					changed= true;
-				}, {
-					if(data[0][i]<verticalScale[0], {
-						verticalScale[0]= data[0][i];
-						changed= true;
-					});
+	Pen.push;
+	Pen.translate(ab.left, ab.top);
+	Pen.strokeColor= Color.black;
+	step= ab.width/(horizontalScale.size-1);
+	horizontalScale.do{|h, i|
+		var x= i*step;
+		Pen.line(Point(x, 0), Point(x, ab.height));
+	};
+	if(pop1.value==0, {
+		3.do{|i|
+			if(data[0][i]>verticalScale[verticalScale.size-1], {
+				verticalScale[verticalScale.size-1]= data[0][i];
+			}, {
+				if(data[0][i]<verticalScale[0], {
+					verticalScale[0]= data[0][i];
 				});
-			};
-			if(changed, {
-				win.refresh;
 			});
-		});
-		step= ab.height/(verticalScale.size-1);
-		verticalScale.do{|v, i|
-			var y= i*step;
-			Pen.line(Point(0, y), Point(ab.width, y));
 		};
-		Pen.stroke;
-		Pen.fillColor= Color.new255(245, 245, 245, 220);
-		Pen.fillRect(Rect(0, 0, ab.width, ab.height));
-
-		Pen.translate(0, ab.height/2);
-		step= numPointsToDraw-1/ab.width;
+	});
+	step= ab.height/(verticalScale.size-1);
+	verticalScale.do{|v, i|
+		var y= i*step;
+		Pen.line(Point(0, y), Point(ab.width, y));
+	};
+	Pen.stroke;
+	Pen.drawImage(Rect(0, 0, ab.width, ab.height), img);
+	Pen.pop;
+	Pen.strokeColor= Color.new255(205, 205, 205);
+	Pen.strokeRect(ab);
+};
+usr.resize= 5;
+usr.canFocus= false;
+imgFunc= {|numPointsToDraw|
+	img.draw({
+		var step;
+		Pen.translate(0, img.height/2);
+		step= numPointsToDraw-1/img.width;
+		img.fill(Color.new255(245, 245, 245, 220));
 		3.do{|i|
 			var lastIndex= 0;
-			var y= (data[0][i]/verticalScale[0]).clip(-1, 1)*ab.height*0.5;
+			var y= (data[0][i]/verticalScale[0]).clip(-1, 1)*img.height*0.5;
 			Pen.strokeColor= colors[i];
-			Pen.moveTo(Point(ab.width, y));
-			ab.width.do{|x|
+			Pen.moveTo(Point(img.width, y));
+			img.width.do{|x|
 				var xyz;
 				var index= (x*step).round.asInteger;
 				if(index>lastIndex and:{data[index]!=nil}, {
 					xyz= data[index];
-					y= (xyz[i]/verticalScale[0]).clip(-1, 1)*ab.height*0.5;
-					Pen.lineTo(Point(ab.width-x, y));
+					y= (xyz[i]/verticalScale[0]).clip(-1, 1)*img.height*0.5;
+					Pen.lineTo(Point(img.width-x, y));
 					lastIndex= index;
 				});
 			};
 			Pen.stroke;
 		};
-		Pen.pop;
-		Pen.strokeColor= Color.new255(205, 205, 205);
-		Pen.strokeRect(ab);
 	});
 };
-usr.resize= 5;
-usr.canFocus= false;
+Routine({
+	var numPointsToDraw;
+	while({win.isClosed.not}, {
+		if(buffer.accelBuffer.size>0, {  //skip frame if no new data arrived (25hz vs fps)
+			numPointsToDraw= 25*horizontalScale[0].abs;  //25hz dependant
+			buffer.readAccel.do{|xyz| data.addFirst(xyz)};
+			while({data.size>numPointsToDraw}, {data.pop});
+			imgFunc.value(numPointsToDraw);
+			win.refresh;
+		});
+		(1/fps).wait;
+	});
+}).play(AppClock);
 
 //--menus
 pw= win.bounds.width*0.125;
