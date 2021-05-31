@@ -32,8 +32,8 @@ DataFilter {
 	filter {|data|
 		var prev_y= clear.copy;
 		var prev_x= clear.copy;
-		var j, out;
-		^Array.fill(data.size, {|i|
+		var i= 0, j, out;
+		while({i<data.size}, {
 			prev_y= prev_y.rotate(1);
 			prev_x= prev_x.rotate(1);
 			prev_x[0]= data[i];
@@ -45,7 +45,9 @@ DataFilter {
 				j= j+1;
 			});
 			prev_y[0]= out;
-			out;
+			data[i]= out;
+			i= i+1;
 		});
+		^data;
 	}
 }

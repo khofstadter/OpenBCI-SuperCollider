@@ -3,7 +3,7 @@
 SyntheticData : OpenBCI {
 	classvar <numChannels= 8;
 	classvar <defaultSampleRate= 250;
-	var task;
+	var task, muted;
 	uVScale {|gain= 24| ^4.5/gain/(2**23-1)*1000000}
 	accScale {^0.002/(2**4)}
 
@@ -14,6 +14,7 @@ SyntheticData : OpenBCI {
 		currentSampleRate= argSampleRate;
 		numChannels= argNumChannels;
 		buffer= {List.fill(bufferSize, {0})}.dup(numChannels);  //need to recreate buffer because numChannels is nil
+		muted= false.dup(numChannels);
 
 		initAction.value(this, "init synthetic data");
 		CmdPeriod.add(this);
@@ -37,6 +38,13 @@ SyntheticData : OpenBCI {
 		this.stop;
 	}
 
+	off {|channel= 1|
+		muted.clipPut(channel-1, true);
+	}
+	on {|channel= 1|
+		muted.clipPut(channel-1, false);
+	}
+
 	//--private
 	prTask {
 		var amp1= 10*2.sqrt, amp2= 50*2.sqrt;
@@ -47,26 +55,28 @@ SyntheticData : OpenBCI {
 		data= 0.dup(numChannels);
 		inf.do{|num|
 			numChannels.do{|i|
-				//TODO deal with muted channels here?
-				var val= 0.gauss(1)*(currentSampleRate/2).sqrt;
-				switch(i,
-					0, {
-						val= val*10;
-					},
-					1, {
-						val= val+(amp1*sin(thetas[i]*2pi*10));
-						thetas[i]= thetas[i]+(1/currentSampleRate);
-					},
-					2, {
-						val= val+(amp2*sin(thetas[i]*2pi*50));
-						thetas[i]= thetas[i]+(1/currentSampleRate);
-					},
-					3, {
-						val= val+(amp2*sin(thetas[i]*2pi*60));
-						thetas[i]= thetas[i]+(1/currentSampleRate);
-					}
-				);
-				data[i]= (val/this.uVScale(24)).round*this.uVScale(24);  //TODO deal with gain changes
+				var val;
+				if(muted[i].not, {
+					val= 0.gauss(1)*(currentSampleRate/2).sqrt;
+					switch(i,
+						0, {
+							val= val*10;
+						},
+						1, {
+							val= val+(amp1*sin(thetas[i]*2pi*10));
+							thetas[i]= thetas[i]+(1/currentSampleRate);
+						},
+						2, {
+							val= val+(amp2*sin(thetas[i]*2pi*50));
+							thetas[i]= thetas[i]+(1/currentSampleRate);
+						},
+						3, {
+							val= val+(amp2*sin(thetas[i]*2pi*60));
+							thetas[i]= thetas[i]+(1/currentSampleRate);
+						}
+					);
+					data[i]= (val/this.uVScale(24)).round*this.uVScale(24);  //TODO deal with gain changes
+				});
 			};
 
 			deltaTime= Main.elapsedTime-lastTime;

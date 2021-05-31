@@ -9,32 +9,53 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var recorder= DataRecord(board).start;  //uncomment to record
 var buffer= DataBuffer(board, 100, false, true);
 var width= 640, height= 320;
-var win, usr, x= 0;
+var win, img, imgFunc, x= 0, data;
+var colors= [Color.red, Color.green, Color.blue], clear= Color.clear;
+var lastPosition= {Point(0, 0)}!3;
 buffer.start;
 win= Window("gui example userview accelerometer", Rect(10, 100, width, height)).front;
-usr= UserView(win, Rect(0, 0, width, height));
-usr.animate= true;
-usr.frameRate= 30;
-usr.background= Color.white;
-usr.clearOnRefresh= false;
-usr.drawFunc= {
-	buffer.readAccel.do{|xyz|
-		Pen.fillColor= Color.white;
-		Pen.fillRect(Rect(x, 0, 1, height));
-		Pen.fillColor= Color.grey(0.9);
-		Pen.fillRect(Rect(0, 0, 100, 70));
-		Pen.fillColor= Color.red;
+win.view.background= Color.white;
+img= Image(width, height);
+imgFunc= {
+	img.draw({
+		data.do{|xyz|
+			height.do{|y| img.setColor(clear, x, y)};
+			xyz.do{|val, i|
+				Pen.strokeColor= colors[i];
+				y= val.linlin(-4.096, 4.096, height, 0);
+				Pen.line(lastPosition[i], Point(x, y));
+				Pen.stroke;
+				lastPosition[i].x= x%(width-1);
+				lastPosition[i].y= y;
+			};
+			x= x+1%width;
+		};
+	});
+};
+win.drawFunc= {
+	Pen.drawImage(Rect(0, 0, win.bounds.width, win.bounds.height), img);
+	Pen.fillColor= Color.grey(0.9, 0.7);
+	Pen.fillRect(Rect(0, 0, 100, 70));
+	data.do{|xyz|
+		Pen.fillColor= colors[0];
 		Pen.stringAtPoint("x:"+xyz[0], Point(5, 5));
-		Pen.fillRect(Rect(x, xyz[0].linlin(-4.096, 4.096, height, 0), 1, 1));
-		Pen.fillColor= Color.green;
+		Pen.fillColor= colors[1];
 		Pen.stringAtPoint("y:"+xyz[1], Point(5, 25));
-		Pen.fillRect(Rect(x, xyz[1].linlin(-4.096, 4.096, height, 0), 1, 1));
-		Pen.fillColor= Color.blue;
+		Pen.fillColor= colors[2];
 		Pen.stringAtPoint("z:"+xyz[2], Point(5, 45));
-		Pen.fillRect(Rect(x, xyz[2].linlin(-4.096, 4.096, height, 0), 1, 1));
-		x= x+1%width;
 	};
 };
+win.onClose= {img.free; board.stop};
+Routine({
+	while({win.isClosed.not}, {
+		data= buffer.readAccel;
+		if(data.isEmpty.not, {
+			imgFunc.value;
+			win.refresh;
+		});
+		(1/30).wait;
+	});
+}).play(AppClock);
 CmdPeriod.doOnce({win.close});
 ~openbci= board;
 )
