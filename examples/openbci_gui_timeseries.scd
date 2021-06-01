@@ -7,15 +7,15 @@
 
 (
 var activeChannels= #[0, 1, 2, 3, 4, 5, 6, 7];
-//var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
-//var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
-var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
+var bufferSize= 512;  //reduce to save CPU. default size is 1024
+//var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start}, bufferSize: bufferSize);  //edit here to match your board
+//var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start}, bufferSize: bufferSize);
+var board= SyntheticData(initAction: {|b| b.start}, bufferSize: bufferSize);  //synthetic test data
 //var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
 var threshRailed= 2.pow(23)-1000*board.uVScale(24);
 var threshNearRailed= 2.pow(23)*0.9*board.uVScale(24);
 var notchFilter, bandpassFilter, dataFunc;
-var numPointsToDraw;
 var fps= 30;
 var usr, pop1, pop2, btn1, btn2, pw, po;
 var img, imgDrawFunc, imgPixels, eraseColor, stepRemainder= 0;
@@ -23,7 +23,6 @@ var horizontalScale, maxAmp;
 var f0= Font("Helvetiva", 16);
 var f1= Font("Helvetiva", 14);
 var f2= Font("Helvetiva", 10);
-var rmsSize= Point("999.9 uVrms".bounds(f2).width, f2.size*1.5);
 var colors= [
 	Color.new255(129, 129, 129),
 	Color.new255(124, 75, 141),
@@ -42,8 +41,7 @@ var channels= {|i|
 		data: [],
 		railed: false,
 		nearRailed: false,
-		uVrms: 0,
-		uVrmsCnt: 0,
+		uVrms: RingBuffer(100, FloatArray),
 		lastPenPositionY: 0
 	)
 }.dup(board.numChannels);
@@ -160,19 +158,19 @@ img= Image(usr.bounds.width.asInteger, usr.bounds.height.asInteger);
 img.interpolation= \fast;
 imgPixels= img.pixels;
 usr.background= Color.new255(245, 245, 245, 220);
-usr.frameRate= fps;
+usr.animate= false;
 usr.clearOnRefresh= true;
 usr.drawFunc= {
 	var uw= usr.bounds.width;
 	var uh= usr.bounds.height;
 	var channelHeight= uh-2/channels.size;
+	var impedanceVal, impedanceRect, impedanceStr;
+	var uVrmsRect, uVrmsStr;
 
 	Pen.drawImage(Rect(0, 0, uw, uh), img);
 
 	Pen.fillColor= Color.new255(255, 255, 255, 200);
 	channels.do{|c, i|
-		var impedanceVal, impedanceRect, impedanceStr;
-		var uVrmsRect, uVrmsStr;
 
 		if(c.active, {
 			if(c.impedance, {
@@ -188,21 +186,18 @@ usr.drawFunc= {
 				Pen.stringLeftJustIn(impedanceStr, impedanceRect, f2, Color.black);
 			});
 
-			if(c.uVrmsCnt>0, {
-				if(c.railed, {
-					uVrmsStr= "RAILED";
-				}, {
-					c.uVrms= (c.uVrms/c.uVrmsCnt).sqrt;
-					uVrmsStr= c.uVrms.round(0.1).asString+"uVrms";
-					if(c.nearRailed, {
-						uVrmsStr= "NEAR RAILED - "++uVrmsStr;
-					});
+			if(c.railed, {
+				uVrmsStr= "RAILED";
+			}, {
+				uVrmsStr= c.uVrms.array.mean.sqrt.round(0.1).asString+"uVrms";
+				if(c.nearRailed, {
+					uVrmsStr= "NEAR RAILED - "++uVrmsStr;
 				});
-				uVrmsRect= uVrmsStr.bounds(f2);
-				uVrmsRect= uVrmsRect.moveTo(uw-uVrmsRect.width-2, channelHeight-uVrmsRect.height-1);
-				Pen.fillRect(uVrmsRect);
-				Pen.stringRightJustIn(uVrmsStr, uVrmsRect, f2, Color.black);
 			});
+			uVrmsRect= uVrmsStr.bounds(f2);
+			uVrmsRect= uVrmsRect.moveTo(uw-uVrmsRect.width-2, channelHeight-uVrmsRect.height-1);
+			Pen.fillRect(uVrmsRect);
+			Pen.stringRightJustIn(uVrmsStr, uVrmsRect, f2, Color.black);
 		});
 
 		Pen.translate(0, channelHeight);
@@ -237,15 +232,13 @@ imgDrawFunc= {
 
 			channels.do{|c, i|
 				var y, val;
-				c.uVrms= 0;
-				c.uVrmsCnt= 0;
 				c.railed= false;
 				c.nearRailed= false;
+				Pen.strokeColor= c.color;
 
 				if(c.active, {
 
 					//--draw data
-					Pen.strokeColor= c.color;
 					Pen.moveTo(Point(img.width-steps, c.lastPenPositionY));
 					val= c.data[c.data.size-1];
 					if(val.abs>=threshNearRailed, {
@@ -254,14 +247,15 @@ imgDrawFunc= {
 							c.railed= true;
 						});
 					});
-					c.uVrms= c.uVrms+pow(val, 2);
-					c.uVrmsCnt= c.uVrmsCnt+1;
+					c.uVrms.overwrite(pow(val, 2));
 					y= 1-(val/maxAmp).clip(-1, 1)*channelHeight*0.5+1;
 					Pen.lineTo(Point(img.width, y));
-					Pen.stroke;
 					c.lastPenPositionY= y;
+				}, {
+					Pen.moveTo(Point(img.width-steps, channelHeight*0.5));
+					Pen.lineTo(Point(img.width, channelHeight*0.5));
 				});
-
+				Pen.stroke;
 				Pen.translate(0, channelHeight);
 			};
 		});
@@ -290,8 +284,6 @@ pop2= PopUpMenu(win, Rect((pw+2)+po, 20, pw, 20))
 		(-10..0),
 		(-20..0)
 	][v.value];
-	numPointsToDraw= board.currentSampleRate*horizontalScale[0].abs.asInteger;  //sr dependant
-	board.bufferSize_((numPointsToDraw*2).max(usr.bounds.width*2));
 	win.refresh;
 }.valueAction_(2);
 btn1= Button(win, Rect((pw+2)*2+po, 20, pw/2, 20)).states_(
