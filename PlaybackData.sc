@@ -11,7 +11,7 @@ PlaybackData : OpenBCI {
 	uVScale {|gain= 24| ^4.5/gain/(2**23-1)*1000000}
 	accScale {^0.002/(2**4)}
 
-	*new {|path, dataAction, initAction, bufferSize= 1024|
+	*new {|path, dataAction, initAction, bufferSize= 512|
 		^super.new(dataAction, nil, initAction, bufferSize).initPlaybackData(path);
 	}
 	initPlaybackData {|argPath|

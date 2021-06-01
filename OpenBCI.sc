@@ -11,7 +11,7 @@ OpenBCI {
 	var <buffer;  //history
 	var <currentSampleRate;
 	var >warn= true;
-	*new {|dataAction, replyAction, initAction, bufferSize= 1024|
+	*new {|dataAction, replyAction, initAction, bufferSize= 512|
 		^super.new.initOpenBCI(dataAction, replyAction, initAction, bufferSize);
 	}
 	initOpenBCI {|argDataAction, argReplyAction, argInitAction, argBufferSize|
@@ -28,7 +28,7 @@ OpenBCI {
 		("%: starting...").format(this.class.name).postln;
 	}
 	numChannels {^this.class.numChannels}
-	bufferSize_ {|size= 1024|
+	bufferSize_ {|size= 512|
 		bufferSize= size.asInteger;
 		buffer= buffer.collect{|data|
 			data= data.asArray.extend(bufferSize, 0).asList;

@@ -7,10 +7,9 @@
 
 (
 var activeChannels= #[0, 1, 2, 3, 4, 5, 6, 7];
-var bufferSize= 512;  //reduce to save CPU. default size is 1024
-//var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start}, bufferSize: bufferSize);  //edit here to match your board
-//var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start}, bufferSize: bufferSize);
-var board= SyntheticData(initAction: {|b| b.start}, bufferSize: bufferSize);  //synthetic test data
+//var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
+//var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
+var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
 var threshRailed= 2.pow(23)-1000*board.uVScale(24);

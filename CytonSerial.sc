@@ -3,7 +3,7 @@
 CytonSerial : Cyton {
 	var <port, task;
 
-	*new {|port, baudrate= 115200, dataAction, replyAction, initAction, bufferSize= 1024|
+	*new {|port, baudrate= 115200, dataAction, replyAction, initAction, bufferSize= 512|
 		^super.new(dataAction, replyAction, initAction, bufferSize).initCytonSerial(port, baudrate);
 	}
 	initCytonSerial {|argPort, argBaudrate|
