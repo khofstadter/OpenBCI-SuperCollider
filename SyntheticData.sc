@@ -7,7 +7,7 @@ SyntheticData : OpenBCI {
 	uVScale {|gain= 24| ^4.5/gain/(2**23-1)*1000000}
 	accScale {^0.002/(2**4)}
 
-	*new {|numChannels= 8, sampleRate= 250, dataAction, initAction, bufferSize= 1024|
+	*new {|numChannels= 8, sampleRate= 250, dataAction, initAction, bufferSize= 512|
 		^super.new(dataAction, nil, initAction, bufferSize).initSyntheticData(numChannels, sampleRate);
 	}
 	initSyntheticData {|argNumChannels, argSampleRate|
