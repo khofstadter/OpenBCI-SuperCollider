@@ -3,7 +3,7 @@
 CytonWifi : Cyton {
 	var <netAddr, responders, num, aux= #[26, 27, 28, 29, 30, 31];
 
-	*new {|netAddr, dataAction, replyAction, initAction, bufferSize= 1024|
+	*new {|netAddr, dataAction, replyAction, initAction, bufferSize= 512|
 		^super.new(dataAction, replyAction, initAction, bufferSize).initCytonWifi(netAddr);
 	}
 	initCytonWifi {|argNetAddr|

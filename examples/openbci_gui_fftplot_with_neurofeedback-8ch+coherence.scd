@@ -29,7 +29,7 @@ var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var recorder= DataRecord(board).start;  //uncomment to record (no extras i.e. Aux)
 var notchFilter, bandpassFilter, smoothFilters;
 var fft= DataFFT(board, 256);
-var fps= 25;
+var fps= 30;
 var downSample= 65;  //only draw this many samples
 var allData= Array.newClear(board.numChannels);  //an array of arrays with fft data
 var drawModes= #[\Paused, \NoData, \DownSampl, \Complete];

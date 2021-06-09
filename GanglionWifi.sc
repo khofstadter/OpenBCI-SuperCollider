@@ -3,7 +3,7 @@
 GanglionWifi : Ganglion {
 	var <netAddr, responders;
 
-	*new {|netAddr, dataAction, replyAction, initAction, bufferSize= 1024|
+	*new {|netAddr, dataAction, replyAction, initAction, bufferSize= 512|
 		^super.new(dataAction, replyAction, initAction, bufferSize).initGanglionWifi(netAddr);
 	}
 	initGanglionWifi {|argNetAddr|
