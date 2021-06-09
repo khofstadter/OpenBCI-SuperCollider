@@ -25,7 +25,7 @@ var phaseCalcArr= Signal.newClear(512) ! 4; //change size to 512 for longer wind
 //var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
 var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
-//var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-09-26_11-02-46_brackets-removed-last-level-amended-last-few-minutes-removed-nfth2.0.txt", initAction: {|b| b.start});  //file data
+//var board= PlaybackData("/Users/khofstadter/Desktop/OpenBCI-RAW-2021-04-25_13-08-39_sc.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record (no extras i.e. Aux)
 var notchFilter, bandpassFilter, smoothFilters;
 var fft= DataFFT(board, 256);
@@ -565,10 +565,10 @@ Routine.run({
 		phaseCalcArr[1]= phaseCalcArr[1].rotate(-1);
 		phaseCalcArr[2]= phaseCalcArr[2].rotate(-1);
 		//phaseCalcArr[3]= phaseCalcArr[3].rotate(-1);
-		phaseCalcArr[0][phaseCalcArr[0].size-1]= ~bandEnergyAvg[2]; //ch3
-		phaseCalcArr[1][phaseCalcArr[1].size-1]= ~bandEnergyAvg[3]; //ch4
-		phaseCalcArr[2][phaseCalcArr[2].size-1]= ~bandEnergyAvg[6]; //ch7
-		//phaseCalcArr[3][phaseCalcArr[3].size-1]= ~bandEnergyAvg[7]; //ch8
+		phaseCalcArr[0][phaseCalcArr[0].size-1]= ~bandEnergyAvg[4]; //F3
+		phaseCalcArr[1][phaseCalcArr[1].size-1]= ~bandEnergyAvg[5]; //F4
+		phaseCalcArr[2][phaseCalcArr[2].size-1]= ~bandEnergyAvg[7]; //P4
+		//phaseCalcArr[3][phaseCalcArr[3].size-1]= ~bandEnergyAvg[7];
 
 		//two phase coherence calculations:
 		~phaseCalcFuncVal[0]= (phaseCalcFunc.(phaseCalcArr[0], phaseCalcArr[1])).round(0.01);
