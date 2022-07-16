@@ -31,6 +31,7 @@ DataFilter {
 	}
 	filter {|data|
 		var i= 0, j, k= 0, l, out, size= data.size;
+		data= data.copy;
 		prev_x= clear.copy;
 		prev_y= clear.copy;
 		while({i<size}, {
