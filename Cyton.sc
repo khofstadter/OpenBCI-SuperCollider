@@ -2,8 +2,8 @@
 
 //related: CytonSerial CytonWifi Ganglion
 
-//https://docs.openbci.com/docs/02Cyton/CytonDataFormat
-//https://docs.openbci.com/docs/02Cyton/CytonSDK
+//https://docs.openbci.com/Cyton/CytonDataFormat/
+//https://docs.openbci.com/Cyton/CytonSDK/
 
 Cyton : OpenBCIboard {
 	classvar <numChannels= 8;
