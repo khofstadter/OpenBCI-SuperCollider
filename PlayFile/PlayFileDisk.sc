@@ -3,7 +3,7 @@
 //related PlayFileDiskView
 
 PlayFileDisk {
-	classvar id= 2222;
+	const id= 2222;  //magic number to use as VDiskIn sendID
 	var <frame= 0;
 	var >bufferSize= 8192;  //decrease for faster frame updates, increase for disk dropout safety
 	var >doneAction;
