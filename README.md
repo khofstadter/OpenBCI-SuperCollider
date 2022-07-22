@@ -46,6 +46,7 @@ see https://docs.openbci.com/Troubleshooting/TroubleshootingLanding/
 
 ## changelog
 
+* 1.82 - fft optimisation and windowtypes, fixing links, increase framerate in examples
 * 1.81 - important bugfix for recorded/raw data file playback
 * 1.80 - default bufferSize reduced from 1024 to 512, filters now calculate in place, use Image class
 * 1.75 - added three scsynth examples and fixed some outdated links
@@ -79,6 +80,5 @@ see https://docs.openbci.com/Troubleshooting/TroubleshootingLanding/
 * finish and test Ganlion classes - both serial and wifi
 * finish and test Daisy classes - both serial and wifi
 * deal with muted channels in test and fft classes
-* DataFFT - add different fft window types
 * converter class for SD log file data
 * ganglion impedance

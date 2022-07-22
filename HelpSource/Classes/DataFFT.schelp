@@ -19,6 +19,16 @@ an instance of a link::Classes/OpenBCI:: subclass (for example a link::Classes/C
 argument::fftSize
 the FFT window size. Should be a power-of-two.
 
+argument::windowType
+By default this will be link::Classes/Signal#fftCosTable::. Use one of the following symbols to specify other types:
+
+code::
+\hamming
+\hanning
+\rect
+\welch
+::
+
 instancemethods::
 
 private::initDataFFT
