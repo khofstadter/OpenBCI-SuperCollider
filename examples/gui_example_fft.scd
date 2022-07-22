@@ -29,7 +29,7 @@ Routine({
 			});
 			msliders[i].value= f.fft(data).explin(0.1, 200, 0, 1);  //0.1-200 uV
 		};
-		(1/30).wait;  //framerate
+		(1/40).wait;  //framerate
 	};
 }).play(AppClock);
 CmdPeriod.doOnce({win.close});

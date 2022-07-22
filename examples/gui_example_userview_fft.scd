@@ -29,7 +29,7 @@ win.drawFunc= {
 	Pen.drawImage(Rect(0, 0, win.bounds.width, win.bounds.height), img);
 	frameCounter= frameCounter+1;
 };
-Routine({while({win.isClosed.not}, {win.refresh; (1/30).wait})}).play(AppClock);
+Routine({while({win.isClosed.not}, {win.refresh; (1/40).wait})}).play(AppClock);
 win.onClose= {img.free; board.stop};
 CmdPeriod.doOnce({win.close});
 ~openbci= board;

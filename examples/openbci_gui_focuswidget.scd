@@ -16,7 +16,7 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var recorder= DataRecord(board).start;  //uncomment to record
 var notchFilter, bandpassFilter, smoothFilters;
 var fft= DataFFT(board, 256);
-var fps= 30;
+var fps= 40;
 var usr, pop1, pop2, btn1, btn2, pw, po;
 var backgroundColor, unfocusedColor, focusedColor;
 var f0= Font("Helvetiva", 16);

@@ -11,7 +11,7 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
 var buffer= DataBuffer(board, 100, false, true).start;
-var fps= 30;
+var fps= 40;
 var usr, pop1, pop2, pw, po;
 var img, imgFunc;
 var verticalScale, horizontalScale;

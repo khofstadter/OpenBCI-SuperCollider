@@ -15,7 +15,7 @@ var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 var threshRailed= 2.pow(23)-1000*board.uVScale(24);
 var threshNearRailed= 2.pow(23)*0.9*board.uVScale(24);
 var notchFilter, bandpassFilter, dataFunc;
-var fps= 30;
+var fps= 40;
 var usr, pop1, pop2, btn1, btn2, pw, po;
 var img, imgDrawFunc, imgPixels, eraseColor, stepRemainder= 0;
 var horizontalScale, maxAmp;

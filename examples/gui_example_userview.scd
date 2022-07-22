@@ -34,7 +34,7 @@ win.drawFunc= {
 	};
 };
 win.onClose= {img.free; board.stop};
-Routine({while({win.isClosed.not}, {win.refresh; (1/30).wait})}).play(AppClock);
+Routine({while({win.isClosed.not}, {win.refresh; (1/40).wait})}).play(AppClock);
 CmdPeriod.doOnce({win.close});
 ~openbci= board;
 )

@@ -53,7 +53,7 @@ Routine({
 			imgFunc.value;
 			win.refresh;
 		});
-		(1/30).wait;
+		(1/40).wait;
 	});
 }).play(AppClock);
 CmdPeriod.doOnce({win.close});

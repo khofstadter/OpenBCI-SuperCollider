@@ -52,7 +52,7 @@ r= Routine.run({
 			smoothers[i].filter(fft).postln;
 		};
 		0.5.wait;
-	};	
+	};
 });
 )
 r.stop;
