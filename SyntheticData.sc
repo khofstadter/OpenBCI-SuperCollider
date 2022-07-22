@@ -47,7 +47,7 @@ SyntheticData : OpenBCI {
 
 	//--private
 	prTask {
-		var thetas= (0.0).dup(numChannels);
+		var theta= 0;
 		var atheta= 0.0;
 		var aux= [0, 0, 0];  //TODO
 		var lastTime= 0, deltaTime;
@@ -62,33 +62,28 @@ SyntheticData : OpenBCI {
 							val= val*10;
 						},
 						1, {
-							val= val+(10*2.sqrt*sin(thetas[i]*2pi*10));
-							thetas[i]= thetas[i]+(1/currentSampleRate);
+							val= val+(10*2.sqrt*sin(theta*10));
 						},
 						2, {
-							val= val+(20*2.sqrt*sin(thetas[i]*2pi*15));
-							thetas[i]= thetas[i]+(1/currentSampleRate);
+							val= val+(20*2.sqrt*sin(theta*15));
 						},
 						3, {
-							val= val+(30*2.sqrt*sin(thetas[i]*2pi*20));
-							thetas[i]= thetas[i]+(1/currentSampleRate);
+							val= val+(30*2.sqrt*sin(theta*20));
 						},
 						4, {
-							val= val+(40*2.sqrt*sin(thetas[i]*2pi*25));
-							thetas[i]= thetas[i]+(1/currentSampleRate);
+							val= val+(40*2.sqrt*sin(theta*25));
 						},
 						5, {
-							val= val+(50*2.sqrt*sin(thetas[i]*2pi*30));
-							thetas[i]= thetas[i]+(1/currentSampleRate);
+							val= val+(50*2.sqrt*sin(theta*30));
 						},
 						6, {
-							val= val+(20*2.sqrt*sin(thetas[i]*2pi*60));
-							thetas[i]= thetas[i]+(1/currentSampleRate);
+							val= val+(20*2.sqrt*sin(theta*60));
 						}
 					);
 					data[i]= (val/this.uVScale(24)).round*this.uVScale(24);  //TODO deal with gain changes
 				});
 			};
+			theta= theta+(1/currentSampleRate*2pi);
 
 			deltaTime= Main.elapsedTime-lastTime;
 			if(deltaTime>=0.04, {  //25Hz
