@@ -18,13 +18,14 @@ DataFFT {
 		bw= 2/fftSize*(board.currentSampleRate*0.5);
 	}
 	fft {|data|
-		var signal;
+		var signal, complex;
 		if(data.size<fftSize, {
 			"%: data size must be >= fftSize. zeropadded % values".format(this.class.name, fftSize-data.size).warn;
 			data= 0.dup(fftSize-data.size)++data;
 		});
 		signal= data.copyRange(data.size-fftSize, data.size-1).as(Signal);
-		^fft(signal, imag, table).magnitude.copyRange(0, fftSize2)/fftSize2;
+		complex= fft(signal, Signal.newClear(fftSize), Signal.fftCosTable(fftSize));
+		^complex.real.copyRange(0, fftSize2).hypot(complex.imag.copyRange(0, fftSize2))/fftSize2;
 	}
 	indexToFreq {|index|
 		if(index==0, {
