@@ -15,8 +15,11 @@ the synthetic data generated put gaussian noise on all channels and then modify 
 definitionList::
 ## first channel || the is noise scaled up x10
 ## second channel || a 10 Hz sine tone at 10 uVrms is added to the noise
-## third channel || a 50 Hz sine tone at 50 uVrms is added to the noise
-## fourth channel || a 60 Hz sine tone at 50 uVrms is added to the noise
+## third channel || a 15 Hz sine tone at 20 uVrms is added to the noise
+## fourth channel || a 20 Hz sine tone at 30 uVrms is added to the noise
+## fifth channel || a 25 Hz sine tone at 40 uVrms is added to the noise
+## sixth channel || a 30 Hz sine tone at 50 uVrms is added to the noise
+## seventh channel || a 60 Hz sine tone at 20 uVrms is added to the noise
 ::
 
 classmethods::

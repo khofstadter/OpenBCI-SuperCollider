@@ -47,7 +47,6 @@ SyntheticData : OpenBCI {
 
 	//--private
 	prTask {
-		var amp1= 10*2.sqrt, amp2= 50*2.sqrt;
 		var thetas= (0.0).dup(numChannels);
 		var atheta= 0.0;
 		var aux= [0, 0, 0];  //TODO
@@ -63,15 +62,27 @@ SyntheticData : OpenBCI {
 							val= val*10;
 						},
 						1, {
-							val= val+(amp1*sin(thetas[i]*2pi*10));
+							val= val+(10*2.sqrt*sin(thetas[i]*2pi*10));
 							thetas[i]= thetas[i]+(1/currentSampleRate);
 						},
 						2, {
-							val= val+(amp2*sin(thetas[i]*2pi*50));
+							val= val+(20*2.sqrt*sin(thetas[i]*2pi*15));
 							thetas[i]= thetas[i]+(1/currentSampleRate);
 						},
 						3, {
-							val= val+(amp2*sin(thetas[i]*2pi*60));
+							val= val+(30*2.sqrt*sin(thetas[i]*2pi*20));
+							thetas[i]= thetas[i]+(1/currentSampleRate);
+						},
+						4, {
+							val= val+(40*2.sqrt*sin(thetas[i]*2pi*25));
+							thetas[i]= thetas[i]+(1/currentSampleRate);
+						},
+						5, {
+							val= val+(50*2.sqrt*sin(thetas[i]*2pi*30));
+							thetas[i]= thetas[i]+(1/currentSampleRate);
+						},
+						6, {
+							val= val+(20*2.sqrt*sin(thetas[i]*2pi*60));
 							thetas[i]= thetas[i]+(1/currentSampleRate);
 						}
 					);
