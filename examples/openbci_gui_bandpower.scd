@@ -102,10 +102,10 @@ usr.drawFunc= {
 	channels.do{|c, i|
 		if(c.active, {
 			data= board.buffer[i];
-			if(btn1.value>0, {
+			if(notchFilter.notNil, {
 				data= notchFilter.filter(data);
 			});
-			if(btn2.value>0, {
+			if(bandpassFilter.notNil, {
 				data= bandpassFilter.filter(data);
 			});
 			data= fft.fft(data);
