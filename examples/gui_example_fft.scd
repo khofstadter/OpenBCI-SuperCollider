@@ -6,7 +6,7 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
-var f= DataFFT(board, 256, \hamming);
+var f= DataFFT(board, 256);
 var win, msliders;
 win= Window("fft gui example multislider", Rect(100, 100, 640, 640)).front;
 msliders= {
@@ -29,7 +29,11 @@ Routine({
 			if(~bandpassFilter.notNil, {
 				data= ~bandpassFilter.filter(data);
 			});
-			msliders[i].value= f.fft(data).explin(0.1, 200, 0, 1);  //0.1-200 uV
+			data= f.fft(data);
+			if(~smoothingFilter.notNil, {
+				data= ~smoothingFilter.filter(data.max(0.01));
+			});
+			msliders[i].value= data.explin(0.1, 100, 0, 1);  //0.1-100 uV
 		};
 		(nextTime-Main.elapsedTime).max(0.001).wait;
 	});
@@ -46,7 +50,8 @@ CmdPeriod.doOnce({win.close});
 ~bandpassFilter= DataFilterBandpass('15-50');
 ~bandpassFilter= DataFilterBandpass('7-13');
 ~bandpassFilter= nil;
-
+~smoothingFilter= DataSmoothing(0.9);
+~smoothingFilter= nil;
 
 ~openbci.softReset;
 ~openbci.start;

@@ -2,6 +2,7 @@
 
 DataFFT {
 	var <board, table, imag, <fftSize, <fftSize2, <bw;
+	var result;
 	*new {|board, fftSize= 256, windowType|
 		^super.new.initDataFFT(board, fftSize, windowType);
 	}
@@ -32,6 +33,7 @@ DataFFT {
 		);
 		imag= Signal.newClear(fftSize);
 		bw= 2/fftSize*(board.currentSampleRate*0.5);
+		result= FloatArray.newClear(fftSize2+1);
 	}
 	fft {|data|
 		var complex;
@@ -40,9 +42,15 @@ DataFFT {
 			data= 0.dup(fftSize-data.size)++data;
 		});
 		data= data.copyRange(data.size-fftSize, data.size-1);
-		data= data-(data.sum/data.size);  //remove mean
+		data= data-(data.sum/data.size);  //remove the mean
 		complex= fft(data.as(Signal), imag, table);
-		^complex.real.copyRange(0, fftSize2).hypot(complex.imag.copyRange(0, fftSize2))/fftSize2;
+		result.size.do{|i|
+			result[i]= complex.real[i].hypot(complex.imag[i])/fftSize;
+			if(i>0 and:{i<fftSize2}, {
+				result[i]= result[i]*2;
+			});
+		};
+		^result;
 	}
 	indexToFreq {|index|
 		if(index==0, {

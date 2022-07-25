@@ -12,7 +12,7 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
 var notchFilter, bandpassFilter, smoothFilters;
-var fft= DataFFT(board, 256, \hamming);
+var fft= DataFFT(board, 256);
 var fps= 60;
 var usr, pop1, pop2, pop3, pop4, btn1, btn2, pw, po;
 var horizontalScale, verticalScale, maxFreq, maxAmp;
@@ -121,7 +121,7 @@ usr.drawFunc= {
 			c.uVrms= (c.uVrms/data.size.div(2)).sqrt;
 			data= fft.fft(data);
 			if(pop4.value>0, {
-				data= smoothFilters[i].filter(data);
+				data= smoothFilters[i].filterLog(data.max(0.01));
 			});
 			Pen.strokeColor= c.color;
 			Pen.moveTo(Point(0, uh));
@@ -190,7 +190,11 @@ btn1= Button(win, Rect((pw+2)*4+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterNotch.keys.collect{|x| [x.asString+"Hz"]}
 ).action_{|v|
 	if(v.value>0, {
-		notchFilter= DataFilterNotch(DataFilterNotch.keys[v.value-1]);
+		notchFilter= DataFilterNotch(
+			DataFilterNotch.keys[v.value-1],
+			board.currentSampleRate,
+			board.bufferSize
+		);
 	}, {
 		notchFilter= nil;
 	});
@@ -199,7 +203,11 @@ btn2= Button(win, Rect((pw+2)*4.5+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterBandpass.keys.collect{|x| [x.asString]}
 ).action_{|v|
 	if(v.value>0, {
-		bandpassFilter= DataFilterBandpass(DataFilterBandpass.keys[v.value-1]);
+		bandpassFilter= DataFilterBandpass(
+			DataFilterBandpass.keys[v.value-1],
+			board.currentSampleRate,
+			board.bufferSize
+		);
 	}, {
 		bandpassFilter= nil;
 	});
@@ -207,11 +215,12 @@ btn2= Button(win, Rect((pw+2)*4.5+po, 20, pw/2, 20)).states_(
 win.view.children.reject{|v| v==usr}.do{|v| v.resize_(3).font_(f2)};
 
 Routine({
-	inf.do{
-		var nextTime= Main.elapsedTime+(1/fps);
+	var nextTime;
+	while({win.isClosed.not}, {
+		nextTime= Main.elapsedTime+(1/fps);
 		usr.refresh;
 		(nextTime-Main.elapsedTime).max(0.001).wait;
-	}
+	});
 }).play(AppClock);
 
 ~channels= channels;

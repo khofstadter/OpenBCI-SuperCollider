@@ -272,7 +272,11 @@ btn1= Button(win, Rect((pw+2)*2+po, 20, pw/2, 20)).states_(
 ).action_{|v|
 	if(v.value>0, {
 		notchFilters= {
-			DataFilterNotch(DataFilterNotch.keys[v.value-1], board.currentSampleRate, board.bufferSize);
+			DataFilterNotch(
+				DataFilterNotch.keys[v.value-1],
+				board.currentSampleRate,
+				board.bufferSize
+			);
 		}.dup(board.numChannels);
 	}, {
 		notchFilters= nil;
@@ -283,7 +287,11 @@ btn2= Button(win, Rect((pw+2)*2.5+po, 20, pw/2, 20)).states_(
 ).action_{|v|
 	if(v.value>0, {
 		bandpassFilters= {
-			DataFilterBandpass(DataFilterBandpass.keys[v.value-1], board.currentSampleRate, board.bufferSize);
+			DataFilterBandpass(
+				DataFilterBandpass.keys[v.value-1],
+				board.currentSampleRate,
+				board.bufferSize
+			);
 		}.dup(board.numChannels);
 	}, {
 		bandpassFilters= nil;
@@ -307,12 +315,13 @@ board.dataAction= {|num, data, acc|
 };
 
 Routine({
-	inf.do{
-		var nextTime= Main.elapsedTime+(1/fps);
+	var nextTime;
+	while({win.isClosed.not}, {
+		nextTime= Main.elapsedTime+(1/fps);
 		imgDrawFunc.value;
 		usr.refresh;
 		(nextTime-Main.elapsedTime).max(0.001).wait;
-	}
+	});
 }).play(AppClock);
 
 ~openbci= board;

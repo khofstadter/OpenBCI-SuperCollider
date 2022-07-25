@@ -46,6 +46,8 @@ see https://docs.openbci.com/Troubleshooting/TroubleshootingLanding/
 
 ## changelog
 
+* 1.86 - fft fixes, revert to default fft window, DataSmoothing filterLog
+* 1.85 - changed SyntheticData to match 4.2.0, button bugfix, filterN, smoother drawing
 * 1.82 - fft optimisation and windowtypes, fixing links, increase framerate in examples
 * 1.81 - important bugfix for recorded/raw data file playback
 * 1.80 - default bufferSize reduced from 1024 to 512, filters now calculate in place, use Image class

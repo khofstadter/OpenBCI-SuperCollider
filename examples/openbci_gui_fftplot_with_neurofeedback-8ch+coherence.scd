@@ -28,7 +28,7 @@ var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var board= PlaybackData("/Users/khofstadter/Desktop/OpenBCI-RAW-2021-04-25_13-08-39_sc.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record (no extras i.e. Aux)
 var notchFilter, bandpassFilter, smoothFilters;
-var fft= DataFFT(board, 256, \hamming);
+var fft= DataFFT(board, 256);
 var fps= 60, animate= false;
 var downSample= 65;  //only draw this many samples
 var allData= Array.newClear(board.numChannels);  //an array of arrays with fft data
@@ -51,7 +51,8 @@ var colors= [
 var channels= {|i|
 	(
 		color: colors.wrapAt(i),
-		active: activeChannels.includes(i)
+		active: activeChannels.includes(i),
+		uVrms: 0.0
 	)
 }.dup(board.numChannels);
 
@@ -436,7 +437,11 @@ btn1= Button(win, Rect((pw+2)*5+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterNotch.keys.collect{|x| [x.asString+"Hz"]}
 ).action_{|v|
 	if(v.value>0, {
-		notchFilter= DataFilterNotch(DataFilterNotch.keys[v.value-1]);
+		notchFilter= DataFilterNotch(
+			DataFilterNotch.keys[v.value-1],
+			board.currentSampleRate,
+			board.bufferSize
+		);
 	}, {
 		notchFilter= nil;
 	});
@@ -445,7 +450,11 @@ btn2= Button(win, Rect((pw+2)*5.5+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterBandpass.keys.collect{|x| [x.asString]}
 ).action_{|v|
 	if(v.value>0, {
-		bandpassFilter= DataFilterBandpass(DataFilterBandpass.keys[v.value-1]);
+		bandpassFilter= DataFilterBandpass(
+			DataFilterBandpass.keys[v.value-1],
+			board.currentSampleRate,
+			board.bufferSize
+		);
 	}, {
 		bandpassFilter= nil;
 	});
@@ -507,6 +516,9 @@ Routine.run({
 				if(bandpassFilter.notNil, {
 					data= bandpassFilter.filter(data);
 				});
+				c.uVrms= 0;
+				data.size.div(2).do{|i| c.uVrms= c.uVrms+pow(data[data.size-1-i], 2)};
+				c.uVrms= (c.uVrms/data.size.div(2)).sqrt;
 				data= fft.fft(data);
 				if(smoothFilters.notNil, {
 					data= smoothFilters[i].filter(data);
@@ -582,11 +594,12 @@ Routine.run({
 }, clock:AppClock);
 
 Routine({
-	inf.do{
-		var nextTime= Main.elapsedTime+(1/fps);
+	var nextTime;
+	while({win.isClosed.not}, {
+		nextTime= Main.elapsedTime+(1/fps);
 		if(animate, {usr.refresh});
 		(nextTime-Main.elapsedTime).max(0.001).wait;
-	}
+	});
 }).play(AppClock);
 
 ~bandEnergyAvg= 0 ! 8;
