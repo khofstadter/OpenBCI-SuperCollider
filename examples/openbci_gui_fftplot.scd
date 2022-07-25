@@ -11,7 +11,7 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
-var notchFilter, bandpassFilter, smoothFilters;
+var notchFilters, bandpassFilters, smoothFilters;
 var fft= DataFFT(board, 256);
 var fps= 60;
 var usr, pop1, pop2, pop3, pop4, btn1, btn2, pw, po;
@@ -33,6 +33,7 @@ var channels= {|i|
 	(
 		color: colors.wrapAt(i),
 		active: activeChannels.includes(i),
+		data: [],
 		uVrms: 0.0
 	)
 }.dup(board.numChannels);
@@ -103,29 +104,21 @@ usr= UserView(win, Rect(*#[0.14, 0.19, 0.8, 0.64]*win.bounds.extent.asArray));
 usr.background= Color.new255(245, 245, 245, 220);
 usr.clearOnRefresh= true;
 usr.drawFunc= {
-	var data;
 	var uh= usr.bounds.height;
 	var step= usr.bounds.width/(maxFreq+1);
 	var drawLog= pop3.value==0;
 	channels.do{|c, i|
-		if(c.active, {
-			data= board.buffer[i];
-			if(notchFilter.notNil, {
-				data= notchFilter.filter(data);
-			});
-			if(bandpassFilter.notNil, {
-				data= bandpassFilter.filter(data);
-			});
+		if(c.active and:{c.data.size>0}, {
 			c.uVrms= 0;
-			data.size.div(2).do{|i| c.uVrms= c.uVrms+pow(data[data.size-1-i], 2)};
-			c.uVrms= (c.uVrms/data.size.div(2)).sqrt;
-			data= fft.fft(data);
+			c.data.size.div(2).do{|i| c.uVrms= c.uVrms+pow(c.data[c.data.size-1-i], 2)};
+			c.uVrms= (c.uVrms/c.data.size.div(2)).sqrt;
+			c.data= fft.fft(c.data);
 			if(pop4.value>0, {
-				data= smoothFilters[i].filterLog(data.max(0.01));
+				c.data= smoothFilters[i].filterLog(c.data.max(0.01));
 			});
 			Pen.strokeColor= c.color;
 			Pen.moveTo(Point(0, uh));
-			data.do{|y, x|
+			c.data.do{|y, x|
 				if(x<=(maxFreq+1) and:{x>0}, {
 					if(drawLog, {
 						y= y.explin(0.1, maxAmp, uh, 0);
@@ -190,29 +183,47 @@ btn1= Button(win, Rect((pw+2)*4+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterNotch.keys.collect{|x| [x.asString+"Hz"]}
 ).action_{|v|
 	if(v.value>0, {
-		notchFilter= DataFilterNotch(
-			DataFilterNotch.keys[v.value-1],
-			board.currentSampleRate,
-			board.bufferSize
-		);
+		notchFilters= {
+			DataFilterNotch(
+				DataFilterNotch.keys[v.value-1],
+				board.currentSampleRate,
+				board.bufferSize
+			);
+		}.dup(board.numChannels);
 	}, {
-		notchFilter= nil;
+		notchFilters= nil;
 	});
 }.valueAction_(1);
 btn2= Button(win, Rect((pw+2)*4.5+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterBandpass.keys.collect{|x| [x.asString]}
 ).action_{|v|
 	if(v.value>0, {
-		bandpassFilter= DataFilterBandpass(
-			DataFilterBandpass.keys[v.value-1],
-			board.currentSampleRate,
-			board.bufferSize
-		);
+		bandpassFilters= {
+			DataFilterBandpass(
+				DataFilterBandpass.keys[v.value-1],
+				board.currentSampleRate,
+				board.bufferSize
+			);
+		}.dup(board.numChannels);
 	}, {
-		bandpassFilter= nil;
+		bandpassFilters= nil;
 	});
 }.valueAction_(1);
 win.view.children.reject{|v| v==usr}.do{|v| v.resize_(3).font_(f2)};
+
+board.dataAction= {|num, data, acc|
+	channels.do{|c, i|
+		if(c.active, {
+			c.data= board.buffer[i];
+			if(notchFilters.notNil, {
+				c.data= notchFilters[i].filterN(c.data.last);
+			});
+			if(bandpassFilters.notNil, {
+				c.data= bandpassFilters[i].filterN(c.data.last);
+			});
+		});
+	};
+};
 
 Routine({
 	var nextTime;

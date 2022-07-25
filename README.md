@@ -46,6 +46,8 @@ see https://docs.openbci.com/Troubleshooting/TroubleshootingLanding/
 
 ## changelog
 
+* 1.90 - major improvement in all examples using fft and filters
+* 1.87 - focuswidget bugfix and bandpower improvements
 * 1.86 - fft fixes, revert to default fft window, DataSmoothing filterLog
 * 1.85 - changed SyntheticData to match 4.2.0, button bugfix, filterN, smoother drawing
 * 1.82 - fft optimisation and windowtypes, fixing links, increase framerate in examples

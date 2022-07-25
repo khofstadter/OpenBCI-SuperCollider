@@ -17,7 +17,7 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
-var notchFilter, bandpassFilter, smoothFilters;
+var notchFilters, bandpassFilters, smoothingFilters;
 var fft= DataFFT(board, 256);
 var fps= 60;
 var bandsBuffer= {List.fill(bands.size, {List.fill(fps, {0})})}.dup(board.numChannels);  //1sec
@@ -35,7 +35,8 @@ var colors= [
 ];
 var channels= {|i|
 	(
-		active: activeChannels.includes(i)
+		active: activeChannels.includes(i),
+		data: []
 	)
 }.dup(board.numChannels);
 
@@ -101,20 +102,13 @@ usr.drawFunc= {
 	var indices= bands.collect{|b| [fft.freqToIndex(b[1]), fft.freqToIndex(b[2])]};
 	var factor= fft.fftSize/board.currentSampleRate;
 	channels.do{|c, i|
-		if(c.active, {
-			data= board.buffer[i];
-			if(notchFilter.notNil, {
-				data= notchFilter.filter(data);
-			});
-			if(bandpassFilter.notNil, {
-				data= bandpassFilter.filter(data);
-			});
-			data= fft.fft(data);
+		if(c.active and:{c.data.size>0}, {
+			c.data= fft.fft(c.data);
 			if(pop1.value>0, {
-				data= smoothFilters[i].filterLog(data.max(0.01));
+				c.data= smoothingFilters[i].filterLog(c.data.max(0.01));
 			});
 			bands.do{|b, j|
-				var psdArr= data.copyRange(indices[j][0], indices[j][1]-1)**2*factor/4;
+				var psdArr= c.data.copyRange(indices[j][0], indices[j][1]-1)**2*factor/4;
 				bandsBuffer[i][j].pop;
 				bandsBuffer[i][j].insert(0, psdArr.sum);
 			};
@@ -144,35 +138,53 @@ StaticText(win, Rect((pw+2)+po, 1, pw, 20)).align_(\center).string_("Filters");
 pop1= PopUpMenu(win, Rect(po, 20, pw, 20))
 .items_(#["0.0", "0.5", "0.75", "0.9", "0.95", "0.98"])
 .action_{|v|
-	smoothFilters= {DataSmoothing(v.item.asFloat)}.dup(board.numChannels);
+	smoothingFilters= {DataSmoothing(v.item.asFloat)}.dup(board.numChannels);
 }.valueAction_(3);
 btn1= Button(win, Rect((pw+2)+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterNotch.keys.collect{|x| [x.asString+"Hz"]}
 ).action_{|v|
 	if(v.value>0, {
-		notchFilter= DataFilterNotch(
-			DataFilterNotch.keys[v.value-1],
-			board.currentSampleRate,
-			board.bufferSize
-		);
+		notchFilters= {
+			DataFilterNotch(
+				DataFilterNotch.keys[v.value-1],
+				board.currentSampleRate,
+				board.bufferSize
+			);
+		}.dup(board.numChannels);
 	}, {
-		notchFilter= nil;
+		notchFilters= nil;
 	});
 }.valueAction_(1);
 btn2= Button(win, Rect((pw+2)*1.5+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterBandpass.keys.collect{|x| [x.asString]}
 ).action_{|v|
 	if(v.value>0, {
-		bandpassFilter= DataFilterBandpass(
-			DataFilterBandpass.keys[v.value-1],
-			board.currentSampleRate,
-			board.bufferSize
-		);
+		bandpassFilters= {
+			DataFilterBandpass(
+				DataFilterBandpass.keys[v.value-1],
+				board.currentSampleRate,
+				board.bufferSize
+			);
+		}.dup(board.numChannels);
 	}, {
-		bandpassFilter= nil;
+		bandpassFilters= nil;
 	});
 }.valueAction_(1);
 win.view.children.reject{|v| v==usr}.do{|v| v.resize_(3).font_(f2)};
+
+board.dataAction= {|num, data, acc|
+	channels.do{|c, i|
+		if(c.active, {
+			c.data= board.buffer[i];
+			if(notchFilters.notNil, {
+				c.data= notchFilters[i].filterN(c.data.last);
+			});
+			if(bandpassFilters.notNil, {
+				c.data= bandpassFilters[i].filterN(c.data.last);
+			});
+		});
+	};
+};
 
 Routine({
 	var nextTime;

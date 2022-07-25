@@ -22,17 +22,18 @@ var band= Array.fill(8, { arg i; [i,4,8] }); //theta on all channels;
 var loBandEnergy= 0.3, hiBandEnergy= 2;  //vertical thresholds
 var bandEnergyAvg= 0 ! 8; //the current calulated averages
 var phaseCalcArr= Signal.newClear(512) ! 4; //change size to 512 for longer window
-//var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
+var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
-var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
+//var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var board= PlaybackData("/Users/khofstadter/Desktop/OpenBCI-RAW-2021-04-25_13-08-39_sc.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record (no extras i.e. Aux)
-var notchFilter, bandpassFilter, smoothFilters;
+var notchFilters, bandpassFilters, smoothFilters;
 var fft= DataFFT(board, 256);
 var fps= 60, animate= false;
 var downSample= 65;  //only draw this many samples
 var allData= Array.newClear(board.numChannels);  //an array of arrays with fft data
 var drawModes= #[\Paused, \NoData, \DownSampl, \Complete];
+var calculations;
 var usr, btn0, pop1, pop2, pop3, pop4, btn1, btn2, pw, po;
 var horizontalScale, verticalScale, maxFreq, maxAmp;
 var f0= Font("Helvetiva", 16);
@@ -52,6 +53,7 @@ var channels= {|i|
 	(
 		color: colors.wrapAt(i),
 		active: activeChannels.includes(i),
+		data: [],
 		uVrms: 0.0
 	)
 }.dup(board.numChannels);
@@ -437,166 +439,172 @@ btn1= Button(win, Rect((pw+2)*5+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterNotch.keys.collect{|x| [x.asString+"Hz"]}
 ).action_{|v|
 	if(v.value>0, {
-		notchFilter= DataFilterNotch(
-			DataFilterNotch.keys[v.value-1],
-			board.currentSampleRate,
-			board.bufferSize
-		);
+		notchFilters= {
+			DataFilterNotch(
+				DataFilterNotch.keys[v.value-1],
+				board.currentSampleRate,
+				board.bufferSize
+			);
+		}.dup(board.numChannels);
 	}, {
-		notchFilter= nil;
+		notchFilters= nil;
 	});
 }.valueAction_(1);
 btn2= Button(win, Rect((pw+2)*5.5+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterBandpass.keys.collect{|x| [x.asString]}
 ).action_{|v|
 	if(v.value>0, {
-		bandpassFilter= DataFilterBandpass(
-			DataFilterBandpass.keys[v.value-1],
-			board.currentSampleRate,
-			board.bufferSize
-		);
+		bandpassFilters= {
+			DataFilterBandpass(
+				DataFilterBandpass.keys[v.value-1],
+				board.currentSampleRate,
+				board.bufferSize
+			);
+		}.dup(board.numChannels);
 	}, {
-		bandpassFilter= nil;
+		bandpassFilters= nil;
 	});
 }.valueAction_(1);
 win.view.children.reject{|v| v==usr}.do{|v| v.resize_(3).font_(f2)};
 
-//--update data in an independent routine
-Routine.run({
-	inf.do{
-		var factor= fft.fftSize/board.currentSampleRate*0.01;
+calculations= {
+	var factor= fft.fftSize/board.currentSampleRate*0.01;
 
-		//here:
-		var bandArr= Array.new ! 8;
+	//here:
+	var bandArr= Array.new ! 8;
 
-		var bandRange0= [
-			(fft.fftSize*(band[0][1]/board.currentSampleRate)).round.asInteger,
-			(fft.fftSize*(band[0][2]/board.currentSampleRate)).round.asInteger
-		];
-		var bandRange1= [
-			(fft.fftSize*(band[1][1]/board.currentSampleRate)).round.asInteger,
-			(fft.fftSize*(band[1][2]/board.currentSampleRate)).round.asInteger
-		];
+	var bandRange0= [
+		(fft.fftSize*(band[0][1]/board.currentSampleRate)).round.asInteger,
+		(fft.fftSize*(band[0][2]/board.currentSampleRate)).round.asInteger
+	];
+	var bandRange1= [
+		(fft.fftSize*(band[1][1]/board.currentSampleRate)).round.asInteger,
+		(fft.fftSize*(band[1][2]/board.currentSampleRate)).round.asInteger
+	];
 
-		var bandRange2= [
-			(fft.fftSize*(band[2][1]/board.currentSampleRate)).round.asInteger,
-			(fft.fftSize*(band[2][2]/board.currentSampleRate)).round.asInteger
-		];
+	var bandRange2= [
+		(fft.fftSize*(band[2][1]/board.currentSampleRate)).round.asInteger,
+		(fft.fftSize*(band[2][2]/board.currentSampleRate)).round.asInteger
+	];
 
-		var bandRange3= [
-			(fft.fftSize*(band[3][1]/board.currentSampleRate)).round.asInteger,
-			(fft.fftSize*(band[3][2]/board.currentSampleRate)).round.asInteger
-		];
+	var bandRange3= [
+		(fft.fftSize*(band[3][1]/board.currentSampleRate)).round.asInteger,
+		(fft.fftSize*(band[3][2]/board.currentSampleRate)).round.asInteger
+	];
 
-		var bandRange4= [
-			(fft.fftSize*(band[4][1]/board.currentSampleRate)).round.asInteger,
-			(fft.fftSize*(band[4][2]/board.currentSampleRate)).round.asInteger
-		];
-		var bandRange5= [
-			(fft.fftSize*(band[5][1]/board.currentSampleRate)).round.asInteger,
-			(fft.fftSize*(band[5][2]/board.currentSampleRate)).round.asInteger
-		];
-		var bandRange6= [
-			(fft.fftSize*(band[6][1]/board.currentSampleRate)).round.asInteger,
-			(fft.fftSize*(band[6][2]/board.currentSampleRate)).round.asInteger
-		];
-		var bandRange7= [
-			(fft.fftSize*(band[7][1]/board.currentSampleRate)).round.asInteger,
-			(fft.fftSize*(band[7][2]/board.currentSampleRate)).round.asInteger
-		];
+	var bandRange4= [
+		(fft.fftSize*(band[4][1]/board.currentSampleRate)).round.asInteger,
+		(fft.fftSize*(band[4][2]/board.currentSampleRate)).round.asInteger
+	];
+	var bandRange5= [
+		(fft.fftSize*(band[5][1]/board.currentSampleRate)).round.asInteger,
+		(fft.fftSize*(band[5][2]/board.currentSampleRate)).round.asInteger
+	];
+	var bandRange6= [
+		(fft.fftSize*(band[6][1]/board.currentSampleRate)).round.asInteger,
+		(fft.fftSize*(band[6][2]/board.currentSampleRate)).round.asInteger
+	];
+	var bandRange7= [
+		(fft.fftSize*(band[7][1]/board.currentSampleRate)).round.asInteger,
+		(fft.fftSize*(band[7][2]/board.currentSampleRate)).round.asInteger
+	];
 
 
-		channels.do{|c, i|
-			var data;
-			if(c.active, {
-				data= board.buffer[i];
-				if(notchFilter.notNil, {
-					data= notchFilter.filter(data);
-				});
-				if(bandpassFilter.notNil, {
-					data= bandpassFilter.filter(data);
-				});
-				c.uVrms= 0;
-				data.size.div(2).do{|i| c.uVrms= c.uVrms+pow(data[data.size-1-i], 2)};
-				c.uVrms= (c.uVrms/data.size.div(2)).sqrt;
-				data= fft.fft(data);
-				if(smoothFilters.notNil, {
-					data= smoothFilters[i].filter(data);
-				});
-				allData[i]= data;
-
-				//here:
-				//--collect amplitudes for frequency range for selected channels
-				if(band[0][0]==i, {
-					bandArr[0]= bandArr[0]++data.copyRange(*bandRange0);
-				});
-				if(band[1][0]==i, {
-					bandArr[1]= bandArr[1]++data.copyRange(*bandRange1);
-				});
-				if(band[2][0]==i, {
-					bandArr[2]= bandArr[2]++data.copyRange(*bandRange2);
-				});
-				if(band[3][0]==i, {
-					bandArr[3]= bandArr[3]++data.copyRange(*bandRange3);
-				});
-				if(band[4][0]==i, {
-					bandArr[4]= bandArr[4]++data.copyRange(*bandRange4);
-				});
-				if(band[5][0]==i, {
-					bandArr[5]= bandArr[5]++data.copyRange(*bandRange5);
-				});
-				if(band[6][0]==i, {
-					bandArr[6]= bandArr[6]++data.copyRange(*bandRange6);
-				});
-				if(band[7][0]==i, {
-					bandArr[7]= bandArr[7]++data.copyRange(*bandRange7);
-				});
+	channels.do{|c, i|
+		if(c.active and:{c.data.size>0}, {
+			c.uVrms= 0;
+			c.data.size.div(2).do{|i| c.uVrms= c.uVrms+pow(c.data[c.data.size-1-i], 2)};
+			c.uVrms= (c.uVrms/c.data.size.div(2)).sqrt;
+			c.data= fft.fft(c.data);
+			if(smoothFilters.notNil, {
+				c.data= smoothFilters[i].filterLog(c.data.max(0.01));
 			});
-		};
+			allData[i]= c.data;
 
-		bandEnergyAvg[0]= bandArr[0].median.round(0.001);
-		bandEnergyAvg[1]= bandArr[1].median.round(0.001);
-		bandEnergyAvg[2]= bandArr[2].median.round(0.001);
-		bandEnergyAvg[3]= bandArr[3].median.round(0.001);
-		bandEnergyAvg[4]= bandArr[4].median.round(0.001);
-		bandEnergyAvg[5]= bandArr[5].median.round(0.001);
-		bandEnergyAvg[6]= bandArr[6].median.round(0.001);
-		bandEnergyAvg[7]= bandArr[7].median.round(0.001);
-		~bandEnergyAvg[0]= bandEnergyAvg[0]; //ch1
-		~bandEnergyAvg[1]= bandEnergyAvg[1]; //ch2
-		~bandEnergyAvg[2]= bandEnergyAvg[2]; //ch3
-		~bandEnergyAvg[3]= bandEnergyAvg[3]; //ch4
-		~bandEnergyAvg[4]= bandEnergyAvg[4]; //ch5
-		~bandEnergyAvg[5]= bandEnergyAvg[5]; //ch6
-		~bandEnergyAvg[6]= bandEnergyAvg[6]; //ch7
-		~bandEnergyAvg[7]= bandEnergyAvg[7]; //ch8
-
-		phaseCalcArr[0]= phaseCalcArr[0].rotate(-1);
-		phaseCalcArr[1]= phaseCalcArr[1].rotate(-1);
-		phaseCalcArr[2]= phaseCalcArr[2].rotate(-1);
-		//phaseCalcArr[3]= phaseCalcArr[3].rotate(-1);
-		phaseCalcArr[0][phaseCalcArr[0].size-1]= ~bandEnergyAvg[4]; //F3
-		phaseCalcArr[1][phaseCalcArr[1].size-1]= ~bandEnergyAvg[5]; //F4
-		phaseCalcArr[2][phaseCalcArr[2].size-1]= ~bandEnergyAvg[7]; //P4
-		//phaseCalcArr[3][phaseCalcArr[3].size-1]= ~bandEnergyAvg[7];
-
-		//two phase coherence calculations:
-		~phaseCalcFuncVal[0]= (phaseCalcFunc.(phaseCalcArr[0], phaseCalcArr[1])).round(0.01);
-		~phaseCalcFuncVal[1]= (phaseCalcFunc.(phaseCalcArr[0], phaseCalcArr[2])).round(0.01);
-
-		~phaseCalcArr[0]= phaseCalcArr[0];
-		~phaseCalcArr[1]= phaseCalcArr[1];
-		~phaseCalcArr[2]= phaseCalcArr[2];
-		//~phaseCalcArr[3]= phaseCalcArr[3];
-
-		(1/fps).wait;
+			//here:
+			//--collect amplitudes for frequency range for selected channels
+			if(band[0][0]==i, {
+				bandArr[0]= bandArr[0]++c.data.copyRange(*bandRange0);
+			});
+			if(band[1][0]==i, {
+				bandArr[1]= bandArr[1]++c.data.copyRange(*bandRange1);
+			});
+			if(band[2][0]==i, {
+				bandArr[2]= bandArr[2]++c.data.copyRange(*bandRange2);
+			});
+			if(band[3][0]==i, {
+				bandArr[3]= bandArr[3]++c.data.copyRange(*bandRange3);
+			});
+			if(band[4][0]==i, {
+				bandArr[4]= bandArr[4]++c.data.copyRange(*bandRange4);
+			});
+			if(band[5][0]==i, {
+				bandArr[5]= bandArr[5]++c.data.copyRange(*bandRange5);
+			});
+			if(band[6][0]==i, {
+				bandArr[6]= bandArr[6]++c.data.copyRange(*bandRange6);
+			});
+			if(band[7][0]==i, {
+				bandArr[7]= bandArr[7]++c.data.copyRange(*bandRange7);
+			});
+		});
 	};
-}, clock:AppClock);
+
+	bandEnergyAvg[0]= (bandArr[0].median?0).round(0.001);
+	bandEnergyAvg[1]= (bandArr[1].median?0).round(0.001);
+	bandEnergyAvg[2]= (bandArr[2].median?0).round(0.001);
+	bandEnergyAvg[3]= (bandArr[3].median?0).round(0.001);
+	bandEnergyAvg[4]= (bandArr[4].median?0).round(0.001);
+	bandEnergyAvg[5]= (bandArr[5].median?0).round(0.001);
+	bandEnergyAvg[6]= (bandArr[6].median?0).round(0.001);
+	bandEnergyAvg[7]= (bandArr[7].median?0).round(0.001);
+	~bandEnergyAvg[0]= bandEnergyAvg[0]; //ch1
+	~bandEnergyAvg[1]= bandEnergyAvg[1]; //ch2
+	~bandEnergyAvg[2]= bandEnergyAvg[2]; //ch3
+	~bandEnergyAvg[3]= bandEnergyAvg[3]; //ch4
+	~bandEnergyAvg[4]= bandEnergyAvg[4]; //ch5
+	~bandEnergyAvg[5]= bandEnergyAvg[5]; //ch6
+	~bandEnergyAvg[6]= bandEnergyAvg[6]; //ch7
+	~bandEnergyAvg[7]= bandEnergyAvg[7]; //ch8
+
+	phaseCalcArr[0]= phaseCalcArr[0].rotate(-1);
+	phaseCalcArr[1]= phaseCalcArr[1].rotate(-1);
+	phaseCalcArr[2]= phaseCalcArr[2].rotate(-1);
+	//phaseCalcArr[3]= phaseCalcArr[3].rotate(-1);
+	phaseCalcArr[0][phaseCalcArr[0].size-1]= ~bandEnergyAvg[4]; //F3
+	phaseCalcArr[1][phaseCalcArr[1].size-1]= ~bandEnergyAvg[5]; //F4
+	phaseCalcArr[2][phaseCalcArr[2].size-1]= ~bandEnergyAvg[7]; //P4
+	//phaseCalcArr[3][phaseCalcArr[3].size-1]= ~bandEnergyAvg[7];
+
+	//two phase coherence calculations:
+	~phaseCalcFuncVal[0]= (phaseCalcFunc.(phaseCalcArr[0], phaseCalcArr[1])).round(0.01);
+	~phaseCalcFuncVal[1]= (phaseCalcFunc.(phaseCalcArr[0], phaseCalcArr[2])).round(0.01);
+
+	~phaseCalcArr[0]= phaseCalcArr[0];
+	~phaseCalcArr[1]= phaseCalcArr[1];
+	~phaseCalcArr[2]= phaseCalcArr[2];
+	//~phaseCalcArr[3]= phaseCalcArr[3];
+};
+
+board.dataAction= {|num, data, acc|
+	channels.do{|c, i|
+		if(c.active, {
+			c.data= board.buffer[i];
+			if(notchFilters.notNil, {
+				c.data= notchFilters[i].filterN(c.data.last);
+			});
+			if(bandpassFilters.notNil, {
+				c.data= bandpassFilters[i].filterN(c.data.last);
+			});
+		});
+	};
+};
 
 Routine({
 	var nextTime;
 	while({win.isClosed.not}, {
 		nextTime= Main.elapsedTime+(1/fps);
+		calculations.value;
 		if(animate, {usr.refresh});
 		(nextTime-Main.elapsedTime).max(0.001).wait;
 	});
