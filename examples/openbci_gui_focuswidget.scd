@@ -145,12 +145,17 @@ usr.drawFunc= {
 	Pen.fillColor= backgroundColor;
 	Pen.fillRect(Rect(w1, h2a, ub.width*0.08, h3-h2a));
 	Pen.fillRect(Rect(w2, 0, ub.width*0.08, h2b));
-	if(focused, {
+	if(alpha>bands[0][3] and:{alpha<bands[0][4]}, {
 		Pen.fillColor= focusedColor;
 	}, {
 		Pen.fillColor= unfocusedColor;
 	});
 	Pen.fillRect(Rect(w1, 0, ub.width*0.08, h2a));
+	if(beta<bands[1][3], {
+		Pen.fillColor= focusedColor;
+	}, {
+		Pen.fillColor= unfocusedColor;
+	});
 	Pen.fillRect(Rect(w2, h2b, ub.width*0.08, h3-h2b));
 
 	Pen.strokeColor= colors[0];
