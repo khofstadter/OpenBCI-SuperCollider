@@ -6,7 +6,7 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
-var f= DataFFT(board, 256);
+var f= DataFFT(board, 256, \hamming);
 var win, msliders;
 win= Window("fft gui example multislider", Rect(100, 100, 640, 640)).front;
 msliders= {
@@ -19,7 +19,9 @@ msliders= {
 }.dup(board.numChannels);
 win.layout= VLayout(*msliders);
 Routine({
-	inf.do{
+	var nextTime;
+	while({win.isClosed.not}, {
+		nextTime= Main.elapsedTime+(1/40);  //framerate
 		board.buffer.do{|data, i|
 			if(~notchFilter.notNil, {
 				data= ~notchFilter.filter(data);
@@ -29,8 +31,8 @@ Routine({
 			});
 			msliders[i].value= f.fft(data).explin(0.1, 200, 0, 1);  //0.1-200 uV
 		};
-		(1/40).wait;  //framerate
-	};
+		(nextTime-Main.elapsedTime).max(0.001).wait;
+	});
 }).play(AppClock);
 CmdPeriod.doOnce({win.close});
 ~openbci= board;

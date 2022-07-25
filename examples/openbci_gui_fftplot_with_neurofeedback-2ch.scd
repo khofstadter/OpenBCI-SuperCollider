@@ -22,8 +22,8 @@ var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var board= PlaybackData("/Users/khofstadter/Dropbox/PhD/raw_eeg_data/shamanic_soundscape/mama/OpenBCI-RAW-2019-10-01_10-31-39_sc.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
 var notchFilter, bandpassFilter, smoothFilters;
-var fft= DataFFT(board, 256);
-var fps= 40;
+var fft= DataFFT(board, 256, \hamming);
+var fps= 60, animate= false;
 var downSample= 65;  //only draw this many samples
 var allData= Array.newClear(board.numChannels);  //an array of arrays with fft data
 var drawModes= #[\Paused, \NoData, \DownSampl, \Complete];
@@ -114,8 +114,6 @@ CmdPeriod.doOnce({win.close});
 //--plot
 usr= UserView(win, Rect(*#[0.14, 0.19, 0.8, 0.64]*win.bounds.extent.asArray));
 usr.background= Color.new255(245, 245, 245, 220);
-usr.animate= true;
-usr.frameRate= fps;
 usr.clearOnRefresh= true;
 usr.drawFunc= {
 	var uh= usr.bounds.height;
@@ -208,9 +206,9 @@ btn0= Button(win, Rect(po, 20, pw, 20))
 .states_(drawModes.collect{|symbol| [symbol.asString]})
 .action_({|view|
 	if(view.value==0, {
-		usr.animate= false;
+		animate= false;
 	}, {
-		usr.animate= true;
+		animate= true;
 	});
 }).valueAction_(1);
 StaticText(win, Rect((pw+2)+po, 1, pw, 20)).align_(\center).string_("Max Freq");
@@ -333,6 +331,14 @@ Routine.run({
 		(1/fps).wait;
 	};
 }, clock:AppClock);
+
+Routine({
+	inf.do{
+		var nextTime= Main.elapsedTime+(1/fps);
+		if(animate, {usr.refresh});
+		(nextTime-Main.elapsedTime).max(0.001).wait;
+	}
+}).play(AppClock);
 
 ~openbci= board;
 

@@ -6,7 +6,7 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
-var f= DataFFT(board, 512);  //fft size
+var f= DataFFT(board, 512, \hamming);  //fft size
 var win, img, frameCounter= 0;
 var width= 640, height= f.fftSize2+1;
 ~channel= 2;  //which channel to read
@@ -29,7 +29,14 @@ win.drawFunc= {
 	Pen.drawImage(Rect(0, 0, win.bounds.width, win.bounds.height), img);
 	frameCounter= frameCounter+1;
 };
-Routine({while({win.isClosed.not}, {win.refresh; (1/40).wait})}).play(AppClock);
+Routine({
+	var nextTime;
+	while({win.isClosed.not}, {
+		nextTime= Main.elapsedTime+(1/60);
+		win.refresh;
+		(nextTime-Main.elapsedTime).max(0.001).wait;
+	});
+}).play(AppClock);
 win.onClose= {img.free; board.stop};
 CmdPeriod.doOnce({win.close});
 ~openbci= board;

@@ -47,13 +47,15 @@ win.drawFunc= {
 };
 win.onClose= {img.free; board.stop};
 Routine({
+	var nextTime;
 	while({win.isClosed.not}, {
+		nextTime= Main.elapsedTime+(1/60);
 		data= buffer.readAccel;
 		if(data.isEmpty.not, {
 			imgFunc.value;
 			win.refresh;
 		});
-		(1/40).wait;
+		(nextTime-Main.elapsedTime).max(0.001).wait;
 	});
 }).play(AppClock);
 CmdPeriod.doOnce({win.close});

@@ -14,10 +14,10 @@ var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var recorder= DataRecord(board).start;  //uncomment to record
 var threshRailed= 2.pow(23)-1000*board.uVScale(24);
 var threshNearRailed= 2.pow(23)*0.9*board.uVScale(24);
-var notchFilter, bandpassFilter, dataFunc;
-var fps= 40;
+var notchFilters, bandpassFilters;
+var fps= 60;
 var usr, pop1, pop2, btn1, btn2, pw, po;
-var img, imgDrawFunc, imgPixels, eraseColor, stepRemainder= 0;
+var img, imgDrawFunc, imgPixels;
 var horizontalScale, maxAmp;
 var f0= Font("Helvetiva", 16);
 var f1= Font("Helvetiva", 14);
@@ -157,7 +157,6 @@ img= Image(usr.bounds.width.asInteger, usr.bounds.height.asInteger);
 img.interpolation= \fast;
 imgPixels= img.pixels;
 usr.background= Color.new255(245, 245, 245, 220);
-usr.animate= false;
 usr.clearOnRefresh= true;
 usr.drawFunc= {
 	var uw= usr.bounds.width;
@@ -204,42 +203,25 @@ usr.drawFunc= {
 };
 usr.resize= 5;
 usr.canFocus= false;
-eraseColor= Image.colorToPixel(Color.clear);
 imgDrawFunc= {
 	img.draw{
 		var channelHeight= img.height-2/channels.size;
-		var stepSize= img.width/horizontalScale[0].abs/fps;
-		var steps= stepSize.asInteger;
-		stepRemainder= stepRemainder+(stepSize-steps);
-		if(stepRemainder>=1, {
-			steps= steps+1;
-			stepRemainder= stepRemainder%1;
-		});
+		var length= horizontalScale[0].abs.asInteger*board.currentSampleRate;
 
-		if(steps>0, {
+		img.fill(Color.clear);
 
-			//--scroll left
-			img.loadPixels(imgPixels);
-			img.height.do{|y|
-				var i= y*img.width;
-				imgPixels.overWrite(imgPixels.copyRange(i+steps, i+img.width-1), i);
-				steps.do{|j|
-					imgPixels[i+img.width-1-j]= eraseColor;
-				};
-			};
-			img.setPixels(imgPixels);
-
-			channels.do{|c, i|
-				var y, val;
+		channels.do{|c, i|
+			Pen.strokeColor= c.color;
+			if(c.active, {
 				c.railed= false;
 				c.nearRailed= false;
-				Pen.strokeColor= c.color;
-
-				if(c.active, {
-
-					//--draw data
-					Pen.moveTo(Point(img.width-steps, c.lastPenPositionY));
-					val= c.data[c.data.size-1];
+				c.data.copyToEnd(c.data.size-length).do{|val, x|
+					var y= 1-(val/maxAmp).clip(-1, 1)*channelHeight*0.5+1;
+					if(x==0, {
+						Pen.moveTo(Point(0, y));
+					}, {
+						Pen.lineTo(Point(x.linlin(0, length, 0, img.width), y));
+					});
 					if(val.abs>=threshNearRailed, {
 						c.nearRailed= true;
 						if(val.abs>=threshRailed, {
@@ -247,17 +229,14 @@ imgDrawFunc= {
 						});
 					});
 					c.uVrms.overwrite(pow(val, 2));
-					y= 1-(val/maxAmp).clip(-1, 1)*channelHeight*0.5+1;
-					Pen.lineTo(Point(img.width, y));
-					c.lastPenPositionY= y;
-				}, {
-					Pen.moveTo(Point(img.width-steps, channelHeight*0.5));
-					Pen.lineTo(Point(img.width, channelHeight*0.5));
-				});
-				Pen.stroke;
-				Pen.translate(0, channelHeight);
-			};
-		});
+				};
+			}, {
+				Pen.moveTo(Point(0, channelHeight*0.5));
+				Pen.lineTo(Point(img.width, channelHeight*0.5));
+			});
+			Pen.stroke;
+			Pen.translate(0, channelHeight);
+		};
 	};
 };
 
@@ -283,44 +262,58 @@ pop2= PopUpMenu(win, Rect((pw+2)+po, 20, pw, 20))
 		(-10..0),
 		(-20..0)
 	][v.value];
+	board.bufferSize= horizontalScale[0].abs.asInteger*board.currentSampleRate;
+	notchFilters.do{|f| f.bufferSize_(board.bufferSize)};
+	bandpassFilters.do{|f| f.bufferSize_(board.bufferSize)};
 	win.refresh;
 }.valueAction_(2);
 btn1= Button(win, Rect((pw+2)*2+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterNotch.keys.collect{|x| [x.asString+"Hz"]}
 ).action_{|v|
 	if(v.value>0, {
-		notchFilter= DataFilterNotch(DataFilterNotch.keys[v.value-1]);
+		notchFilters= {
+			DataFilterNotch(DataFilterNotch.keys[v.value-1], board.currentSampleRate, board.bufferSize);
+		}.dup(board.numChannels);
 	}, {
-		notchFilter= nil;
+		notchFilters= nil;
 	});
 }.valueAction_(1);
 btn2= Button(win, Rect((pw+2)*2.5+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterBandpass.keys.collect{|x| [x.asString]}
 ).action_{|v|
 	if(v.value>0, {
-		bandpassFilter= DataFilterBandpass(DataFilterBandpass.keys[v.value-1]);
+		bandpassFilters= {
+			DataFilterBandpass(DataFilterBandpass.keys[v.value-1], board.currentSampleRate, board.bufferSize);
+		}.dup(board.numChannels);
 	}, {
-		bandpassFilter= nil;
+		bandpassFilters= nil;
 	});
 }.valueAction_(1);
 win.view.children.reject{|v| v==usr}.do{|v| v.resize_(3).font_(f2)};
 win.onClose= {img.free};
 
-dataFunc= {
+board.dataAction= {|num, data, acc|
 	channels.do{|c, i|
 		if(c.active, {
 			c.data= board.buffer[i];
-			if(notchFilter.notNil, {
-				c.data= notchFilter.filter(c.data);
+			if(notchFilters.notNil, {
+				c.data= notchFilters[i].filterN(c.data.last);
 			});
-			if(bandpassFilter.notNil, {
-				c.data= bandpassFilter.filter(c.data);
+			if(bandpassFilters.notNil, {
+				c.data= bandpassFilters[i].filterN(c.data.last);
 			});
 		});
 	};
 };
 
-Routine({inf.do{dataFunc.value; imgDrawFunc.value; usr.refresh; wait(1/fps)}}).play(AppClock);
+Routine({
+	inf.do{
+		var nextTime= Main.elapsedTime+(1/fps);
+		imgDrawFunc.value;
+		usr.refresh;
+		(nextTime-Main.elapsedTime).max(0.001).wait;
+	}
+}).play(AppClock);
 
 ~openbci= board;
 )

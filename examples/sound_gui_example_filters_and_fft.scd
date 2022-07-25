@@ -52,8 +52,6 @@ s.waitForBoot{
 	});
 	win= Window("fft", Rect(10, 100, width, height), false);
 	usr= UserView(win, Rect(0, 0, width, height));
-	usr.animate= true;
-	usr.frameRate= 60;
 	usr.background= Color.black;
 	usr.drawFunc= {
 		Pen.fillColor= Color.white;
@@ -71,6 +69,14 @@ s.waitForBoot{
 	};
 	CmdPeriod.doOnce({win.close});
 	win.front;
+
+	Routine({
+		inf.do{
+			var nextTime= Main.elapsedTime+(1/60);
+			usr.refresh;
+			(nextTime-Main.elapsedTime).max(0.001).wait;
+		}
+	}).play(AppClock);
 };
 )
 

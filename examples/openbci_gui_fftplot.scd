@@ -12,8 +12,8 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
 var notchFilter, bandpassFilter, smoothFilters;
-var fft= DataFFT(board, 256);  //DataFFT(board, 256, \hanning);
-var fps= 40;
+var fft= DataFFT(board, 256, \hamming);
+var fps= 60;
 var usr, pop1, pop2, pop3, pop4, btn1, btn2, pw, po;
 var horizontalScale, verticalScale, maxFreq, maxAmp;
 var f0= Font("Helvetiva", 16);
@@ -101,8 +101,6 @@ CmdPeriod.doOnce({win.close});
 //--plot
 usr= UserView(win, Rect(*#[0.14, 0.19, 0.8, 0.64]*win.bounds.extent.asArray));
 usr.background= Color.new255(245, 245, 245, 220);
-usr.animate= true;
-usr.frameRate= fps;
 usr.clearOnRefresh= true;
 usr.drawFunc= {
 	var data;
@@ -207,6 +205,14 @@ btn2= Button(win, Rect((pw+2)*4.5+po, 20, pw/2, 20)).states_(
 	});
 }.valueAction_(1);
 win.view.children.reject{|v| v==usr}.do{|v| v.resize_(3).font_(f2)};
+
+Routine({
+	inf.do{
+		var nextTime= Main.elapsedTime+(1/fps);
+		usr.refresh;
+		(nextTime-Main.elapsedTime).max(0.001).wait;
+	}
+}).play(AppClock);
 
 ~channels= channels;
 ~openbci= board;
