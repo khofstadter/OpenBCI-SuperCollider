@@ -27,10 +27,11 @@ var f0= Font("Helvetiva", 16);
 var f1= Font("Helvetiva", 14);
 var f2= Font("Helvetiva", 10);
 var colors= [
-	Color.new255(184, 181, 247),
-	Color.new255(130, 122, 251),
-	Color.new255(80, 64, 254),
-	Color.new255(36, 0, 255)
+	Color.new255(133, 152, 193),
+	Color.new255(174, 145, 184),
+	Color.new255(130, 167, 153),
+	Color.new255(231, 206, 109),
+	Color.new255(233, 134, 127)
 ];
 var channels= {|i|
 	(
@@ -40,7 +41,8 @@ var channels= {|i|
 
 //--window
 var win= Window("band power widget", Rect(10, 100, 512, 320));
-var as= "(uV)^2 / Hz per channel";
+var ts= "EEG Power Bands";
+var as= "Power - (uV)^2 / Hz";
 win.view.minSize= Size(436, 145);
 win.background= Color.white;
 win.drawFunc= {
@@ -53,6 +55,7 @@ win.drawFunc= {
 
 	Pen.push;
 	Pen.translate(ub.left, ub.bottom);
+	Pen.stringAtPoint(ts, Point(ub.width-ts.bounds(f1).width/2, wb.height-ub.bottom/2), f1);
 	step= ub.width-1/bands.size;
 	bands.do{|arr, i|
 		var x= step*i+(step*0.5);
@@ -64,7 +67,7 @@ win.drawFunc= {
 	Pen.push;
 	Pen.rotate(-0.5pi, wb.width/2, wb.height/2);
 	Pen.translate(0-(wb.height-wb.width/2-(wb.height-ub.bottom)), wb.height-wb.width/2+ub.left);
-	Pen.stringAtPoint(as, Point(ub.height-as.bounds(f1).width, 0-ub.left*0.75), f1);
+	Pen.stringAtPoint(as, Point(ub.height-as.bounds(f1).width*0.5, 0-ub.left*0.75), f1);
 	Pen.line(Point(0, -6), Point(ub.height, -6));
 	step= verticalScale[1].explin(verticalScale[0], 100, 0, ub.height-1);
 	verticalScale.do{|v, i|
@@ -117,7 +120,6 @@ usr.drawFunc= {
 			};
 		});
 	};
-	Pen.strokeColor= Color.blue;
 	bands.do{|b, j|
 		var x, y, arr= Array.new;
 		channels.do{|c, i|
@@ -129,7 +131,6 @@ usr.drawFunc= {
 		y= arr.mean.explin(0.1, 100, ub.height, 0);
 		Pen.fillColor= colors.wrapAt(j);
 		Pen.fillRect(Rect(x, y, step-2, ub.height-y));
-		Pen.strokeRect(Rect(x, y, step-2, ub.height-y));
 	};
 };
 usr.resize= 5;
