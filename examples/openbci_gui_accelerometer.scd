@@ -11,7 +11,7 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
 var buffer= DataBuffer(board, 100, false, true).start;
-var fps= 30;
+var fps= 60;
 var usr, pop1, pop2, pw, po;
 var img, imgFunc;
 var verticalScale, horizontalScale;
@@ -178,15 +178,17 @@ imgFunc= {|numPointsToDraw|
 };
 Routine({
 	var numPointsToDraw;
+	var nextTime;
 	while({win.isClosed.not}, {
+		nextTime= Main.elapsedTime+(1/fps);
 		if(buffer.accelBuffer.size>0, {  //skip frame if no new data arrived (25hz vs fps)
 			numPointsToDraw= 25*horizontalScale[0].abs;  //25hz dependant
 			buffer.readAccel.do{|xyz| data.addFirst(xyz)};
 			while({data.size>numPointsToDraw}, {data.pop});
 			imgFunc.value(numPointsToDraw);
-			win.refresh;
+			usr.refresh;
 		});
-		(1/fps).wait;
+		(nextTime-Main.elapsedTime).max(0.001).wait;
 	});
 }).play(AppClock);
 

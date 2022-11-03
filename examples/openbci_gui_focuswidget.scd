@@ -4,7 +4,7 @@
 //TODO test with ganglion and daisy
 
 (
-var activeChannels= #[0, 1];
+var activeChannels= #[0, 1, 2, 3, 4, 5, 6, 7];
 var bands= #[
 	["alpha", 7.5, 12.5, 0.7, 2.0],  //name, low freq, high freq, thresh, max value
 	["beta", 12.5, 30.0, 0.7, 2.0]
@@ -14,9 +14,9 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var board= PlaybackData("~/Desktop/OpenBCI-RAW-2019-04-10_19-04-26.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
-var notchFilter, bandpassFilter, smoothFilters;
+var notchFilters, bandpassFilters, smoothingFilters;
 var fft= DataFFT(board, 256);
-var fps= 30;
+var fps= 60;
 var usr, pop1, pop2, btn1, btn2, pw, po;
 var backgroundColor, unfocusedColor, focusedColor;
 var f0= Font("Helvetiva", 16);
@@ -37,7 +37,8 @@ var colors= [
 var channels= {|i|
 	(
 		color: colors.wrapAt(i),
-		active: activeChannels.includes(i)
+		active: activeChannels.includes(i),
+		data: []
 	)
 }.dup(board.numChannels);
 
@@ -55,8 +56,6 @@ CmdPeriod.doOnce({win.close});
 //--plot
 usr= UserView(win, Rect(*#[0.05, 0.19, 0.9, 0.76]*win.bounds.extent.asArray));
 usr.background= Color.new255(245, 245, 245, 220);
-usr.animate= true;
-usr.frameRate= fps;
 usr.clearOnRefresh= true;
 usr.drawFunc= {
 	var data;
@@ -73,20 +72,13 @@ usr.drawFunc= {
 	var alpha, beta;
 	var bandsData= {[]}.dup(bands.size);
 	channels.do{|c, i|
-		if(c.active, {
-			data= board.buffer[i];
-			if(btn1.value>0, {
-				data= notchFilter.filter(data);
-			});
-			if(btn2.value>0, {
-				data= bandpassFilter.filter(data);
-			});
-			data= fft.fft(data);
+		if(c.active and:{c.data.size>0}, {
+			c.data= fft.fft(c.data);
 			if(pop2.value>0, {
-				data= smoothFilters[i].filter(data);
+				c.data= smoothingFilters[i].filterLog(c.data.max(0.01));
 			});
 			bands.do{|b, j|
-				var arr= data.copyRange(indices[j][0], indices[j][1]-1)**2*factor/4;
+				var arr= c.data.copyRange(indices[j][0], indices[j][1]-1)**2*factor/4;
 				bandsData[j]= bandsData[j]++arr;
 			};
 		});
@@ -147,12 +139,17 @@ usr.drawFunc= {
 	Pen.fillColor= backgroundColor;
 	Pen.fillRect(Rect(w1, h2a, ub.width*0.08, h3-h2a));
 	Pen.fillRect(Rect(w2, 0, ub.width*0.08, h2b));
-	if(focused, {
+	if(alpha>bands[0][3] and:{alpha<bands[0][4]}, {
 		Pen.fillColor= focusedColor;
 	}, {
 		Pen.fillColor= unfocusedColor;
 	});
 	Pen.fillRect(Rect(w1, 0, ub.width*0.08, h2a));
+	if(beta<bands[1][3], {
+		Pen.fillColor= focusedColor;
+	}, {
+		Pen.fillColor= unfocusedColor;
+	});
 	Pen.fillRect(Rect(w2, h2b, ub.width*0.08, h3-h2b));
 
 	Pen.strokeColor= colors[0];
@@ -204,27 +201,62 @@ pop1= PopUpMenu(win, Rect(po, 20, pw, 20))
 pop2= PopUpMenu(win, Rect((pw+2)+po, 20, pw, 20))
 .items_(#["0.0", "0.5", "0.75", "0.9", "0.95", "0.98"])
 .action_{|v|
-	smoothFilters= {DataSmoothing(v.item.asFloat)}.dup(board.numChannels);
-}.valueAction_(5);
+	smoothingFilters= {DataSmoothing(v.item.asFloat)}.dup(board.numChannels);
+}.valueAction_(3);
 btn1= Button(win, Rect((pw+2)*2+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterNotch.keys.collect{|x| [x.asString+"Hz"]}
 ).action_{|v|
 	if(v.value>0, {
-		notchFilter= DataFilterNotch(DataFilterNotch.keys[v.value-1]);
+		notchFilters= {
+			DataFilterNotch(
+				DataFilterNotch.keys[v.value-1],
+				board.currentSampleRate,
+				board.bufferSize
+			);
+		}.dup(board.numChannels);
 	}, {
-		notchFilter= nil;
+		notchFilters= nil;
 	});
 }.valueAction_(1);
 btn2= Button(win, Rect((pw+2)*2.5+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterBandpass.keys.collect{|x| [x.asString]}
 ).action_{|v|
 	if(v.value>0, {
-		bandpassFilter= DataFilterBandpass(DataFilterBandpass.keys[v.value-1]);
+		bandpassFilters= {
+			DataFilterBandpass(
+				DataFilterBandpass.keys[v.value-1],
+				board.currentSampleRate,
+				board.bufferSize
+			);
+		}.dup(board.numChannels);
 	}, {
-		bandpassFilter= nil;
+		bandpassFilters= nil;
 	});
 }.valueAction_(1);
 win.view.children.reject{|v| v==usr}.do{|v| v.resize_(3).font_(f2)};
+
+board.dataAction= {|num, data, acc|
+	channels.do{|c, i|
+		if(c.active, {
+			c.data= board.buffer[i];
+			if(notchFilters.notNil, {
+				c.data= notchFilters[i].filterN(c.data.last);
+			});
+			if(bandpassFilters.notNil, {
+				c.data= bandpassFilters[i].filterN(c.data.last);
+			});
+		});
+	};
+};
+
+Routine({
+	var nextTime;
+	while({win.isClosed.not}, {
+		nextTime= Main.elapsedTime+(1/fps);
+		usr.refresh;
+		(nextTime-Main.elapsedTime).max(0.001).wait;
+	});
+}).play(AppClock);
 
 ~openbci= board;
 )

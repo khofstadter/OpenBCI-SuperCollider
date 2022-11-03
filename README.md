@@ -7,11 +7,11 @@ SuperCollider classes for communicating with [Open Source Brain-Computer Interfa
 
 The following boards are supported...
 
-* [Cyton](https://docs.openbci.com/docs/02Cyton/CytonLanding) (8 channels) [sdk](https://docs.openbci.com/docs/02Cyton/CytonSDK)
+* [Cyton](https://docs.openbci.com/Cyton/CytonLanding/) (8 channels) [sdk](https://docs.openbci.com/Cyton/CytonSDK/)
 
-* [Cyton + Daisy](https://docs.openbci.com/docs/02Cyton/CytonSpecs#openbci-daisy-module) (16 channels) **untested**
+* [Cyton + Daisy](https://docs.openbci.com/Cyton/CytonSpecs/#openbci-daisy-module) (16 channels) **untested**
 
-* [Ganglion](https://docs.openbci.com/docs/03Ganglion/GanglionLanding) (4 channels), [sdk](https://docs.openbci.com/docs/03Ganglion/GanglionSDK)
+* [Ganglion](https://docs.openbci.com/Ganglion/GanglionLanding/) (4 channels), [sdk](https://docs.openbci.com/Ganglion/GanglionSDK/)
 
 ```supercollider
 //install
@@ -23,11 +23,13 @@ OpenBCI.openHelpFile
 
 For more info see https://openbci.com
 
+Note that several of the examples here are ported from the official application [OpenBCI_GUI](https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/) v4.2.0.
+
 ## overview
 
 * Cyton, CytonDaisy, Ganglion - use these SuperCollider classes if you connect to your board via bluetooth serial (the dongle). Maximum sample rate is 250Hz (Cyton) and 200Hz (Ganglion).
 
-* CytonWifi, CytonDaisyWifi, GanglionWifi - these SuperCollider classes require the [WiFi Shield](https://docs.openbci.com/docs/05ThirdParty/03-WiFiShield/WiFiLanding) (also [DIY](https://fredrikolofsson.com/f0blog/openbci-wifi-shield-diy/)) and a special firmware ( [Arduino sketch](https://github.com/redFrik/OpenBCI_WIFI/blob/OpenSoundControl/examples/WifiShieldOSC/WifiShieldOSC.ino) ) for sending OSC. Maximum sample rate for these classes is 16000Hz.
+* CytonWifi, CytonDaisyWifi, GanglionWifi - these SuperCollider classes require the [WiFi Shield](https://docs.openbci.com/ThirdParty/WiFiShield/WiFiLanding/) (also [DIY](https://fredrikolofsson.com/f0blog/openbci-wifi-shield-diy/)) and a special firmware ( [Arduino sketch](https://github.com/redFrik/OpenBCI_WIFI/blob/OpenSoundControl/examples/WifiShieldOSC/WifiShieldOSC.ino) ) for sending OSC. Maximum sample rate for these classes is 16000Hz.
 
 * PlaybackData - is a class tha can play back recorded data from file (e.g. the files recorded onto the onboard SD-card).
 
@@ -40,28 +42,15 @@ _(screenshot showing gui widgets ported from OpenBCI_GUI.app)_
 
 ## troubleshooting
 
-**mac os 10.12.x** and later with cyton + dongle...
-
-if you experience freezes and sporadic updates in the stream of serial data, make sure that you are using the AppleUSBFTDI driver and *not* the driver from ftdichip.com.
-to check plug in the dongle, open terminal and type...
-```
-kextstat | grep FTDI
-```
-if it is reporting `com.FTDI.driver.FTDIUSBSerialDriver (2.4.2)` then unload this driver with the following terminal command...
-```
-sudo kextunload -b com.FTDI.driver.FTDIUSBSerialDriver
-```
-unplug and plug in the dongle and once again run...
-```
-kextstat | grep FTDI
-```
-it should now report `com.apple.driver.AppleUSBFTDI (5.0.0)` and the data should come streaming in at a smooth rate and without hickups. test this with for example the file `gui_example_userview_accelerometer.scd`.
-
-**mac os 10.11.x** and earlier with cyton + dongle...
-if hickups and freezes see here... https://docs.openbci.com/docs/10Troubleshooting/FTDI_Fix_Mac
+see https://docs.openbci.com/Troubleshooting/TroubleshootingLanding/
 
 ## changelog
 
+* 1.90 - major improvement in all examples using fft and filters
+* 1.87 - focuswidget bugfix and bandpower improvements
+* 1.86 - fft fixes, revert to default fft window, DataSmoothing filterLog
+* 1.85 - changed SyntheticData to match 4.2.0, button bugfix, filterN, smoother drawing
+* 1.82 - fft optimisation and windowtypes, fixing links, increase framerate in examples
 * 1.81 - important bugfix for recorded/raw data file playback
 * 1.80 - default bufferSize reduced from 1024 to 512, filters now calculate in place, use Image class
 * 1.75 - added three scsynth examples and fixed some outdated links
@@ -95,6 +84,5 @@ if hickups and freezes see here... https://docs.openbci.com/docs/10Troubleshooti
 * finish and test Ganlion classes - both serial and wifi
 * finish and test Daisy classes - both serial and wifi
 * deal with muted channels in test and fft classes
-* DataFFT - add different fft window types
 * converter class for SD log file data
 * ganglion impedance

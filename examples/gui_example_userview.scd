@@ -8,45 +8,94 @@ var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start})
 //var recorder= DataRecord(board).start;  //uncomment to record
 var width= 640, height= 640;
 var win, img;
-width= width.min(board.bufferSize);
+var channels= {
+	(
+		data: []
+	)
+}.dup(board.numChannels);
+var notchFilters, bandpassFilters;
 ~maxuV= 20;
-~notchFilter= DataFilterNotch('50');
-~bandpassFilter= DataFilterBandpass('5-50');
+~makeNotchFilters= {|type|
+	if(DataFilterNotch.keys.includes(type).not, {
+		notchFilters= nil;
+	}, {
+		notchFilters= {
+			DataFilterNotch(
+				type,
+				board.currentSampleRate,
+				board.bufferSize
+			);
+		}.dup(board.numChannels);
+	});
+};
+~makeNotchFilters.value('50');
+~makeBandpassFilters= {|type|
+	if(DataFilterBandpass.keys.includes(type).not, {
+		bandpassFilters= nil;
+	}, {
+		bandpassFilters= {
+			DataFilterBandpass(
+				type,
+				board.currentSampleRate,
+				board.bufferSize
+			);
+		}.dup(board.numChannels);
+	});
+};
+~makeBandpassFilters.value('5-50');
+width= width.min(board.bufferSize);
 win= Window("gui example userview", Rect(10, 100, width, height)).front;
 img= Image.color(width, height, Color.black).interpolation_(\fast);
 win.drawFunc= {
 	var chanHeight= height/board.numChannels;
 	var color= Color.white;
 	img.fill(Color.black);
-	board.buffer.do{|data, i|
-		if(~notchFilter.notNil, {
-			data= ~notchFilter.filter(data);
+	channels.do{|c, i|
+		if(c.data.size>0, {
+			width.do{|x|
+				var val= c.data[c.data.size-1-x];
+				var y= (val/~maxuV+(i+0.5*chanHeight)).asInteger;
+				img.setColor(color, width-1-x, y.clip(0, img.height-1));
+			};
 		});
-		if(~bandpassFilter.notNil, {
-			data= ~bandpassFilter.filter(data);
-		});
-		width.do{|x|
-			var val= data[data.size-1-x];
-			var y= (val/~maxuV+(i+0.5*chanHeight)).asInteger;
-			img.setColor(color, width-1-x, y);
-		};
-		Pen.drawImage(Rect(0, 0, win.bounds.width, win.bounds.height), img);
 	};
+	Pen.drawImage(Rect(0, 0, win.bounds.width, win.bounds.height), img);
 };
 win.onClose= {img.free; board.stop};
-Routine({while({win.isClosed.not}, {win.refresh; (1/30).wait})}).play(AppClock);
 CmdPeriod.doOnce({win.close});
+
+board.dataAction= {|num, data, acc|
+	channels.do{|c, i|
+		c.data= board.buffer[i];
+		if(notchFilters.notNil, {
+			c.data= notchFilters[i].filterN(c.data.last);
+		});
+		if(bandpassFilters.notNil, {
+			c.data= bandpassFilters[i].filterN(c.data.last);
+		});
+	};
+};
+
+Routine({
+	var nextTime;
+	while({win.isClosed.not}, {
+		nextTime= Main.elapsedTime+(1/60);
+		win.refresh;
+		(nextTime-Main.elapsedTime).max(0.001).wait;
+	});
+}).play(AppClock);
+
 ~openbci= board;
 )
 
-~notchFilter= DataFilterNotch('50');
-~notchFilter= DataFilterNotch('60');
-~notchFilter= nil;
-~bandpassFilter= DataFilterBandpass('1-50');
-~bandpassFilter= DataFilterBandpass('5-50');
-~bandpassFilter= DataFilterBandpass('15-50');
-~bandpassFilter= DataFilterBandpass('7-13');
-~bandpassFilter= nil;
+~makeNotchFilters.value('50');
+~makeNotchFilters.value('60');
+~makeNotchFilters.value(nil);
+~makeBandpassFilters.value('1-50');
+~makeBandpassFilters.value('5-50');
+~makeBandpassFilters.value('15-50');
+~makeBandpassFilters.value('7-13');
+~makeBandpassFilters.value(nil);
 
 
 ~openbci.softReset;

@@ -2,10 +2,11 @@
 
 DataFFT {
 	var <board, table, imag, <fftSize, <fftSize2, <bw;
-	*new {|board, fftSize= 256|
-		^super.new.initDataFFT(board, fftSize);
+	var result;
+	*new {|board, fftSize= 256, windowType|
+		^super.new.initDataFFT(board, fftSize, windowType);
 	}
-	initDataFFT {|argBoard, argSize|
+	initDataFFT {|argBoard, argSize, argWindowType|
 		board= argBoard;
 		if(argSize.isPowerOfTwo.not, {
 			argSize= argSize.nextPowerOfTwo;
@@ -13,18 +14,43 @@ DataFFT {
 		});
 		fftSize= argSize;
 		fftSize2= argSize.div(2);
-		table= Signal.fftCosTable(fftSize);
+		table= switch(argWindowType,
+			\hamming, {
+				Signal.hammingWindow(fftSize2+2).copyToEnd(fftSize2.div(2)+1);
+			},
+			\hanning, {
+				Signal.hanningWindow(fftSize2+2).copyToEnd(fftSize2.div(2)+1);
+			},
+			\rect, {
+				Signal.rectWindow(fftSize2+2).copyToEnd(fftSize2.div(2)+1);
+			},
+			\welch, {
+				Signal.welchWindow(fftSize2+2).copyToEnd(fftSize2.div(2)+1);
+			},
+			{
+				Signal.fftCosTable(fftSize);
+			}
+		);
 		imag= Signal.newClear(fftSize);
 		bw= 2/fftSize*(board.currentSampleRate*0.5);
+		result= FloatArray.newClear(fftSize2+1);
 	}
 	fft {|data|
-		var signal;
+		var complex;
 		if(data.size<fftSize, {
 			"%: data size must be >= fftSize. zeropadded % values".format(this.class.name, fftSize-data.size).warn;
 			data= 0.dup(fftSize-data.size)++data;
 		});
-		signal= data.copyRange(data.size-fftSize, data.size-1).as(Signal);
-		^fft(signal, imag, table).magnitude.copyRange(0, fftSize2)/fftSize2;
+		data= data.copyRange(data.size-fftSize, data.size-1);
+		data= data-(data.sum/data.size);  //remove the mean
+		complex= fft(data.as(Signal), imag, table);
+		result.size.do{|i|
+			result[i]= complex.real[i].hypot(complex.imag[i])/fftSize;
+			if(i>0 and:{i<fftSize2}, {
+				result[i]= result[i]*2;
+			});
+		};
+		^result;
 	}
 	indexToFreq {|index|
 		if(index==0, {

@@ -16,17 +16,18 @@ var thetaBand= [0, 4, 8];  //channel, min, max (in Hz)
 var gammaBand= [1, 35, 45];  //channel, min, max (in Hz)
 var loThetaEnergy= 0, hiThetaEnergy= 10;  //vertical thresholds - adjust min and max for theta
 var loGammaEnergy= 0, hiGammaEnergy= 10;  //vertical thresholds - adjust min and max for gamma
-//var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
+var board= CytonSerial("/dev/tty.usbserial-DM00DRM0", initAction: {|b| b.start});  //edit here to match your board
 //var board= CytonWifi(NetAddr("OpenBCI_WifiShieldOSC.local", 13999), initAction: {|b| b.start});
-var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
+//var board= SyntheticData(initAction: {|b| b.start});  //synthetic test data
 //var board= PlaybackData("/Users/khofstadter/Dropbox/PhD/raw_eeg_data/shamanic_soundscape/mama/OpenBCI-RAW-2019-10-01_10-31-39_sc.txt", initAction: {|b| b.start});  //file data
 //var recorder= DataRecord(board).start;  //uncomment to record
-var notchFilter, bandpassFilter, smoothFilters;
+var notchFilters, bandpassFilters, smoothFilters;
 var fft= DataFFT(board, 256);
-var fps= 30;
+var fps= 60, animate= false;
 var downSample= 65;  //only draw this many samples
 var allData= Array.newClear(board.numChannels);  //an array of arrays with fft data
 var drawModes= #[\Paused, \NoData, \DownSampl, \Complete];
+var calculations;
 var energyThetaAvg= 0, energyGammaAvg= 0;  //the current calulated averages
 var usr, btn0, pop1, pop2, pop3, pop4, btn1, btn2, pw, po;
 var horizontalScale, verticalScale, maxFreq, maxAmp;
@@ -46,7 +47,9 @@ var colors= [
 var channels= {|i|
 	(
 		color: colors.wrapAt(i),
-		active: activeChannels.includes(i)
+		active: activeChannels.includes(i),
+		data: [],
+		uVrms: 0.0
 	)
 }.dup(board.numChannels);
 
@@ -114,8 +117,6 @@ CmdPeriod.doOnce({win.close});
 //--plot
 usr= UserView(win, Rect(*#[0.14, 0.19, 0.8, 0.64]*win.bounds.extent.asArray));
 usr.background= Color.new255(245, 245, 245, 220);
-usr.animate= true;
-usr.frameRate= fps;
 usr.clearOnRefresh= true;
 usr.drawFunc= {
 	var uh= usr.bounds.height;
@@ -208,9 +209,9 @@ btn0= Button(win, Rect(po, 20, pw, 20))
 .states_(drawModes.collect{|symbol| [symbol.asString]})
 .action_({|view|
 	if(view.value==0, {
-		usr.animate= false;
+		animate= false;
 	}, {
-		usr.animate= true;
+		animate= true;
 	});
 }).valueAction_(1);
 StaticText(win, Rect((pw+2)+po, 1, pw, 20)).align_(\center).string_("Max Freq");
@@ -262,77 +263,104 @@ btn1= Button(win, Rect((pw+2)*5+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterNotch.keys.collect{|x| [x.asString+"Hz"]}
 ).action_{|v|
 	if(v.value>0, {
-		notchFilter= DataFilterNotch(DataFilterNotch.keys[v.value-1]);
+		notchFilters= {
+			DataFilterNotch(
+				DataFilterNotch.keys[v.value-1],
+				board.currentSampleRate,
+				board.bufferSize
+			);
+		}.dup(board.numChannels);
 	}, {
-		notchFilter= nil;
+		notchFilters= nil;
 	});
 }.valueAction_(1);
 btn2= Button(win, Rect((pw+2)*5.5+po, 20, pw/2, 20)).states_(
 	[["Off"]]++DataFilterBandpass.keys.collect{|x| [x.asString]}
 ).action_{|v|
 	if(v.value>0, {
-		bandpassFilter= DataFilterBandpass(DataFilterBandpass.keys[v.value-1]);
+		bandpassFilters= {
+			DataFilterBandpass(
+				DataFilterBandpass.keys[v.value-1],
+				board.currentSampleRate,
+				board.bufferSize
+			);
+		}.dup(board.numChannels);
 	}, {
-		bandpassFilter= nil;
+		bandpassFilters= nil;
 	});
 }.valueAction_(1);
 win.view.children.reject{|v| v==usr}.do{|v| v.resize_(3).font_(f2)};
 
-//--update data in an independent routine
-Routine.run({
-	inf.do{
-		var factor= fft.fftSize/board.currentSampleRate*0.01;
-		var thetaArr= Array.new, gammaArr= Array.new;
-		var thetaRange= [
-			(fft.fftSize*(thetaBand[1]/board.currentSampleRate)).round.asInteger,
-			(fft.fftSize*(thetaBand[2]/board.currentSampleRate)).round.asInteger
-		];
-		var gammaRange= [
-			(fft.fftSize*(gammaBand[1]/board.currentSampleRate)).round.asInteger,
-			(fft.fftSize*(gammaBand[2]/board.currentSampleRate)).round.asInteger
-		];
+calculations= {
+	var factor= fft.fftSize/board.currentSampleRate*0.01;
+	var thetaArr= Array.new, gammaArr= Array.new;
+	var thetaRange= [
+		(fft.fftSize*(thetaBand[1]/board.currentSampleRate)).round.asInteger,
+		(fft.fftSize*(thetaBand[2]/board.currentSampleRate)).round.asInteger
+	];
+	var gammaRange= [
+		(fft.fftSize*(gammaBand[1]/board.currentSampleRate)).round.asInteger,
+		(fft.fftSize*(gammaBand[2]/board.currentSampleRate)).round.asInteger
+	];
 
-		channels.do{|c, i|
-			var data;
-			if(c.active, {
-				data= board.buffer[i];
-				if(notchFilter.notNil, {
-					data= notchFilter.filter(data);
-				});
-				if(bandpassFilter.notNil, {
-					data= bandpassFilter.filter(data);
-				});
-				data= fft.fft(data);
-				if(smoothFilters.notNil, {
-					data= smoothFilters[i].filter(data);
-				});
-				allData[i]= data;
-
-				//--collect amplitudes for frequency range for selected channels
-				if(thetaBand[0]==i, {
-					thetaArr= thetaArr++data.copyRange(*thetaRange);
-				});
-				if(gammaBand[0]==i, {
-					gammaArr= gammaArr++data.copyRange(*gammaRange);
-				});
+	channels.do{|c, i|
+		if(c.active and:{c.data.size>0}, {
+			c.uVrms= 0;
+			c.data.size.div(2).do{|i| c.uVrms= c.uVrms+pow(c.data[c.data.size-1-i], 2)};
+			c.uVrms= (c.uVrms/c.data.size.div(2)).sqrt;
+			c.data= fft.fft(c.data);
+			if(smoothFilters.notNil, {
+				c.data= smoothFilters[i].filterLog(c.data.max(0.01));
 			});
-		};
+			allData[i]= c.data;
 
-		//--calculate average energy and store in global variables
-		//amended by khofsadter:
-		//energyThetaAvg= thetaArr.squared.sum*factor;
-		energyThetaAvg = thetaArr.median.round(0.001);
-		//energyGammaAvg= gammaArr.squared.sum*factor;
-		energyGammaAvg = gammaArr.median.round(0.001);
-		//~energyTheta= energyThetaAvg.linlin(loThetaEnergy, hiThetaEnergy, 0, 1);
-		~energyTheta = energyThetaAvg;
-		//~energyGamma= energyGammaAvg.linlin(loGammaEnergy, hiGammaEnergy, 0, 1);
-		~energyGamma = energyGammaAvg;
-		//Ndef(\energyTheta).source= ~energyTheta;
-		//Ndef(\energyGamma).source= ~energyGamma;
-		(1/fps).wait;
+			//--collect amplitudes for frequency range for selected channels
+			if(thetaBand[0]==i, {
+				thetaArr= thetaArr++c.data.copyRange(*thetaRange);
+			});
+			if(gammaBand[0]==i, {
+				gammaArr= gammaArr++c.data.copyRange(*gammaRange);
+			});
+		});
 	};
-}, clock:AppClock);
+
+	//--calculate average energy and store in global variables
+	//amended by khofsadter:
+	//energyThetaAvg= thetaArr.squared.sum*factor;
+	energyThetaAvg = (thetaArr.median?0).round(0.001);
+	//energyGammaAvg= gammaArr.squared.sum*factor;
+	energyGammaAvg = (gammaArr.median?0).round(0.001);
+	//~energyTheta= energyThetaAvg.linlin(loThetaEnergy, hiThetaEnergy, 0, 1);
+	~energyTheta = energyThetaAvg;
+	//~energyGamma= energyGammaAvg.linlin(loGammaEnergy, hiGammaEnergy, 0, 1);
+	~energyGamma = energyGammaAvg;
+	//Ndef(\energyTheta).source= ~energyTheta;
+	//Ndef(\energyGamma).source= ~energyGamma;
+};
+
+board.dataAction= {|num, data, acc|
+	channels.do{|c, i|
+		if(c.active, {
+			c.data= board.buffer[i];
+			if(notchFilters.notNil, {
+				c.data= notchFilters[i].filterN(c.data.last);
+			});
+			if(bandpassFilters.notNil, {
+				c.data= bandpassFilters[i].filterN(c.data.last);
+			});
+		});
+	};
+};
+
+Routine({
+	var nextTime;
+	while({win.isClosed.not}, {
+		nextTime= Main.elapsedTime+(1/fps);
+		calculations.value;
+		if(animate, {usr.refresh});
+		(nextTime-Main.elapsedTime).max(0.001).wait;
+	});
+}).play(AppClock);
 
 ~openbci= board;
 

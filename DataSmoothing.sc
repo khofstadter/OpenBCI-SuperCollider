@@ -16,4 +16,13 @@ DataSmoothing {
 		prevData= data;
 		^data;
 	}
+	filterLog {|data|
+		if(prevData.notNil, {
+			data= (1-factor)*data.pow(2).log;
+			data= factor*prevData.pow(2).log+data;
+			data= data.exp.sqrt;
+		});
+		prevData= data;
+		^data;
+	}
 }

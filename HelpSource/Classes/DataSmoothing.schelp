@@ -30,6 +30,16 @@ an link::Classes/Array:: of values.
 returns::
 an link::Classes/Array:: of smoothed values.
 
+method::filterLog
+smooth in dB power space
+note::CPU heavy and can not deal with values <=0.0::
+
+argument::data
+an link::Classes/Array:: of values.
+
+returns::
+an link::Classes/Array:: of smoothed values.
+
 examples::
 
 code::
@@ -52,7 +62,7 @@ r= Routine.run({
 			smoothers[i].filter(fft).postln;
 		};
 		0.5.wait;
-	};	
+	};
 });
 )
 r.stop;

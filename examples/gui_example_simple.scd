@@ -17,21 +17,23 @@ win.layout= VLayout(*[
 	HLayout(*sliders),
 	HLayout(*numbers)
 ]);
+CmdPeriod.doOnce({win.close});
+
 board.dataAction= {|num, data, accel|
-	if(Main.elapsedTime-lastTime>0.033, {  //downsample to 30fps
+	if(Main.elapsedTime-lastTime>0.025, {  //downsample to 40fps
 		lastTime= Main.elapsedTime;
 		data.do{|x, i|
 			if(x!=lastValues[i], {  //filter out repeats
 				lastValues[i]= x;
 				{
-					sliders[i].value= x.linlin(0-~maxuV, ~maxuV, 0, 1);  //-500 to 500uV
+					sliders[i].value= x.linlin(0-~maxuV, ~maxuV, 0, 1);  //-1000 to 1000uV
 					numbers[i].value= x;  //display raw values
 				}.defer;
 			});
 		};
 	});
 };
-CmdPeriod.doOnce({win.close});
+
 ~openbci= board;
 )
 

@@ -18,6 +18,12 @@ create a new filter instance.
 argument::type
 a link::Classes/Symbol:: for looking up the filter constants.
 
+argument::sampleRate
+use code::board.currentSampleRate::.
+
+argument::bufferSize
+internal buffer size. only used for link::#-filterN::.
+
 method::keys
 
 an link::Classes/Array:: of symbols which can be used to look up filter constants.
@@ -37,11 +43,20 @@ perform the filter calculations.
 argument::data
 a link::Classes/List:: of data.
 
+method::filterN
+perform the filter calculations in steps. an internal buffer is used.
+
+argument::newData
+an link::Classes/Array:: or a single sample.
+
 method::type
 a link::Classes/Symbol:: for current filter frequency/frequencies.
 
 method::sampleRate
 get or set sample rate.
+
+method::bufferSize
+internal buffer size.
 
 method::filt_a
 current filter constants. looked up at instance creation or when changing sample rate.
