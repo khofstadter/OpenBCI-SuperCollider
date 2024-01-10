@@ -4,6 +4,7 @@ SyntheticData : OpenBCI {
 	classvar <numChannels= 8;
 	classvar <defaultSampleRate= 250;
 	var task, muted;
+	var <>noiseAmp= 1.0;
 	uVScale {|gain= 24| ^4.5/gain/(2**23-1)*1000000}
 	accScale {^0.002/(2**4)}
 
@@ -56,7 +57,7 @@ SyntheticData : OpenBCI {
 			numChannels.do{|i|
 				var val;
 				if(muted[i].not, {
-					val= 0.gauss(1)*(currentSampleRate/2).sqrt;
+					val= 0.gauss(1)*(currentSampleRate/2).sqrt*noiseAmp;
 					switch(i,
 						0, {
 							val= val*10;
