@@ -111,7 +111,8 @@ SerialPort.listDevices;
 ~openbci.testDC
 ~openbci.testGnd
 ~openbci.setDefaultChannelSettings
-~maxuV= 10;  //-200 to 200uV
+~maxuV= 10;  //-10 to 10uV
+~maxuV= 20;  //-20 to 20uV (default)
 ~maxuV= 200;  //-200 to 200uV
 ~maxuV= 1000;  //-1000 to 1000uV
 ~maxuV= 10000;  //-10000 to 10000uV
