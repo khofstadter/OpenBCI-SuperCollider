@@ -2,8 +2,6 @@
 //meassure at T5-O1 and T6-O2
 //https://www.richardmudhar.com/blog/2017/05/mind-mirror-reverse-engineering/
 
-//TODO sEMG
-
 (
 var activeChannels= #[0, 1];  //only two - left and right side - T5-O1 and T6-O2
 var filterHum= '50';  //filter out mains (in Hz - can be '50' or '60')
@@ -23,7 +21,6 @@ var colors= [
 	#[11] -> Color.new255(241, 112, 40),  //24
 	#[12, 13] -> Color.new255(232, 72, 40),  //30, 38
 ];
-var colorsEMG= Color.new255(251, 13, 27);
 var f0= Font("Helvetiva", 12, italic:true);
 var bandData= 0.dup(activeChannels.size).dup(frequencyBands.size);
 var sequencer= DataSequencer(board, 1000, true, false);
@@ -52,41 +49,34 @@ win.drawFunc= {
 	var bandPoints;
 	var width2= win.bounds.width*0.5;
 	var height= win.bounds.height;
-	var h16= height/16;
-	var verticalGap= h16*0.2;
-	var barHeight= h16-verticalGap;
+	var hh= height/15;
+	var verticalGap= hh*0.2;
+	var barHeight= hh-verticalGap;
 	var horizontalGap= 30;
 	var borderGap= 20;
 	var tw= horizontalGap*2;
 
 	Pen.translate(width2, height-(verticalGap*0.5));
-	Pen.fillColor= colorsEMG;
-	Pen.addRect(Rect(0-horizontalGap, 0, -0, 0-barHeight));  //TODO data
-	Pen.addRect(Rect(horizontalGap, 0, 0, 0-barHeight));  //TODO data
-	Pen.fill;
 	Pen.fillColor= Color.white;
-	//Pen.stringCenteredIn("sEMG", Rect.aboutPoint(Point(0, -0.5*barHeight), tw, h16), f0);
-
-	Pen.translate(0, 0-h16);
 	5.do{|i|
 		var uV= (i+1/5*~maxuV);
 		var x= uV.linlin(0, ~maxuV, horizontalGap, width2-borderGap);
 		var pnt= Point(0-x, -0.5*barHeight);
-		Pen.stringCenteredIn(uV.asString, Rect.aboutPoint(pnt, tw, h16), f0);
+		Pen.stringCenteredIn(uV.asString, Rect.aboutPoint(pnt, tw, hh), f0);
 		pnt= Point(x, -0.5*barHeight);
-		Pen.stringCenteredIn(uV.asString, Rect.aboutPoint(pnt, tw, h16), f0);
+		Pen.stringCenteredIn(uV.asString, Rect.aboutPoint(pnt, tw, hh), f0);
 	};
 
-	Pen.translate(0, 0-h16);
+	Pen.translate(0, 0-hh);
 	bandPoints= bandData.collect{|band, i|
 		var left= band.wrapAt(0);
 		var right= band.wrapAt(1);
 		var leftX= 0-left.linlin(0, ~maxuV, 0, width2-borderGap-horizontalGap);
 		var rightX= right.linlin(0, ~maxuV, 0, width2-borderGap-horizontalGap);
-		var y= 0-(h16*i);
+		var y= 0-(hh*i);
 		[Point(leftX, y), left>~maxuV, Point(rightX, y), right>~maxuV];
 	};
-	bandPoints.do{|pnts, i|
+	bandPoints.drop(-1).do{|pnts, i|
 		var y= pnts[0].y;
 		var str= frequencyBands[i].asString;
 		Pen.fillColor= colors.detect{|a| a.key.includes(i)}.value;
@@ -94,7 +84,7 @@ win.drawFunc= {
 		Pen.addRect(Rect(horizontalGap, y, pnts[2].x, 0-barHeight));
 		Pen.fill;
 		Pen.fillColor= Color.white;
-		Pen.stringCenteredIn(str, Rect.aboutPoint(Point(0, -0.5*barHeight+y), tw, h16), f0);
+		Pen.stringCenteredIn(str, Rect.aboutPoint(Point(0, -0.5*barHeight+y), tw, hh), f0);
 		if(pnts[1], {Pen.fillRect(Rect(0-width2, y, borderGap, 0-barHeight))});
 		if(pnts[3], {Pen.fillRect(Rect(width2, y, 0-borderGap, 0-barHeight))});
 	};
@@ -128,7 +118,7 @@ if(activeChannels.size!=2, {
 		var d;
 		if(mindSynth.notNil, {
 			d= data[activeChannels];
-			d= d.collect{|x, i| notchFilters[i].filterN(x)};
+			d.do{|x, i| notchFilters[i].filterN(x)};
 			s.bind{mindSynth.set(\data, d)};
 		});
 	};
