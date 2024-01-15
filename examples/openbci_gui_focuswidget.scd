@@ -253,7 +253,9 @@ Routine({
 	var nextTime;
 	while({win.isClosed.not}, {
 		nextTime= Main.elapsedTime+(1/fps);
-		usr.refresh;
+		if(channels[0].data.size>=fft.fftSize, {
+			usr.refresh;
+		});
 		(nextTime-Main.elapsedTime).max(0.001).wait;
 	});
 }).play(AppClock);

@@ -74,7 +74,7 @@ Routine({
 	while({win.isClosed.not}, {
 		nextTime= Main.elapsedTime+(1/40);  //framerate
 		channels.do{|c, i|
-			if(c.data.size>0, {
+			if(c.data.size>=fft.fftSize, {
 				c.data= fft.fft(c.data);
 				if(smoothingFilters.notNil, {
 					c.data= smoothingFilters[i].filter(c.data.max(0.01));
