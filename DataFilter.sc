@@ -15,7 +15,7 @@ DataFilter {
 			"type % not supported. only: %".format(type, this.class.constants.keys.asArray).warn;
 			type= this.class.constants.keys.asArray[0];
 		});
-		this.sampleRate_(argSampleRate?250);  //set a default
+		this.sampleRate_(argSampleRate.asInteger?250);  //set a default
 		this.bufferSize_(argBufferSize?1250);
 	}
 	bufferSize_ {|val|
