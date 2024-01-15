@@ -33,15 +33,17 @@ Cyton : OpenBCIboard {
 
 	settings {|channel= 1, powerDown= 0, gain= 6, type= 0, bias= 1, srb2= 1, srb1= 0|
 		if(channel>=1 and:{channel<=numChannels}, {
-			this.prCommand($x);
-			this.prCommand(channel.asDigit);
-			this.prCommand(powerDown.clip(0, 1).asDigit);
-			this.prCommand(gain.clip(0, 6).asDigit);
-			this.prCommand(type.clip(0, 7).asDigit);
-			this.prCommand(bias.clip(0, 1).asDigit);
-			this.prCommand(srb2.clip(0, 1).asDigit);
-			this.prCommand(srb1.clip(0, 1).asDigit);
-			this.prCommand($X);
+			this.prCommandArray(
+				"x%%%%%%%X".format(
+					channel,
+					powerDown.clip(0, 1),
+					gain.clip(0, 6),
+					type.clip(0, 7),
+					bias.clip(0, 1),
+					srb2.clip(0, 1),
+					srb1.clip(0, 1)
+				)
+			);
 		}, {
 			"channel % out of range".format(channel).warn;
 		});
@@ -54,11 +56,13 @@ Cyton : OpenBCIboard {
 	}
 	impedance {|channel= 1, pchan= 0, nchan= 1|
 		if(channel>=1 and:{channel<=numChannels}, {
-			this.prCommand($z);
-			this.prCommand(channel.asDigit);
-			this.prCommand(pchan.clip(0, 1).asDigit);
-			this.prCommand(nchan.clip(0, 1).asDigit);
-			this.prCommand($Z);
+			this.prCommandArray(
+				"z%%%Z".format(
+					channel,
+					pchan.clip(0, 1),
+					nchan.clip(0, 1)
+				)
+			);
 		}, {
 			"channel % out of range".format(channel).warn;
 		});
@@ -134,25 +138,27 @@ CytonDaisy : Cyton {
 	//--commands
 	settings {|channel= 1, powerDown= 0, gain= 6, type= 0, bias= 1, srb2= 1, srb1= 0|
 		if(channel>=1 and:{channel<=numChannels}, {
-			this.prCommand($x);
-			switch(channel,
-				9, {this.prCommand($Q)},
-				10, {this.prCommand($W)},
-				11, {this.prCommand($E)},
-				12, {this.prCommand($R)},
-				13, {this.prCommand($T)},
-				14, {this.prCommand($Y)},
-				15, {this.prCommand($U)},
-				16, {this.prCommand($I)},
-				{this.prCommand(channel.asDigit)}
+			this.prCommandArray(
+				"x%%%%%%%X".format(
+					switch(channel,
+						9, {$Q},
+						10, {$W},
+						11, {$E},
+						12, {$R},
+						13, {$T},
+						14, {$Y},
+						15, {$U},
+						16, {$I},
+						{channel}
+					),
+					powerDown.clip(0, 1),
+					gain.clip(0, 6),
+					type.clip(0, 7),
+					bias.clip(0, 1),
+					srb2.clip(0, 1),
+					srb1.clip(0, 1)
+				)
 			);
-			this.prCommand(powerDown.clip(0, 1).asDigit);
-			this.prCommand(gain.clip(0, 6).asDigit);
-			this.prCommand(type.clip(0, 7).asDigit);
-			this.prCommand(bias.clip(0, 1).asDigit);
-			this.prCommand(srb2.clip(0, 1).asDigit);
-			this.prCommand(srb1.clip(0, 1).asDigit);
-			this.prCommand($X);
 		}, {
 			"channel % out of range".format(channel).warn;
 		});

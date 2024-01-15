@@ -46,6 +46,7 @@ see https://docs.openbci.com/Troubleshooting/TroubleshootingLanding/
 
 ## changelog
 
+* 1.91 - add mind mirror example, minor refactor and helpfile improvements
 * 1.90 - major improvement in all examples using fft and filters
 * 1.87 - focuswidget bugfix and bandpower improvements
 * 1.86 - fft fixes, revert to default fft window, DataSmoothing filterLog

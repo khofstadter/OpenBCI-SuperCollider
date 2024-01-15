@@ -58,6 +58,9 @@ stop streaming synthetic data.
 method::close
 stops main loop.
 
+method::noiseAmp
+Turn off noise by setting this to 0.0 - just for help debugging.
+
 examples::
 
 code::
