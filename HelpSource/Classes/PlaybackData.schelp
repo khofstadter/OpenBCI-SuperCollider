@@ -8,6 +8,8 @@ this class acts like a drop-in replacement for link::Classes/CytonSerial:: and l
 
 It will play back files recorded with OpenBCI_GUI. These are normally called something like code::OpenBCI-RAW-2019-04-10_19-04-26.txt:: and contain OpenBCI Raw EEG Data.
 
+File formats: older versions as well as version 5 are supported.
+
 note::
 does not survive link::Classes/CmdPeriod::.
 ::
