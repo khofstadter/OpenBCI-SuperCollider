@@ -17,7 +17,7 @@ PlaybackData : OpenBCI {
 	initPlaybackData {|argPath|
 		fileData= CSVFileReader.read(argPath.standardizePath);
 		if(fileData[0][0].contains("%OpenBCI Raw EEG Data"), {
-			currentSampleRate= fileData[2][0].split($=)[1].asFloat;
+			currentSampleRate= fileData[2][0].split($=)[1].asInteger;
 			defaultSampleRate= currentSampleRate;
 			numChannels= fileData[1][0].split($=)[1].asInteger;
 			buffer= {List.fill(bufferSize, {0})}.dup(numChannels);  //need to recreate buffer because numChannels is nil
